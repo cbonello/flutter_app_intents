@@ -1,0 +1,28 @@
+name: flutter_app_intents
+description: "A Flutter plugin for integrating Apple App Intents with your iOS applications."
+version: 0.1.0
+publish_to: none
+license: MIT
+
+environment:
+  sdk: ^3.8.1
+  flutter: ">=1.17.0"
+
+dependencies:
+  equatable: ^2.0.0
+  flutter:
+    sdk: flutter
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  mocktail: ^1.0.0
+  very_good_analysis: ^9.0.0
+
+flutter:
+  plugin:
+    platforms:
+      ios:
+        pluginClass: FlutterAppIntentsPlugin
+        fileName: flutter_app_intents.swift
+  uses-material-design: true
