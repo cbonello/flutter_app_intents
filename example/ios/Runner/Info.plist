@@ -60,15 +60,21 @@
 	<!-- Enable App Intents integration -->
 	<key>NSSupportsLiveActivities</key>
 	<true/>
-	<key>INIntentsSupported</key>
-	<array>
-		<string>INSearchCallHistoryIntent</string>
-	</array>
-	<key>INIntentsRestrictedWhileLocked</key>
-	<array/>
+	<key>NSAppIntentsConfiguration</key>
+	<dict>
+		<key>NSAppIntentsPackage</key>
+		<string>flutter_app_intents_example</string>
+	</dict>
+	<key>NSAppIntentsMetadata</key>
+	<dict>
+		<key>NSAppIntentsSupported</key>
+		<true/>
+	</dict>
 	<key>NSUserActivityTypes</key>
 	<array>
-		<string>com.flutter_app_intents.example.intent</string>
+		<string>increment_counter</string>
+		<string>reset_counter</string>
+		<string>get_counter</string>
 	</array>
 </dict>
 </plist>
