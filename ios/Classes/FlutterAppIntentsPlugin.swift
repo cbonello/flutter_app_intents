@@ -9,10 +9,10 @@ import CoreLocation
 public class FlutterAppIntentsPlugin: NSObject, FlutterPlugin {
     private var channel: FlutterMethodChannel?
     private var registeredIntents: [String: Any] = [:]
-    private var activeIntents: [String: DynamicAppIntent] = [:]
+    internal var activeIntents: [String: DynamicAppIntent] = [:]
     
     // Singleton to handle intent registry
-    static let shared = FlutterAppIntentsPlugin()
+    public static let shared = FlutterAppIntentsPlugin()
     
     public static func register(with registrar: FlutterPluginRegistrar) {
         let channel = FlutterMethodChannel(name: "flutter_app_intents", binaryMessenger: registrar.messenger())
@@ -310,9 +310,9 @@ public class FlutterAppIntentsPlugin: NSObject, FlutterPlugin {
     }
     
     private func updateAppShortcuts() async {
-        // AppShortcuts management is handled automatically by iOS 16+
-        // when intents are properly registered with the AppIntent protocol
-        print("App shortcuts updated automatically by the system")
+        // App shortcuts are automatically managed by iOS when AppShortcutsProvider.appShortcuts changes
+        // The system will refresh shortcuts when it detects changes to the provider
+        print("App shortcuts updated with \(activeIntents.count) intents")
     }
     
     private func createAppShortcuts() -> [String] {
@@ -462,7 +462,9 @@ public class FlutterAppIntentsPlugin: NSObject, FlutterPlugin {
     }
     
     // Handle intent invocation from the system
-    func handleIntentInvocation(identifier: String, parameters: [String: Any]) async -> [String: Any] {
+    public func handleIntentInvocation(identifier: String, parameters: [String: Any]) async -> [String: Any] {
+        print("🚀 iOS calling Flutter intent: \(identifier) with parameters: \(parameters)")
+        
         let arguments: [String: Any] = [
             "identifier": identifier,
             "parameters": parameters
@@ -470,15 +472,20 @@ public class FlutterAppIntentsPlugin: NSObject, FlutterPlugin {
         
         // Create a continuation to wait for Flutter response
         return await withCheckedContinuation { continuation in
-            channel?.invokeMethod("handleIntent", arguments: arguments) { result in
-                if let resultDict = result as? [String: Any] {
-                    continuation.resume(returning: resultDict)
-                } else {
-                    let errorResult: [String: Any] = [
-                        "success": false,
-                        "error": "Failed to execute intent on Flutter side"
-                    ]
-                    continuation.resume(returning: errorResult)
+            // Ensure we're on the main thread for Flutter platform channel calls
+            DispatchQueue.main.async {
+                self.channel?.invokeMethod("handleIntent", arguments: arguments) { result in
+                    print("📱 Flutter response for \(identifier): \(String(describing: result))")
+                    
+                    if let resultDict = result as? [String: Any] {
+                        continuation.resume(returning: resultDict)
+                    } else {
+                        let errorResult: [String: Any] = [
+                            "success": false,
+                            "error": "Failed to execute intent on Flutter side"
+                        ]
+                        continuation.resume(returning: errorResult)
+                    }
                 }
             }
         }
@@ -997,5 +1004,68 @@ enum IntentExecutionError: Error, LocalizedError {
         case .parameterResolutionFailed(let paramName):
             return "Failed to resolve parameter: \(paramName)"
         }
+    }
+}
+
+// MARK: - App Shortcuts Provider
+
+@available(iOS 16.0, *)
+struct FlutterAppShortcutsProvider: AppShortcutsProvider {
+    static var appShortcuts: [AppShortcut] {
+        let plugin = FlutterAppIntentsPlugin.shared
+        return plugin.activeIntents.values.compactMap { intent in
+            createAppShortcut(for: intent)
+        }
+    }
+    
+    private static func createAppShortcut(for intent: DynamicAppIntent) -> AppShortcut? {
+        // Create appropriate shortcut based on intent parameters
+        if intent.parameters.isEmpty {
+            return AppShortcut(
+                intent: NoParameterIntent(intentIdentifier: intent.identifier, intentConfig: intent.asConfigDict()),
+                phrases: [
+                    .init(intent.intentTitle)
+                ]
+            )
+        } else if intent.parameters.count == 1 {
+            let param = intent.parameters[0]
+            switch param.type {
+            case .string:
+                return AppShortcut(
+                    intent: OneStringParameterIntent(intentIdentifier: intent.identifier, intentConfig: intent.asConfigDict()),
+                    phrases: [
+                        .init(intent.intentTitle),
+                        .init("\(intent.intentTitle) \(param.name)")
+                    ]
+                )
+            case .integer:
+                return AppShortcut(
+                    intent: OneIntegerParameterIntent(intentIdentifier: intent.identifier, intentConfig: intent.asConfigDict()),
+                    phrases: [
+                        .init(intent.intentTitle),
+                        .init("\(intent.intentTitle) \(param.name)")
+                    ]
+                )
+            case .boolean:
+                return AppShortcut(
+                    intent: OneBooleanParameterIntent(intentIdentifier: intent.identifier, intentConfig: intent.asConfigDict()),
+                    phrases: [
+                        .init(intent.intentTitle),
+                        .init("\(intent.intentTitle) \(param.name)")
+                    ]
+                )
+            case .double:
+                return AppShortcut(
+                    intent: OneDoubleParameterIntent(intentIdentifier: intent.identifier, intentConfig: intent.asConfigDict()),
+                    phrases: [
+                        .init(intent.intentTitle),
+                        .init("\(intent.intentTitle) \(param.name)")
+                    ]
+                )
+            default:
+                return nil
+            }
+        }
+        return nil
     }
 }
