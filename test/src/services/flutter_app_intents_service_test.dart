@@ -473,15 +473,15 @@ void main() {
 
       group(FlutterAppIntentsService.donateIntentBatch, () {
         test('calls platform method with batch data', () async {
-          final donations = [
+          const donations = [
             IntentDonation.highRelevance(
               identifier: 'intent1',
-              parameters: const {'value': 1},
-              context: const {'type': 'user'},
+              parameters: {'value': 1},
+              context: {'type': 'user'},
             ),
             IntentDonation.mediumRelevance(
               identifier: 'intent2',
-              parameters: const {'value': 2},
+              parameters: {'value': 2},
             ),
           ];
 

@@ -1,4 +1,5 @@
-// ignore_for_file: avoid_returning_this
+// ignore_for_file: avoid_returning_this - AppIntentBuilder uses fluent
+// interface pattern where methods return `this` to enable method chaining.
 // ignore_for_file: prefer_constructors_over_static_methods
 
 import 'dart:async';

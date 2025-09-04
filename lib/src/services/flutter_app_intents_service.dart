@@ -1,11 +1,10 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:equatable/equatable.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
-
 import 'package:flutter_app_intents/src/models/app_intent.dart';
-import 'package:equatable/equatable.dart';
 import 'package:flutter_app_intents/src/models/app_intent_result.dart';
 
 /// Service for managing Apple App Intents integration
@@ -272,6 +271,47 @@ class IntentDonation extends Equatable {
     this.timestamp,
   });
 
+  /// Creates an intent donation with high relevance (for frequently used
+  /// intents)
+  const IntentDonation.highRelevance({
+    required this.identifier,
+    required this.parameters,
+    this.context = const {},
+    this.timestamp,
+  }) : relevanceScore = 1.0;
+
+  /// Creates an intent donation with medium relevance
+  const IntentDonation.mediumRelevance({
+    required this.identifier,
+    required this.parameters,
+    this.context = const {},
+    this.timestamp,
+  }) : relevanceScore = 0.7;
+
+  /// Creates an intent donation with low relevance (for rarely used intents)
+  const IntentDonation.lowRelevance({
+    required this.identifier,
+    required this.parameters,
+    this.context = const {},
+    this.timestamp,
+  }) : relevanceScore = 0.3;
+
+  /// Creates an intent donation for user-initiated actions
+  const IntentDonation.userInitiated({
+    required this.identifier,
+    required this.parameters,
+    this.context = const {},
+    this.timestamp,
+  }) : relevanceScore = 0.9;
+
+  /// Creates an intent donation for automated/background actions
+  const IntentDonation.automated({
+    required this.identifier,
+    required this.parameters,
+    this.context = const {},
+    this.timestamp,
+  }) : relevanceScore = 0.5;
+
   /// The identifier of the intent to donate
   final String identifier;
 
@@ -287,55 +327,14 @@ class IntentDonation extends Equatable {
   /// When the intent was executed
   final DateTime? timestamp;
 
-  /// Creates an intent donation with high relevance (for frequently used
-  /// intents)
-  IntentDonation.highRelevance({
-    required this.identifier,
-    required this.parameters,
-    this.context = const {},
-    this.timestamp,
-  }) : relevanceScore = 1.0;
-
-  /// Creates an intent donation with medium relevance
-  IntentDonation.mediumRelevance({
-    required this.identifier,
-    required this.parameters,
-    this.context = const {},
-    this.timestamp,
-  }) : relevanceScore = 0.7;
-
-  /// Creates an intent donation with low relevance (for rarely used intents)
-  IntentDonation.lowRelevance({
-    required this.identifier,
-    required this.parameters,
-    this.context = const {},
-    this.timestamp,
-  }) : relevanceScore = 0.3;
-
-  /// Creates an intent donation for user-initiated actions
-  IntentDonation.userInitiated({
-    required this.identifier,
-    required this.parameters,
-    this.context = const {},
-    this.timestamp,
-  }) : relevanceScore = 0.9;
-
-  /// Creates an intent donation for automated/background actions
-  IntentDonation.automated({
-    required this.identifier,
-    required this.parameters,
-    this.context = const {},
-    this.timestamp,
-  }) : relevanceScore = 0.5;
-
   @override
   List<Object?> get props => [
-        identifier,
-        parameters,
-        relevanceScore,
-        context,
-        timestamp,
-      ];
+    identifier,
+    parameters,
+    relevanceScore,
+    context,
+    timestamp,
+  ];
 
   @override
   String toString() =>

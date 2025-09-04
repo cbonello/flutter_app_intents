@@ -5,7 +5,7 @@ void main() {
   group('Intent Donation Enhancement Tests', () {
     group('IntentDonation Factory Constructors', () {
       test('creates high relevance donation correctly', () {
-        final donation = IntentDonation.highRelevance(
+        const donation = IntentDonation.highRelevance(
           identifier: 'test_intent',
           parameters: {'value': 42},
           context: {'source': 'user'},
@@ -19,7 +19,7 @@ void main() {
       });
 
       test('creates medium relevance donation correctly', () {
-        final donation = IntentDonation.mediumRelevance(
+        const donation = IntentDonation.mediumRelevance(
           identifier: 'medium_intent',
           parameters: {'count': 10},
         );
@@ -31,7 +31,7 @@ void main() {
       });
 
       test('creates low relevance donation correctly', () {
-        final donation = IntentDonation.lowRelevance(
+        const donation = IntentDonation.lowRelevance(
           identifier: 'low_intent',
           parameters: {'data': 'test'},
         );
@@ -40,7 +40,7 @@ void main() {
       });
 
       test('creates user initiated donation correctly', () {
-        final donation = IntentDonation.userInitiated(
+        const donation = IntentDonation.userInitiated(
           identifier: 'user_intent',
           parameters: {},
         );
@@ -49,7 +49,7 @@ void main() {
       });
 
       test('creates automated donation correctly', () {
-        final donation = IntentDonation.automated(
+        const donation = IntentDonation.automated(
           identifier: 'auto_intent',
           parameters: {},
         );
@@ -61,7 +61,7 @@ void main() {
         final now = DateTime.now();
         final donation = IntentDonation.highRelevance(
           identifier: 'timed_intent',
-          parameters: {},
+          parameters: const {},
           timestamp: now,
         );
 
@@ -71,12 +71,12 @@ void main() {
 
     group('IntentDonation Equality and Hashing', () {
       test('equal donations have same hash code', () {
-        final donation1 = IntentDonation.highRelevance(
+        const donation1 = IntentDonation.highRelevance(
           identifier: 'test',
           parameters: {'key': 'value'},
         );
 
-        final donation2 = IntentDonation.highRelevance(
+        const donation2 = IntentDonation.highRelevance(
           identifier: 'test',
           parameters: {'key': 'value'},
         );
@@ -86,12 +86,12 @@ void main() {
       });
 
       test('different donations are not equal', () {
-        final donation1 = IntentDonation.highRelevance(
+        const donation1 = IntentDonation.highRelevance(
           identifier: 'test1',
           parameters: {},
         );
 
-        final donation2 = IntentDonation.highRelevance(
+        const donation2 = IntentDonation.highRelevance(
           identifier: 'test2',
           parameters: {},
         );
@@ -101,12 +101,12 @@ void main() {
       });
 
       test('donations with different relevance scores are not equal', () {
-        final donation1 = IntentDonation.highRelevance(
+        const donation1 = IntentDonation.highRelevance(
           identifier: 'test',
           parameters: {},
         );
 
-        final donation2 = IntentDonation.mediumRelevance(
+        const donation2 = IntentDonation.mediumRelevance(
           identifier: 'test',
           parameters: {},
         );
@@ -120,9 +120,9 @@ void main() {
         final now = DateTime.now();
         final donation = IntentDonation(
           identifier: 'test_intent',
-          parameters: {'count': 5},
+          parameters: const {'count': 5},
           relevanceScore: 0.8,
-          context: {'app': 'test'},
+          context: const {'app': 'test'},
           timestamp: now,
         );
 
@@ -209,7 +209,7 @@ void main() {
       });
 
       test('donateIntentBatch handles multiple donations correctly', () {
-        final donations = [
+        const donations = [
           IntentDonation.highRelevance(
             identifier: 'intent1',
             parameters: {'value': 1},
@@ -245,7 +245,7 @@ void main() {
 
         expect(
           () => FlutterAppIntentsService.donateIntentBatch([
-            IntentDonation.highRelevance(
+            const IntentDonation.highRelevance(
               identifier: 'test',
               parameters: {},
             ),
@@ -260,7 +260,7 @@ void main() {
         final now = DateTime.now();
         final donation = IntentDonation(
           identifier: 'complex_intent',
-          parameters: {
+          parameters: const {
             'stringParam': 'test',
             'intParam': 42,
             'boolParam': true,
@@ -268,7 +268,7 @@ void main() {
             'mapParam': {'nested': 'value'},
           },
           relevanceScore: 0.75,
-          context: {
+          context: const {
             'userAction': true,
             'sessionId': 'abc123',
             'feature': 'counter',
