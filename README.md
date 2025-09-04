@@ -28,6 +28,19 @@ dependencies:
     path: packages/flutter_app_intents
 ```
 
+## Architecture Overview
+
+This plugin uses a **hybrid approach** combining:
+
+1. **Static Swift intents** in your main iOS app target (required for iOS discovery)
+2. **Dynamic Flutter handlers** registered through the plugin (your business logic)
+
+```
+iOS Shortcuts/Siri → Static Swift Intent → Flutter Plugin Bridge → Your Flutter Handler
+```
+
+The static Swift intents act as a bridge, calling your Flutter handlers when executed.
+
 ## Quick Start
 
 ### 1. Import the package
@@ -36,7 +49,11 @@ dependencies:
 import 'package:flutter_app_intents/flutter_app_intents.dart';
 ```
 
-### 2. Create and register an App Intent
+### 2. Add static intents to iOS (Required)
+
+⚠️ **First, add static App Intents to your iOS `AppDelegate.swift`** (see iOS Configuration section below)
+
+### 3. Create and register Flutter handlers
 
 ```dart
 class MyApp extends StatelessWidget {
@@ -111,6 +128,166 @@ Future<AppIntentResult> handleIncrementIntent(Map<String, dynamic> parameters) a
   }
 }
 ```
+
+## Navigation with App Intents
+
+Our plugin excels at handling app navigation through voice commands and shortcuts. Here's how to implement navigation intents:
+
+### Navigation Intent Pattern
+
+For navigation, use `needsToContinueInApp: true` to tell iOS to focus your app and `OpensIntent` return type in Swift:
+
+**iOS Implementation:**
+```swift
+@available(iOS 16.0, *)
+struct OpenProfileIntent: AppIntent {
+    static var title: LocalizedStringResource = "Open Profile"
+    static var description = IntentDescription("Open user profile page")
+    static var isDiscoverable = true
+    
+    @Parameter(title: "User ID")
+    var userId: String?
+    
+    func perform() async throws -> some IntentResult & OpensIntent {
+        let plugin = FlutterAppIntentsPlugin.shared
+        let result = await plugin.handleIntentInvocation(
+            identifier: "open_profile",
+            parameters: ["userId": userId ?? "current"]
+        )
+        
+        if let success = result["success"] as? Bool, success {
+            return .result() // This opens/focuses the app
+        } else {
+            let errorMessage = result["error"] as? String ?? "Failed to open profile"
+            throw AppIntentError.executionFailed(errorMessage)
+        }
+    }
+}
+```
+
+**Flutter Handler:**
+```dart
+Future<AppIntentResult> _handleOpenProfileIntent(
+  Map<String, dynamic> parameters,
+) async {
+  final userId = parameters['userId'] as String? ?? 'current';
+  
+  // Navigate to the target page
+  Navigator.of(context).pushNamed('/profile', arguments: {'userId': userId});
+  
+  return AppIntentResult.successful(
+    value: 'Opening profile for user $userId',
+    needsToContinueInApp: true, // Critical: focuses the app
+  );
+}
+```
+
+### Common Navigation Patterns
+
+#### 1. Deep Linking with Parameters
+```dart
+// Navigate to specific content with parameters
+Future<AppIntentResult> _handleOpenChatIntent(Map<String, dynamic> parameters) async {
+  final contactName = parameters['contactName'] as String;
+  
+  Navigator.of(context).pushNamed('/chat', arguments: {
+    'contactName': contactName,
+    'openedViaIntent': true,
+  });
+  
+  return AppIntentResult.successful(
+    value: 'Opening chat with $contactName',
+    needsToContinueInApp: true,
+  );
+}
+```
+
+#### 2. Search Navigation
+```dart
+// Handle search queries with navigation
+Future<AppIntentResult> _handleSearchIntent(Map<String, dynamic> parameters) async {
+  final query = parameters['query'] as String;
+  
+  Navigator.of(context).pushNamed('/search', arguments: {'query': query});
+  
+  return AppIntentResult.successful(
+    value: 'Searching for "$query"',
+    needsToContinueInApp: true,
+  );
+}
+```
+
+#### 3. Settings/Configuration Navigation
+```dart
+// Navigate to specific settings pages
+Future<AppIntentResult> _handleOpenSettingsIntent(Map<String, dynamic> parameters) async {
+  final section = parameters['section'] as String? ?? 'general';
+  
+  Navigator.of(context).pushNamed('/settings/$section');
+  
+  return AppIntentResult.successful(
+    value: 'Opening $section settings',
+    needsToContinueInApp: true,
+  );
+}
+```
+
+### Navigation with GoRouter
+
+If you're using GoRouter, the pattern is similar:
+
+```dart
+Future<AppIntentResult> _handleNavigationIntent(Map<String, dynamic> parameters) async {
+  final route = parameters['route'] as String;
+  
+  // Use GoRouter for navigation
+  context.go(route);
+  
+  return AppIntentResult.successful(
+    value: 'Navigating to $route',
+    needsToContinueInApp: true,
+  );
+}
+```
+
+### AppShortcuts for Navigation
+
+Add navigation shortcuts to your `AppShortcutsProvider`:
+
+```swift
+@available(iOS 16.0, *)
+struct AppShortcuts: AppShortcutsProvider {
+    static var appShortcuts: [AppShortcut] {
+        return [
+            // Navigation shortcuts
+            AppShortcut(
+                intent: OpenProfileIntent(),
+                phrases: [
+                    "Open my profile in ${applicationName}",
+                    "Show profile using ${applicationName}",
+                    "Go to profile with ${applicationName}"
+                ]
+            ),
+            AppShortcut(
+                intent: OpenChatIntent(),
+                phrases: [
+                    "Chat with \\(.contactName) using ${applicationName}",
+                    "Open chat with \\(.contactName) in ${applicationName}",
+                    "Message \\(.contactName) with ${applicationName}"
+                ]
+            )
+        ]
+    }
+}
+```
+
+### Navigation vs Action Intents
+
+| Intent Type | Return Type | Use Case | Example |
+|-------------|-------------|----------|---------|
+| **Action** | `ReturnsValue<String>` | Execute functionality | "Increment counter", "Send message" |
+| **Navigation** | `OpensIntent` | Navigate to pages | "Open profile", "Show chat" |
+| **Combined** | `ReturnsValue<String> & OpensIntent` | Action + navigation | "Create note and open editor" |
 
 ## API Reference
 
@@ -342,15 +519,97 @@ IntentDonation.lowRelevance(
 
 ## iOS Configuration
 
-### Info.plist
+### Required Setup: Static App Intents in Main App Target
 
-Add these permissions to your iOS `Info.plist`:
+**⚠️ Important**: iOS App Intents framework requires static intent declarations in your main app target, not just dynamic registration from the plugin. 
+
+Add this code to your iOS app's `AppDelegate.swift`:
+
+```swift
+import Flutter
+import UIKit
+import AppIntents
+import flutter_app_intents
+
+@main
+@objc class AppDelegate: FlutterAppDelegate {
+  override func application(
+    _ application: UIApplication,
+    didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
+  ) -> Bool {
+    GeneratedPluginRegistrant.register(with: self)
+    return super.application(application, didFinishLaunchingWithOptions: launchOptions)
+  }
+}
+
+// Static App Intents that bridge to Flutter handlers
+@available(iOS 16.0, *)
+struct MyCounterIntent: AppIntent {
+    static var title: LocalizedStringResource = "Increment Counter"
+    static var description = IntentDescription("Increment the counter by one")
+    static var isDiscoverable = true
+    
+    func perform() async throws -> some IntentResult & ReturnsValue<String> {
+        let plugin = FlutterAppIntentsPlugin.shared
+        let result = await plugin.handleIntentInvocation(
+            identifier: "increment_counter", 
+            parameters: [:]
+        )
+        
+        if let success = result["success"] as? Bool, success {
+            let value = result["value"] as? String ?? "Counter incremented"
+            return .result(value: value)
+        } else {
+            let errorMessage = result["error"] as? String ?? "Failed to increment counter"
+            throw AppIntentError.executionFailed(errorMessage)
+        }
+    }
+}
+
+// Error handling for App Intents
+enum AppIntentError: Error {
+    case executionFailed(String)
+}
+
+// AppShortcutsProvider for Siri/Shortcuts discovery
+@available(iOS 16.0, *)
+struct AppShortcuts: AppShortcutsProvider {
+    static var appShortcuts: [AppShortcut] {
+        return [
+            AppShortcut(
+                intent: MyCounterIntent(),
+                phrases: [
+                    "Increment counter with ${applicationName}",
+                    "Add one with ${applicationName}",
+                    "Count up using ${applicationName}"
+                ]
+            )
+        ]
+    }
+}
+```
+
+### Info.plist Configuration
+
+Add these permissions and configuration to your iOS `Info.plist`:
 
 ```xml
 <key>NSMicrophoneUsageDescription</key>
 <string>This app uses microphone for Siri integration</string>
 <key>NSSpeechRecognitionUsageDescription</key>
 <string>This app uses speech recognition for Siri integration</string>
+
+<!-- App Intents Configuration -->
+<key>NSAppIntentsConfiguration</key>
+<dict>
+    <key>NSAppIntentsPackage</key>
+    <string>your_app_bundle_id</string>
+</dict>
+<key>NSAppIntentsMetadata</key>
+<dict>
+    <key>NSAppIntentsSupported</key>
+    <true/>
+</dict>
 ```
 
 ### Minimum Deployment Target
@@ -385,31 +644,58 @@ Control when intents can be executed:
 
 ## Best Practices
 
+### General Practices
 1. **Keep intent names simple and descriptive**
 2. **Use appropriate parameter types**
 3. **Provide good descriptions for discoverability**
-4. **Donate intents strategically**:
+4. **Handle errors gracefully**
+5. **Test with Siri and Shortcuts app**
+
+### Navigation Intents
+6. **Always use `needsToContinueInApp: true`** for navigation intents
+7. **Use `OpensIntent` return type** in Swift for navigation
+8. **Handle app state properly** - check if context is still mounted
+9. **Pass meaningful parameters** to destination pages
+10. **Consider app lifecycle** - navigation may happen when app is backgrounded
+
+### Intent Donation Strategy
+11. **Donate intents strategically**:
    - Use enhanced donation with metadata for better Siri learning
    - Donate after successful execution only
    - Use appropriate relevance scores based on usage patterns
    - Provide contextual information to improve predictions
    - Use batch donations for related intents
-5. **Handle errors gracefully**
-6. **Test with Siri and Shortcuts app**
-7. **Monitor donation performance and adjust relevance scores based on user behavior**
+12. **Navigation intents should have high relevance** (0.8-1.0) when user-initiated
+13. **Monitor donation performance and adjust relevance scores** based on user behavior
+
+### App Integration
+14. **Static intents must match Flutter handlers** - ensure identifier consistency
+15. **Handle app cold starts** - navigation intents may launch your app
+16. **Test edge cases** - what happens when target pages don't exist?
+17. **Provide fallback navigation** - graceful handling of invalid routes
 
 ## Example
 
 Check out the [example app](example/) for a complete implementation showing:
 
-- Multiple intent types
-- Parameter handling
-- Error management
+### Action Intents
+- Counter increment/reset/query intents
+- Parameter handling with type safety
+- Error management and validation
+
+### Navigation Intents  
+- Deep linking with parameters
+- Search navigation patterns
+- Settings page navigation
+- App focusing and lifecycle management
+
+### Advanced Features
 - Basic and enhanced intent donation
 - Batch donation examples
 - Relevance score optimization
 - Context-aware donations
 - Siri integration testing
+- Navigation with Flutter Router and GoRouter
 
 ## Troubleshooting
 
@@ -417,12 +703,20 @@ Check out the [example app](example/) for a complete implementation showing:
 
 This plugin only works on iOS 16.0+. Make sure you're testing on a compatible device or simulator.
 
-### Intents not appearing in Siri
+### Intents not appearing in Siri/Shortcuts
 
-1. Ensure intents are registered successfully
-2. Check that `isEligibleForPrediction` is `true`
-3. Try donating the intent after manual execution
-4. Restart the Shortcuts app
+**Most Common Issue**: Missing static App Intents in main app target
+
+1. **Verify static intents are declared** in your `AppDelegate.swift` (see iOS Configuration above)
+2. **Ensure AppShortcutsProvider exists** in your main app target
+3. **Check intent identifiers match** between static Swift intents and Flutter handlers
+4. **Restart the app completely** after adding static intents
+5. Ensure intents are registered successfully on Flutter side
+6. Check that `isEligibleForPrediction` is `true`
+7. Try donating the intent after manual execution
+8. Restart the Shortcuts app
+
+**Architecture Note**: iOS App Intents framework requires static intent declarations at compile time for Siri/Shortcuts discovery. Dynamic registration from Flutter plugins alone is not sufficient.
 
 ### Voice commands not recognized
 
@@ -430,6 +724,15 @@ This plugin only works on iOS 16.0+. Make sure you're testing on a compatible de
 2. Test different phrasings
 3. Check Siri's language settings
 4. Verify intent titles are descriptive
+
+### Navigation intents not working
+
+1. **Verify `needsToContinueInApp: true`** in Flutter result
+2. **Check `OpensIntent` return type** in Swift intent
+3. **Ensure routes exist** in your app's navigation setup
+4. **Test app lifecycle** - try when app is backgrounded vs foreground
+5. **Check mounted context** before navigation calls
+6. **Verify parameter passing** to destination screens
 
 ### Intent donations not improving predictions
 

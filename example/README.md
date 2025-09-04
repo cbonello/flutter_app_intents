@@ -32,29 +32,71 @@ The example app implements the following three intents for controlling a simple 
     -   This intent is eligible for Spotlight search.
     -   **Siri command**: "Hey Siri, get counter value".
 
-## Getting Started
+## Architecture
 
-This project is a starting point for a Flutter application.
+This example demonstrates the **hybrid approach** required for Flutter App Intents:
 
-A few resources to get you started if this is your first Flutter project:
-
--   [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
--   [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+1. **Static Swift App Intents** (`ios/Runner/AppDelegate.swift`) - Required for iOS discovery
+2. **Flutter handlers** (`lib/main.dart`) - Your app's business logic
+3. **Bridge communication** - Static intents call Flutter handlers via the plugin
 
 ## How to Run the Example
 
-1.  Make sure you have a working Flutter environment.
-2.  This plugin requires **iOS 16.0 or later**. You will need a physical device or a simulator running a compatible iOS version.
-3.  Open the `example` directory in your terminal.
-4.  Run `flutter pub get` to fetch the dependencies.
-5.  Run `flutter run` to build and launch the app on your connected device or simulator.
+### Prerequisites
+1. Flutter environment with iOS development setup
+2. **iOS 16.0 or later** device or simulator
+3. Xcode 14.0 or later
 
-Once the app is running, you can:
--   Use the on-screen button to increment the counter manually.
--   Try the Siri commands listed above.
--   Open the Shortcuts app on your device to see the new actions available from this app.
--   Search for "Get Counter Value" in Spotlight.
+### Setup Steps
+
+1. **Install dependencies**:
+   ```bash
+   cd example
+   flutter pub get
+   ```
+
+2. **Verify iOS configuration**:
+   - The example already includes the required static App Intents in `ios/Runner/AppDelegate.swift`
+   - Info.plist is configured with necessary permissions
+   - iOS deployment target is set to 16.0
+
+3. **Run the app**:
+   ```bash
+   flutter run
+   ```
+
+### Testing the App Intents
+
+Once the app is running:
+
+1. **Manual Testing**:
+   - Use the on-screen button to increment the counter manually
+
+2. **Siri Commands** (try these specific phrases):
+   - "Increment counter with flutter app intents example"
+   - "Reset counter with flutter app intents example"  
+   - "Get counter from flutter app intents example"
+
+3. **Shortcuts App**:
+   - Open the iOS Shortcuts app
+   - Look for your app's shortcuts under "App Shortcuts"
+   - You should see: Increment Counter, Reset Counter, Get Counter Value
+
+4. **Settings Integration**:
+   - Go to Settings > Siri & Search > App Shortcuts
+   - Your app should appear with available shortcuts
+
+### Troubleshooting
+
+**Shortcuts not appearing?**
+1. Ensure the app ran successfully and intents were registered (check console logs)
+2. Wait a few seconds for iOS to register the static intents
+3. Try restarting the Shortcuts app
+4. Check that iOS is 16.0 or later
+
+**Siri not recognizing commands?**
+1. Use the exact phrases shown above
+2. Try adding custom phrases in Settings > Siri & Search > App Shortcuts
+3. Use the shortcuts manually first to help Siri learn
+
+For more detailed troubleshooting, see the main [README](../README.md).
