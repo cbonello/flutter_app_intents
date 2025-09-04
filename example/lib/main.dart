@@ -209,9 +209,7 @@ class _MyHomePageState extends State<MyHomePage> {
     final amount = parameters['amount'] as int? ?? 1;
 
     // Update app state to reflect the change
-    setState(() {
-      _counter += amount;
-    });
+    setState(() => _counter += amount);
 
     // Donate this intent execution to help Siri learn user patterns
     await _client.donateIntent('increment_counter', parameters);
@@ -236,9 +234,7 @@ class _MyHomePageState extends State<MyHomePage> {
     Map<String, dynamic> parameters,
   ) async {
     // Reset counter to initial value
-    setState(() {
-      _counter = 0;
-    });
+    setState(() => _counter = 0);
 
     // Donate for Siri learning
     await _client.donateIntent('reset_counter', parameters);
@@ -278,11 +274,7 @@ class _MyHomePageState extends State<MyHomePage> {
   /// - Voice commands (intent handlers)
   /// - Shortcuts app
   /// - Spotlight search
-  void _incrementCounter() {
-    setState(() {
-      _counter++;
-    });
-  }
+  void _incrementCounter() => setState(() => _counter++);
 
   /// Builds the main UI for the flutter_app_intents demonstration.
   ///
