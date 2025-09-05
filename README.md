@@ -656,35 +656,52 @@ Control when intents can be executed:
 4. **Handle errors gracefully**
 5. **Test with Siri and Shortcuts app**
 
+### Long-Running Operations and Loading States
+6. **No loading indicators during intent execution** - App Intents run outside your Flutter app's UI context through iOS's system-level framework, so you cannot display loading indicators during execution
+7. **Use `needsToContinueInApp: true` for long operations** - Return immediately and continue processing in your app:
+   ```dart
+   Future<AppIntentResult> _handleLongOperation(Map<String, dynamic> parameters) async {
+     // Start background work but return immediately
+     _startBackgroundWork();
+     
+     return AppIntentResult.successful(
+       value: 'Operation started, opening app for progress...',
+       needsToContinueInApp: true,  // Opens your app where you can show progress
+     );
+   }
+   ```
+8. **Show progress in Flutter app after intent redirect** - Display loading indicators in your Flutter UI after the intent opens your app
+9. **Consider timeout handling** - Long-running intents may timeout at the system level, so break work into smaller chunks
+
 ### App Opening Behavior
-6. **Use `static var openAppWhenRun = true`** in Swift intents that should open the app
-7. **Add `& OpensIntent`** to the return type for intents that open the app
-8. **Include `needsToContinueInApp: true`** in Flutter results for visual feedback
-9. **Choose appropriate behavior**: Some intents (like queries) may not need to open the app
+10. **Use `static var openAppWhenRun = true`** in Swift intents that should open the app
+11. **Add `& OpensIntent`** to the return type for intents that open the app
+12. **Include `needsToContinueInApp: true`** in Flutter results for visual feedback
+13. **Choose appropriate behavior**: Some intents (like queries) may not need to open the app
 
 ### Navigation Intents
-10. **Always use `needsToContinueInApp: true`** for navigation intents
-11. **Add `static var openAppWhenRun = true`** to force app opening
-12. **Use `ReturnsValue<String> & OpensIntent`** return type in Swift
-13. **Handle app state properly** - check if context is still mounted
-14. **Pass meaningful parameters** to destination pages
-15. **Consider app lifecycle** - navigation may happen when app is backgrounded
+14. **Always use `needsToContinueInApp: true`** for navigation intents
+15. **Add `static var openAppWhenRun = true`** to force app opening
+16. **Use `ReturnsValue<String> & OpensIntent`** return type in Swift
+17. **Handle app state properly** - check if context is still mounted
+18. **Pass meaningful parameters** to destination pages
+19. **Consider app lifecycle** - navigation may happen when app is backgrounded
 
 ### Intent Donation Strategy
-16. **Donate intents strategically**:
+20. **Donate intents strategically**:
    - Use enhanced donation with metadata for better Siri learning
    - Donate after successful execution only
    - Use appropriate relevance scores based on usage patterns
    - Provide contextual information to improve predictions
    - Use batch donations for related intents
-17. **Navigation intents should have high relevance** (0.8-1.0) when user-initiated
-18. **Monitor donation performance and adjust relevance scores** based on user behavior
+21. **Navigation intents should have high relevance** (0.8-1.0) when user-initiated
+22. **Monitor donation performance and adjust relevance scores** based on user behavior
 
 ### App Integration
-19. **Static intents must match Flutter handlers** - ensure identifier consistency
-20. **Handle app cold starts** - navigation intents may launch your app
-21. **Test edge cases** - what happens when target pages don't exist?
-22. **Provide fallback navigation** - graceful handling of invalid routes
+23. **Static intents must match Flutter handlers** - ensure identifier consistency
+24. **Handle app cold starts** - navigation intents may launch your app
+25. **Test edge cases** - what happens when target pages don't exist?
+26. **Provide fallback navigation** - graceful handling of invalid routes
 
 ## Examples
 
