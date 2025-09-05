@@ -1,9 +1,14 @@
+// UI widget tests for the counter example app
+//
+// Tests the counter app's user interface, layout, theming, and basic
+// functionality to ensure the UI components work correctly.
+
 import 'package:counter_example/main.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  group('Flutter App Intents Example App Tests', () {
+  group('Counter App UI Tests', () {
     testWidgets('App builds and displays correct title', (tester) async {
       // Build the app
       await tester.pumpWidget(const MyApp());

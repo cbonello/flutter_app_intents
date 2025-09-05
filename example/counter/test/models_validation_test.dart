@@ -1,11 +1,18 @@
+// Models and validation tests
+//
+// Tests error handling, model validation, and data integrity for
+// flutter_app_intents package models including exceptions, builders,
+// serialization, and edge cases.
+
 import 'package:flutter_app_intents/flutter_app_intents.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  group('Flutter App Intents Error Handling Tests', () {
+  group('Models Validation Tests', () {
     group('FlutterAppIntentsException', () {
       test('creates exception with message', () {
         const exception = FlutterAppIntentsException('Test error');
+
         expect(exception.message, equals('Test error'));
         expect(exception.code, isNull);
         expect(exception.toString(), contains('Test error'));
@@ -13,6 +20,7 @@ void main() {
 
       test('creates exception with message and code', () {
         const exception = FlutterAppIntentsException('Test error', 'TEST_CODE');
+
         expect(exception.message, equals('Test error'));
         expect(exception.code, equals('TEST_CODE'));
         expect(exception.toString(), contains('Test error'));
@@ -21,13 +29,14 @@ void main() {
 
       test('implements Exception interface', () {
         const exception = FlutterAppIntentsException('Test');
+
         expect(exception, isA<Exception>());
       });
     });
 
     group('Model Validation', () {
       test('AppIntent handles invalid authentication policy gracefully', () {
-        // Test fromMap with unknown authentication policy
+        // Test fromMap() with unknown authentication policy
         final map = {
           'identifier': 'test',
           'title': 'Test',
@@ -127,73 +136,78 @@ void main() {
       });
     });
 
-    group('Service Error Handling', () {
-      test('FlutterAppIntentsService methods handle platform correctly', () {
-        // These tests verify the service handles non-iOS platforms gracefully
-        // by throwing appropriate UnsupportedError exceptions
+    group(
+      'Service Error Handling',
+      () {
+        test('FlutterAppIntentsService methods handle platform correctly', () {
+          // These tests verify the service handles non-iOS platforms gracefully
+          // by throwing appropriate UnsupportedError exceptions
+          const testIntent = AppIntent(
+            identifier: 'test',
+            title: 'Test',
+            description: 'Test intent',
+          );
 
-        const testIntent = AppIntent(
-          identifier: 'test',
-          title: 'Test',
-          description: 'Test intent',
-        );
+          // All service methods should throw UnsupportedError on non-iOS
+          expect(
+            () => FlutterAppIntentsService.registerIntent(testIntent),
+            throwsA(isA<UnsupportedError>()),
+          );
 
-        // All service methods should throw UnsupportedError on non-iOS
-        expect(
-          () => FlutterAppIntentsService.registerIntent(testIntent),
-          throwsA(isA<UnsupportedError>()),
-        );
+          expect(
+            () => FlutterAppIntentsService.registerIntents([testIntent]),
+            throwsA(isA<UnsupportedError>()),
+          );
 
-        expect(
-          () => FlutterAppIntentsService.registerIntents([testIntent]),
-          throwsA(isA<UnsupportedError>()),
-        );
+          expect(
+            () => FlutterAppIntentsService.unregisterIntent('test'),
+            throwsA(isA<UnsupportedError>()),
+          );
 
-        expect(
-          () => FlutterAppIntentsService.unregisterIntent('test'),
-          throwsA(isA<UnsupportedError>()),
-        );
+          expect(
+            FlutterAppIntentsService.getRegisteredIntents(),
+            throwsA(isA<UnsupportedError>()),
+          );
 
-        expect(
-          FlutterAppIntentsService.getRegisteredIntents(),
-          throwsA(isA<UnsupportedError>()),
-        );
+          expect(
+            FlutterAppIntentsService.updateShortcuts(),
+            throwsA(isA<UnsupportedError>()),
+          );
 
-        expect(
-          FlutterAppIntentsService.updateShortcuts(),
-          throwsA(isA<UnsupportedError>()),
-        );
+          expect(
+            () => FlutterAppIntentsService.donateIntent('test', {}),
+            throwsA(isA<UnsupportedError>()),
+          );
+        });
 
-        expect(
-          () => FlutterAppIntentsService.donateIntent('test', {}),
-          throwsA(isA<UnsupportedError>()),
-        );
-      });
+        testWidgets('FlutterAppIntentsClient delegates to service correctly', (
+          tester,
+        ) async {
+          final client = FlutterAppIntentsClient.instance;
 
-      testWidgets('FlutterAppIntentsClient delegates to service correctly', (
-        tester,
-      ) async {
-        final client = FlutterAppIntentsClient.instance;
+          // Client methods should delegate to service and handle errors
+          const testIntent = AppIntent(
+            identifier: 'test',
+            title: 'Test',
+            description: 'Test intent',
+          );
 
-        // Client methods should delegate to service and handle errors
-        const testIntent = AppIntent(
-          identifier: 'test',
-          title: 'Test',
-          description: 'Test intent',
-        );
+          expect(
+            () => client.registerIntent(testIntent, (params) async {
+              return AppIntentResult.successful();
+            }),
+            throwsA(isA<UnsupportedError>()),
+          );
 
-        expect(
-          () => client.registerIntent(testIntent, (params) async {
-            return AppIntentResult.successful();
-          }),
-          throwsA(isA<UnsupportedError>()),
-        );
+          expect(
+            client.getRegisteredIntents(),
+            throwsA(isA<UnsupportedError>()),
+          );
 
-        expect(client.getRegisteredIntents(), throwsA(isA<UnsupportedError>()));
-
-        expect(client.updateShortcuts(), throwsA(isA<UnsupportedError>()));
-      });
-    });
+          expect(client.updateShortcuts(), throwsA(isA<UnsupportedError>()));
+        });
+      },
+    );
 
     group('Data Integrity', () {
       test('Models maintain equality contract correctly', () {
@@ -202,13 +216,11 @@ void main() {
           title: 'Test',
           description: 'Test description',
         );
-
         const intent2 = AppIntent(
           identifier: 'test',
           title: 'Test',
           description: 'Test description',
         );
-
         const intent3 = AppIntent(
           identifier: 'different',
           title: 'Test',
@@ -224,7 +236,7 @@ void main() {
         expect(intent1.hashCode, isNot(equals(intent3.hashCode)));
       });
 
-      test('copyWith preserves object integrity', () {
+      test('copyWith() preserves object integrity', () {
         const original = AppIntent(
           identifier: 'original',
           title: 'Original Title',
@@ -252,7 +264,6 @@ void main() {
           isOptional: true,
           defaultValue: 42,
         );
-
         const intent = AppIntent(
           identifier: 'complex_intent',
           title: 'Complex Intent',

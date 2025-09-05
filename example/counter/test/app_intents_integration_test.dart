@@ -1,3 +1,9 @@
+// Flutter App Intents integration tests
+//
+// Tests the integration between the counter app and the flutter_app_intents
+// package, including component demonstrations, model usage patterns, and
+// platform-specific behavior handling.
+
 import 'dart:io';
 
 import 'package:counter_example/main.dart';
@@ -6,29 +12,30 @@ import 'package:flutter_app_intents/flutter_app_intents.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  group('Flutter App Intents Integration Tests', () {
-    testWidgets('App properly integrates with flutter_app_intents package', (
-      tester,
-    ) async {
-      await tester.pumpWidget(const MyApp());
-      await tester.pumpAndSettle();
+  group('App Intents Integration Tests', () {
+    testWidgets(
+      'App properly integrates with flutter_app_intents package',
+      (tester) async {
+        await tester.pumpWidget(const MyApp());
+        await tester.pumpAndSettle();
 
-      // Verify flutter_app_intents components are accessible
-      expect(find.text('App Intents Status:'), findsOneWidget);
+        // Verify flutter_app_intents components are accessible
+        expect(find.text('App Intents Status:'), findsOneWidget);
 
-      // The status should reflect the platform
-      if (Platform.isIOS) {
-        // On iOS, should show either success or specific error
-        final statusCard = find.ancestor(
-          of: find.text('App Intents Status:'),
-          matching: find.byType(Card),
-        );
-        expect(statusCard, findsOneWidget);
-      } else {
-        // On non-iOS, should show platform warning
-        expect(find.textContaining('iOS'), findsOneWidget);
-      }
-    });
+        // The status should reflect the platform
+        if (Platform.isIOS) {
+          // On iOS, should show either success or specific error
+          final statusCard = find.ancestor(
+            of: find.text('App Intents Status:'),
+            matching: find.byType(Card),
+          );
+          expect(statusCard, findsOneWidget);
+        } else {
+          // On non-iOS, should show platform warning
+          expect(find.textContaining('iOS'), findsOneWidget);
+        }
+      },
+    );
 
     testWidgets('Intent builder functionality works correctly', (tester) async {
       await tester.pumpWidget(const MyApp());
@@ -46,58 +53,60 @@ void main() {
       expect(find.textContaining('get'), findsOneWidget);
     });
 
-    testWidgets('App demonstrates all flutter_app_intents model classes', (
-      tester,
-    ) async {
-      await tester.pumpWidget(const MyApp());
-      await tester.pumpAndSettle();
+    testWidgets(
+      'App demonstrates all flutter_app_intents model classes',
+      (tester) async {
+        await tester.pumpWidget(const MyApp());
+        await tester.pumpAndSettle();
 
-      // The app should demonstrate usage of:
-      // - AppIntent (through the builder)
-      // - AppIntentParameter (shown in the example commands)
-      // - AppIntentResult (returned from handlers)
-      // - FlutterAppIntentsClient (singleton usage)
+        // The app should demonstrate usage of:
+        // - AppIntent (through the builder)
+        // - AppIntentParameter (shown in the example commands)
+        // - AppIntentResult (returned from handlers)
+        // - FlutterAppIntentsClient (singleton usage)
 
-      // Verify UI elements that indicate these are being used
-      expect(find.text('Try these Siri commands:'), findsOneWidget);
-      expect(
-        find.byType(Card),
-        findsWidgets,
-      ); // Multiple cards showing different aspects
+        // Verify UI elements that indicate these are being used
+        expect(find.text('Try these Siri commands:'), findsOneWidget);
+        expect(
+          find.byType(Card),
+          findsWidgets,
+        ); // Multiple cards showing different aspects
 
-      // Check that counter functionality works (demonstrating AppIntentResult
-      // handling)
-      final initialCounter = find.text('0');
-      expect(initialCounter, findsOneWidget);
+        // Check that counter functionality works (demonstrating AppIntentResult
+        // handling)
+        final initialCounter = find.text('0');
+        expect(initialCounter, findsOneWidget);
 
-      await tester.tap(find.byType(FloatingActionButton));
-      await tester.pump();
+        await tester.tap(find.byType(FloatingActionButton));
+        await tester.pump();
 
-      expect(find.text('1'), findsOneWidget);
-      expect(find.text('0'), findsNothing);
-    });
+        expect(find.text('1'), findsOneWidget);
+        expect(find.text('0'), findsNothing);
+      },
+    );
 
-    testWidgets('App handles flutter_app_intents exceptions gracefully', (
-      tester,
-    ) async {
-      await tester.pumpWidget(const MyApp());
-      await tester.pumpAndSettle();
+    testWidgets(
+      'App handles flutter_app_intents exceptions gracefully',
+      (tester) async {
+        await tester.pumpWidget(const MyApp());
+        await tester.pumpAndSettle();
 
-      // The app should handle any flutter_app_intents setup errors gracefully
-      // and display appropriate status messages
-      final statusCard = find.ancestor(
-        of: find.text('App Intents Status:'),
-        matching: find.byType(Card),
-      );
-      expect(statusCard, findsOneWidget);
+        // The app should handle any flutter_app_intents setup errors gracefully
+        // and display appropriate status messages
+        final statusCard = find.ancestor(
+          of: find.text('App Intents Status:'),
+          matching: find.byType(Card),
+        );
+        expect(statusCard, findsOneWidget);
 
-      // Should not crash and should display some status
-      final statusTexts = find.descendant(
-        of: statusCard,
-        matching: find.byType(Text),
-      );
-      expect(statusTexts, findsWidgets);
-    });
+        // Should not crash and should display some status
+        final statusTexts = find.descendant(
+          of: statusCard,
+          matching: find.byType(Text),
+        );
+        expect(statusTexts, findsWidgets);
+      },
+    );
 
     group('Flutter App Intents Model Integration', () {
       test('AppIntent models can be created as expected', () {
@@ -166,38 +175,40 @@ void main() {
     });
 
     group('Platform-specific behavior', () {
-      testWidgets('App shows appropriate messages for platform', (
-        tester,
-      ) async {
-        await tester.pumpWidget(const MyApp());
-        await tester.pumpAndSettle();
+      testWidgets(
+        'App shows appropriate messages for platform',
+        (tester) async {
+          await tester.pumpWidget(const MyApp());
+          await tester.pumpAndSettle();
 
-        if (Platform.isIOS) {
-          // On iOS, should attempt to register intents
-          final statusTexts = find.byType(Text);
-          expect(statusTexts, findsWidgets);
+          if (Platform.isIOS) {
+            // On iOS, should attempt to register intents
+            final statusTexts = find.byType(Text);
+            expect(statusTexts, findsWidgets);
 
-          // Should not show the iOS-only warning
-          expect(find.textContaining('only supported on iOS'), findsNothing);
-        } else {
-          // On non-iOS platforms, should show platform limitation
-          expect(find.textContaining('iOS'), findsOneWidget);
-        }
-      });
+            // Should not show the iOS-only warning
+            expect(find.textContaining('only supported on iOS'), findsNothing);
+          } else {
+            // On non-iOS platforms, should show platform limitation
+            expect(find.textContaining('iOS'), findsOneWidget);
+          }
+        },
+      );
 
-      testWidgets('FlutterAppIntentsClient singleton works correctly', (
-        tester,
-      ) async {
-        await tester.pumpWidget(const MyApp());
+      testWidgets(
+        'FlutterAppIntentsClient singleton works correctly',
+        (tester) async {
+          await tester.pumpWidget(const MyApp());
 
-        // The app uses FlutterAppIntentsClient.instance
-        // We can verify this works by checking the app doesn't crash
-        // and properly initializes
-        await tester.pumpAndSettle();
+          // The app uses FlutterAppIntentsClient.instance
+          // We can verify this works by checking the app doesn't crash
+          // and properly initializes
+          await tester.pumpAndSettle();
 
-        expect(find.byType(Scaffold), findsOneWidget);
-        expect(find.text('Flutter App Intents Example'), findsWidgets);
-      });
+          expect(find.byType(Scaffold), findsOneWidget);
+          expect(find.text('Flutter App Intents Example'), findsWidgets);
+        },
+      );
     });
 
     testWidgets(

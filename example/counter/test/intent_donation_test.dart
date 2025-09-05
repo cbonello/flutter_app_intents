@@ -1,8 +1,14 @@
+// Intent donation functionality tests
+//
+// Tests enhanced intent donation features including factory constructors,
+// relevance scoring, metadata handling, batch donations, and performance
+// with various parameter sets and edge cases.
+
 import 'package:flutter_app_intents/flutter_app_intents.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  group('Intent Donation Enhancement Tests', () {
+  group('Intent Donation Tests', () {
     group('IntentDonation Factory Constructors', () {
       test('creates high relevance donation correctly', () {
         const donation = IntentDonation.highRelevance(
