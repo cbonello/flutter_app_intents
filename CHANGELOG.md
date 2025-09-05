@@ -5,6 +5,64 @@ All notable changes to the Flutter App Intents package will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.0] - 2025-09-05
+
+### Added
+- **Enhanced Intent Donation API**: New `IntentDonation` class with factory constructors for different relevance levels
+  - `IntentDonation.highRelevance()` for user-initiated actions (0.8-1.0 relevance)
+  - `IntentDonation.mediumRelevance()` for contextual suggestions (0.4-0.7 relevance)  
+  - `IntentDonation.lowRelevance()` for background/automated actions (0.1-0.3 relevance)
+  - `IntentDonation.userInitiated()` and `IntentDonation.automated()` convenience constructors
+- **Metadata and Context Support**: Enhanced donation with metadata and context information for better Siri learning
+- **Batch Donation Functionality**: Support for donating multiple related intents efficiently
+- **Loading Indicator Documentation**: Added comprehensive guidance on handling long-running operations in App Intents
+- **Navigation Example**: Complete navigation app demonstrating route handling, parameter passing, and deep linking
+- **Counter Example Documentation**: Enhanced counter example with better integration patterns
+
+### Enhanced
+- **Documentation**: Updated README with extensive best practices including:
+  - Long-running operations and loading states guidance
+  - Navigation intent patterns and deep linking
+  - Intent donation strategies with relevance scoring
+  - Platform-specific behavior handling
+  - Error handling and app integration patterns
+- **Test Coverage**: Comprehensive test suites for both examples:
+  - **Navigation Example**: 45 focused tests across 3 well-organized files
+    - `parameter_logic_test.dart`: Unit tests for intent parameter handling
+    - `page_widgets_test.dart`: UI widget tests for all navigation pages  
+    - `navigation_flows_test.dart`: End-to-end navigation flow tests
+  - **Counter Example**: 95+ tests across 4 specialized files
+    - `counter_ui_test.dart`: UI widget tests for counter app
+    - `app_intents_integration_test.dart`: Flutter App Intents integration tests
+    - `models_validation_test.dart`: Models and validation tests
+    - `intent_donation_test.dart`: Intent donation functionality tests
+- **Example Apps**: Both examples now include comprehensive test documentation with clear running instructions
+
+### Improved  
+- **Test Organization**: Consolidated and renamed test files with descriptive, purpose-driven names
+- **File Structure**: Clean separation of concerns across test files (UI → integration → logic)
+- **Developer Experience**: Clear test file names that immediately indicate what each file tests
+- **Maintainability**: Eliminated redundant tests and improved test focus
+- **Error Handling**: Enhanced validation and edge case handling across models
+
+### Fixed
+- **Test Reliability**: Fixed multiple test failures across both examples:
+  - Navigation example: Fixed text assertions, icon types, and widget finder conflicts
+  - Counter example: Addressed platform-specific test issues and UI rendering edge cases
+- **Icon Consistency**: Updated icon references to match actual implementations (`Icons.chat` → `Icons.chat_bubble`)
+- **Text Assertions**: Corrected text expectations to match actual UI content
+- **Widget Structure**: Resolved multiple widget finder conflicts in tests
+
+### Technical Improvements
+- **Intent Donation**: Enhanced with proper relevance scoring (0.0-1.0 range validation)
+- **Performance**: Optimized for large parameter sets and special character handling
+- **Serialization**: Improved data integrity and round-trip serialization
+- **Error Messages**: More descriptive error handling and validation feedback
+- **Platform Handling**: Better iOS vs non-iOS platform behavior management
+
+### Breaking Changes
+- **Test File Structure**: Renamed test files for clarity - developers may need to update any references to old test file names
+
 ## [0.1.1] - 2025-09-04
 
 ### Fixed
