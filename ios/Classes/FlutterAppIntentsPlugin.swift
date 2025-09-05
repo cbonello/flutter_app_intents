@@ -1009,6 +1009,8 @@ enum IntentExecutionError: Error, LocalizedError {
 
 // MARK: - App Shortcuts Provider
 
+// Commented out to allow app-specific AppShortcutsProvider implementations
+/*
 @available(iOS 16.0, *)
 struct FlutterAppShortcutsProvider: AppShortcutsProvider {
     static var appShortcuts: [AppShortcut] {
@@ -1069,3 +1071,4 @@ struct FlutterAppShortcutsProvider: AppShortcutsProvider {
         return nil
     }
 }
+*/
