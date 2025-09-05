@@ -24,8 +24,9 @@ struct OpenProfileIntent: AppIntent {
     static var title: LocalizedStringResource = "Open Profile"
     static var description = IntentDescription("Navigate to user profile page")
     static var isDiscoverable = true
+    static var openAppWhenRun = true
     
-    func perform() async throws -> some IntentResult & ReturnsValue<String> {
+    func perform() async throws -> some IntentResult & ReturnsValue<String> & OpensIntent {
         let plugin = FlutterAppIntentsPlugin.shared
         let result = await plugin.handleIntentInvocation(
             identifier: "open_profile",
@@ -47,8 +48,9 @@ struct OpenChatIntent: AppIntent {
     static var title: LocalizedStringResource = "Open Chat"
     static var description = IntentDescription("Open chat with a contact")
     static var isDiscoverable = true
+    static var openAppWhenRun = true
     
-    func perform() async throws -> some IntentResult & ReturnsValue<String> {
+    func perform() async throws -> some IntentResult & ReturnsValue<String> & OpensIntent {
         let plugin = FlutterAppIntentsPlugin.shared
         let result = await plugin.handleIntentInvocation(
             identifier: "open_chat",
@@ -70,8 +72,9 @@ struct SearchContentIntent: AppIntent {
     static var title: LocalizedStringResource = "Search Content"
     static var description = IntentDescription("Search for content in the app")
     static var isDiscoverable = true
+    static var openAppWhenRun = true
     
-    func perform() async throws -> some IntentResult & ReturnsValue<String> {
+    func perform() async throws -> some IntentResult & ReturnsValue<String> & OpensIntent {
         let plugin = FlutterAppIntentsPlugin.shared
         let result = await plugin.handleIntentInvocation(
             identifier: "search_content",
@@ -93,8 +96,9 @@ struct OpenSettingsIntent: AppIntent {
     static var title: LocalizedStringResource = "Open Settings"
     static var description = IntentDescription("Navigate to app settings")
     static var isDiscoverable = true
+    static var openAppWhenRun = true
     
-    func perform() async throws -> some IntentResult & ReturnsValue<String> {
+    func perform() async throws -> some IntentResult & ReturnsValue<String> & OpensIntent {
         let plugin = FlutterAppIntentsPlugin.shared
         let result = await plugin.handleIntentInvocation(
             identifier: "open_settings",

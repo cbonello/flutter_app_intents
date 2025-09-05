@@ -43,6 +43,8 @@ The static Swift intents act as a bridge, calling your Flutter handlers when exe
 
 ## Quick Start
 
+> 📖 **New to App Intents?** Check out our [Step-by-Step Tutorial](documentation/TUTORIAL.md) for a complete walkthrough from `flutter create` to working Siri integration!
+
 ### 1. Import the package
 
 ```dart
@@ -144,11 +146,12 @@ struct OpenProfileIntent: AppIntent {
     static var title: LocalizedStringResource = "Open Profile"
     static var description = IntentDescription("Open user profile page")
     static var isDiscoverable = true
+    static var openAppWhenRun = true
     
     @Parameter(title: "User ID")
     var userId: String?
     
-    func perform() async throws -> some IntentResult & OpensIntent {
+    func perform() async throws -> some IntentResult & ReturnsValue<String> & OpensIntent {
         let plugin = FlutterAppIntentsPlugin.shared
         let result = await plugin.handleIntentInvocation(
             identifier: "open_profile",
@@ -156,7 +159,8 @@ struct OpenProfileIntent: AppIntent {
         )
         
         if let success = result["success"] as? Bool, success {
-            return .result() // This opens/focuses the app
+            let value = result["value"] as? String ?? "Profile opened"
+            return .result(value: value) // This opens/focuses the app
         } else {
             let errorMessage = result["error"] as? String ?? "Failed to open profile"
             throw AppIntentError.executionFailed(errorMessage)
@@ -285,9 +289,9 @@ struct AppShortcuts: AppShortcutsProvider {
 
 | Intent Type | Return Type | Use Case | Example |
 |-------------|-------------|----------|---------|
-| **Action** | `ReturnsValue<String>` | Execute functionality | "Increment counter", "Send message" |
-| **Navigation** | `OpensIntent` | Navigate to pages | "Open profile", "Show chat" |
-| **Combined** | `ReturnsValue<String> & OpensIntent` | Action + navigation | "Create note and open editor" |
+| **Query** | `ReturnsValue<String>` | Get information only | "Get counter value", "Check weather" |
+| **Action + App Opening** | `ReturnsValue<String> & OpensIntent` | Execute + show result | "Increment counter", "Send message" |
+| **Navigation** | `ReturnsValue<String> & OpensIntent` | Navigate to pages | "Open profile", "Show chat" |
 
 ## API Reference
 
@@ -548,8 +552,9 @@ struct MyCounterIntent: AppIntent {
     static var title: LocalizedStringResource = "Increment Counter"
     static var description = IntentDescription("Increment the counter by one")
     static var isDiscoverable = true
+    static var openAppWhenRun = true
     
-    func perform() async throws -> some IntentResult & ReturnsValue<String> {
+    func perform() async throws -> some IntentResult & ReturnsValue<String> & OpensIntent {
         let plugin = FlutterAppIntentsPlugin.shared
         let result = await plugin.handleIntentInvocation(
             identifier: "increment_counter", 
@@ -651,32 +656,43 @@ Control when intents can be executed:
 4. **Handle errors gracefully**
 5. **Test with Siri and Shortcuts app**
 
+### App Opening Behavior
+6. **Use `static var openAppWhenRun = true`** in Swift intents that should open the app
+7. **Add `& OpensIntent`** to the return type for intents that open the app
+8. **Include `needsToContinueInApp: true`** in Flutter results for visual feedback
+9. **Choose appropriate behavior**: Some intents (like queries) may not need to open the app
+
 ### Navigation Intents
-6. **Always use `needsToContinueInApp: true`** for navigation intents
-7. **Use `OpensIntent` return type** in Swift for navigation
-8. **Handle app state properly** - check if context is still mounted
-9. **Pass meaningful parameters** to destination pages
-10. **Consider app lifecycle** - navigation may happen when app is backgrounded
+10. **Always use `needsToContinueInApp: true`** for navigation intents
+11. **Add `static var openAppWhenRun = true`** to force app opening
+12. **Use `ReturnsValue<String> & OpensIntent`** return type in Swift
+13. **Handle app state properly** - check if context is still mounted
+14. **Pass meaningful parameters** to destination pages
+15. **Consider app lifecycle** - navigation may happen when app is backgrounded
 
 ### Intent Donation Strategy
-11. **Donate intents strategically**:
+16. **Donate intents strategically**:
    - Use enhanced donation with metadata for better Siri learning
    - Donate after successful execution only
    - Use appropriate relevance scores based on usage patterns
    - Provide contextual information to improve predictions
    - Use batch donations for related intents
-12. **Navigation intents should have high relevance** (0.8-1.0) when user-initiated
-13. **Monitor donation performance and adjust relevance scores** based on user behavior
+17. **Navigation intents should have high relevance** (0.8-1.0) when user-initiated
+18. **Monitor donation performance and adjust relevance scores** based on user behavior
 
 ### App Integration
-14. **Static intents must match Flutter handlers** - ensure identifier consistency
-15. **Handle app cold starts** - navigation intents may launch your app
-16. **Test edge cases** - what happens when target pages don't exist?
-17. **Provide fallback navigation** - graceful handling of invalid routes
+19. **Static intents must match Flutter handlers** - ensure identifier consistency
+20. **Handle app cold starts** - navigation intents may launch your app
+21. **Test edge cases** - what happens when target pages don't exist?
+22. **Provide fallback navigation** - graceful handling of invalid routes
 
-## Example
+## Examples
 
-Check out the [example app](example/) for a complete implementation showing:
+### 📚 Tutorial: Simple Counter App
+Our [Step-by-Step Tutorial](documentation/TUTORIAL.md) walks you through building a complete counter app with Siri integration from scratch.
+
+### 🔍 Example Apps
+Check out the [example apps](example/) for complete implementations showing:
 
 ### Action Intents
 - Counter increment/reset/query intents

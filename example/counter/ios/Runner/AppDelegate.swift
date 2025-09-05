@@ -25,8 +25,9 @@ struct CounterIntent: AppIntent {
     static var title: LocalizedStringResource = "Increment Counter"
     static var description = IntentDescription("Increment the counter by one")
     static var isDiscoverable = true
+    static var openAppWhenRun: Bool = true
     
-    func perform() async throws -> some IntentResult & ReturnsValue<String> {
+    func perform() async throws -> some IntentResult & ReturnsValue<String> & OpensIntent {
         let plugin = FlutterAppIntentsPlugin.shared
         let result = await plugin.handleIntentInvocation(
             identifier: "increment_counter", 
@@ -47,8 +48,9 @@ struct CounterIntent: AppIntent {
 struct ResetIntent: AppIntent {
     static var title: LocalizedStringResource = "Reset Counter"  
     static var description = IntentDescription("Reset the counter to zero")
+    static var openAppWhenRun: Bool = true
     
-    func perform() async throws -> some IntentResult & ReturnsValue<String> {
+    func perform() async throws -> some IntentResult & ReturnsValue<String> & OpensIntent {
         let plugin = FlutterAppIntentsPlugin.shared
         let result = await plugin.handleIntentInvocation(
             identifier: "reset_counter", 

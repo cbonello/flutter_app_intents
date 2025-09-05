@@ -217,6 +217,7 @@ class _MyHomePageState extends State<MyHomePage> {
     // Return successful result with informative message
     return AppIntentResult.successful(
       value: 'Counter incremented by $amount. New value: $_counter',
+      needsToContinueInApp: true,
     );
   }
 
@@ -240,7 +241,10 @@ class _MyHomePageState extends State<MyHomePage> {
     await _client.donateIntent('reset_counter', parameters);
 
     // Return success confirmation
-    return AppIntentResult.successful(value: 'Counter reset to 0');
+    return AppIntentResult.successful(
+      value: 'Counter reset to 0',
+      needsToContinueInApp: true,
+    );
   }
 
   /// Handles the get counter value intent invocation.
@@ -329,10 +333,10 @@ class _MyHomePageState extends State<MyHomePage> {
             // Instructions for using Siri with the registered intents
             const Text('You can now use Siri to control this counter:'),
             const SizedBox(height: 10),
-            const Card(
+            Card(
               color: Colors.blue,
               child: Padding(
-                padding: EdgeInsets.all(12),
+                padding: const EdgeInsets.all(12),
                 child: Column(
                   children: [
                     Text(
@@ -345,10 +349,11 @@ class _MyHomePageState extends State<MyHomePage> {
                     SizedBox(height: 8),
                     // Example voice commands that will trigger the intents
                     Text(
-                      '• "Hey Siri, increment counter"\n'
-                      '• "Hey Siri, reset counter"\n'
-                      '• "Hey Siri, get counter value"',
-                      style: TextStyle(color: Colors.white),
+                      '• "Increment counter with Flutter App Intents Example"\n'
+                      '• "Reset counter with Flutter App Intents Example"\n'
+                      '• "Get counter from Flutter App Intents Example"',
+                      style: TextStyle(color: Colors.white, fontSize: 13),
+                      textAlign: TextAlign.left,
                     ),
                   ],
                 ),
@@ -372,14 +377,28 @@ class _MyHomePageState extends State<MyHomePage> {
               ),
               const SizedBox(height: 8),
               // List each registered intent with its details
-              for (final intent in _registeredIntents)
-                Card(
-                  child: ListTile(
-                    title: Text(intent.title),
-                    subtitle: Text(intent.description),
-                    trailing: Chip(label: Text(intent.identifier)),
-                  ),
+              Flexible(
+                child: ListView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: _registeredIntents.length,
+                  itemBuilder: (context, index) {
+                    final intent = _registeredIntents[index];
+                    return Card(
+                      child: ListTile(
+                        title: Text(intent.title),
+                        subtitle: Text(intent.description),
+                        trailing: Chip(
+                          label: Text(
+                            intent.identifier,
+                            style: const TextStyle(fontSize: 10),
+                          ),
+                        ),
+                      ),
+                    );
+                  },
                 ),
+              ),
             ],
           ],
         ),
