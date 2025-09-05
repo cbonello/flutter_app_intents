@@ -1,17 +1,30 @@
 import Flutter
 import UIKit
 import Intents
-import IntentsUI
 import AppIntents
 import CoreLocation
 
+/// Flutter plugin for iOS App Intents integration
+/// 
+/// This plugin provides a bridge between Flutter apps and iOS 16+ App Intents framework,
+/// enabling Siri voice commands, Shortcuts app integration, and Spotlight search.
+/// 
+/// Key features:
+/// - Dynamic intent registration from Flutter
+/// - Parameter support for complex intents
+/// - Enhanced intent donation for better Siri learning
+/// - Batch donation capabilities
+/// - Legacy intent support for backward compatibility
 @available(iOS 16.0, *)
 public class FlutterAppIntentsPlugin: NSObject, FlutterPlugin {
+    /// Flutter method channel for communication with Dart side
     private var channel: FlutterMethodChannel?
+    /// Storage for registered intent configurations
     private var registeredIntents: [String: Any] = [:]
+    /// Active dynamic intent instances ready for execution
     internal var activeIntents: [String: DynamicAppIntent] = [:]
     
-    // Singleton to handle intent registry
+    /// Singleton instance to handle intent registry across the app
     public static let shared = FlutterAppIntentsPlugin()
     
     public static func register(with registrar: FlutterPluginRegistrar) {
@@ -273,6 +286,13 @@ public class FlutterAppIntentsPlugin: NSObject, FlutterPlugin {
         }
     }
     
+    /// Donates an intent with enhanced metadata for better Siri learning
+    /// - Parameters:
+    ///   - intent: The dynamic app intent to donate
+    ///   - parameters: Parameters used in the intent execution
+    ///   - relevanceScore: Relevance score between 0.0 and 1.0 for prediction
+    ///   - context: Additional context information for learning
+    ///   - timestamp: When the intent was executed
     private func donateIntentWithEnhancedMetadata(
         intent: DynamicAppIntent,
         parameters: [String: Any],
@@ -461,7 +481,11 @@ public class FlutterAppIntentsPlugin: NSObject, FlutterPlugin {
         }
     }
     
-    // Handle intent invocation from the system
+    /// Handles intent invocation from the iOS system and bridges to Flutter
+    /// - Parameters:
+    ///   - identifier: The unique identifier of the intent to execute
+    ///   - parameters: Parameters passed from the iOS intent system
+    /// - Returns: A dictionary containing success status and result value from Flutter
     public func handleIntentInvocation(identifier: String, parameters: [String: Any]) async -> [String: Any] {
         print("🚀 iOS calling Flutter intent: \(identifier) with parameters: \(parameters)")
         
@@ -1009,66 +1033,6 @@ enum IntentExecutionError: Error, LocalizedError {
 
 // MARK: - App Shortcuts Provider
 
-// Commented out to allow app-specific AppShortcutsProvider implementations
-/*
-@available(iOS 16.0, *)
-struct FlutterAppShortcutsProvider: AppShortcutsProvider {
-    static var appShortcuts: [AppShortcut] {
-        let plugin = FlutterAppIntentsPlugin.shared
-        return plugin.activeIntents.values.compactMap { intent in
-            createAppShortcut(for: intent)
-        }
-    }
-    
-    private static func createAppShortcut(for intent: DynamicAppIntent) -> AppShortcut? {
-        // Create appropriate shortcut based on intent parameters
-        if intent.parameters.isEmpty {
-            return AppShortcut(
-                intent: NoParameterIntent(intentIdentifier: intent.identifier, intentConfig: intent.asConfigDict()),
-                phrases: [
-                    .init(intent.intentTitle)
-                ]
-            )
-        } else if intent.parameters.count == 1 {
-            let param = intent.parameters[0]
-            switch param.type {
-            case .string:
-                return AppShortcut(
-                    intent: OneStringParameterIntent(intentIdentifier: intent.identifier, intentConfig: intent.asConfigDict()),
-                    phrases: [
-                        .init(intent.intentTitle),
-                        .init("\(intent.intentTitle) \(param.name)")
-                    ]
-                )
-            case .integer:
-                return AppShortcut(
-                    intent: OneIntegerParameterIntent(intentIdentifier: intent.identifier, intentConfig: intent.asConfigDict()),
-                    phrases: [
-                        .init(intent.intentTitle),
-                        .init("\(intent.intentTitle) \(param.name)")
-                    ]
-                )
-            case .boolean:
-                return AppShortcut(
-                    intent: OneBooleanParameterIntent(intentIdentifier: intent.identifier, intentConfig: intent.asConfigDict()),
-                    phrases: [
-                        .init(intent.intentTitle),
-                        .init("\(intent.intentTitle) \(param.name)")
-                    ]
-                )
-            case .double:
-                return AppShortcut(
-                    intent: OneDoubleParameterIntent(intentIdentifier: intent.identifier, intentConfig: intent.asConfigDict()),
-                    phrases: [
-                        .init(intent.intentTitle),
-                        .init("\(intent.intentTitle) \(param.name)")
-                    ]
-                )
-            default:
-                return nil
-            }
-        }
-        return nil
-    }
-}
-*/
+// Note: AppShortcutsProvider implementations are handled by individual apps
+// Each app should implement their own AppShortcutsProvider in their AppDelegate.swift
+// This allows for custom phrases and better control over shortcuts presentation
