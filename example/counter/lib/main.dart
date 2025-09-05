@@ -260,14 +260,11 @@ class _MyHomePageState extends State<MyHomePage> {
   Future<AppIntentResult> _handleGetCounterIntent(
     Map<String, dynamic> parameters,
   ) async {
-    print('🔍 Flutter: _handleGetCounterIntent called with counter = $_counter');
-    
     // Donate for learning (queries are also valuable for predictions)
     await _client.donateIntent('get_counter', parameters);
 
     final resultValue = 'Current counter value is $_counter';
-    print('🔍 Flutter: Returning result: $resultValue');
-    
+
     // Return current state as result
     return AppIntentResult.successful(
       value: resultValue,
