@@ -71,7 +71,7 @@ struct GetCounterIntent: AppIntent {
     static var description = IntentDescription("Get the current counter value")
     static var isDiscoverable = true
     
-    func perform() async throws -> some IntentResult & ReturnsValue<String> {
+    func perform() async throws -> some IntentResult & ReturnsValue<String> & ProvidesDialog {
         print("🔍 GetCounterIntent.perform() called")
         let plugin = FlutterAppIntentsPlugin.shared
         let result = await plugin.handleIntentInvocation(
