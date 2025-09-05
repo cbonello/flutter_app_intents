@@ -330,10 +330,10 @@ class _MyHomePageState extends State<MyHomePage> {
             // Instructions for using Siri with the registered intents
             const Text('You can now use Siri to control this counter:'),
             const SizedBox(height: 10),
-            Card(
+            const Card(
               color: Colors.blue,
               child: Padding(
-                padding: const EdgeInsets.all(12),
+                padding: EdgeInsets.all(12),
                 child: Column(
                   children: [
                     Text(
