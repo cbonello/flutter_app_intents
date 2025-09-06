@@ -16,6 +16,7 @@ void main() {
         expect(intent.title, equals('Test Intent'));
         expect(intent.description, equals('A test intent for testing'));
         expect(intent.parameters, isEmpty);
+        expect(intent.phrases, isEmpty);
         expect(intent.isEligibleForSearch, isTrue);
         expect(intent.isEligibleForPrediction, isTrue);
         expect(intent.authenticationPolicy, equals(AuthenticationPolicy.none));
@@ -34,6 +35,7 @@ void main() {
           title: 'Complex Intent',
           description: 'A complex intent for testing',
           parameters: [parameter],
+          phrases: ['Complex Intent', 'Do Complex Thing'],
           isEligibleForSearch: false,
           isEligibleForPrediction: false,
           authenticationPolicy: AuthenticationPolicy.requiresAuthentication,
@@ -44,6 +46,7 @@ void main() {
         expect(intent.description, equals('A complex intent for testing'));
         expect(intent.parameters, hasLength(1));
         expect(intent.parameters.first, equals(parameter));
+        expect(intent.phrases, equals(['Complex Intent', 'Do Complex Thing']));
         expect(intent.isEligibleForSearch, isFalse);
         expect(intent.isEligibleForPrediction, isFalse);
         expect(
@@ -68,6 +71,7 @@ void main() {
               'defaultValue': 'default',
             },
           ],
+          'phrases': ['From Map Intent', 'Create from Map', 'Map Intent'],
           'isEligibleForSearch': false,
           'isEligibleForPrediction': true,
           'authenticationPolicy': 'requiresUnlockedDevice',
@@ -80,6 +84,8 @@ void main() {
         expect(intent.description, equals('Created from map'));
         expect(intent.parameters, hasLength(1));
         expect(intent.parameters.first.name, equals('test_param'));
+        expect(intent.phrases, 
+            equals(['From Map Intent', 'Create from Map', 'Map Intent']));
         expect(intent.isEligibleForSearch, isFalse);
         expect(intent.isEligibleForPrediction, isTrue);
         expect(
@@ -101,6 +107,7 @@ void main() {
         expect(intent.title, equals('Minimal Intent'));
         expect(intent.description, equals('Minimal map'));
         expect(intent.parameters, isEmpty);
+        expect(intent.phrases, isEmpty);
         expect(intent.isEligibleForSearch, isTrue);
         expect(intent.isEligibleForPrediction, isTrue);
         expect(intent.authenticationPolicy, equals(AuthenticationPolicy.none));
@@ -131,6 +138,19 @@ void main() {
 
         expect(intent.parameters, isEmpty);
       });
+
+      test('handles null phrases list', () {
+        final map = <String, dynamic>{
+          'identifier': 'test_intent',
+          'title': 'Test Intent',
+          'description': 'Test description',
+          'phrases': null,
+        };
+
+        final intent = AppIntent.fromMap(map);
+
+        expect(intent.phrases, isEmpty);
+      });
     });
 
     group('toMap()', () {
@@ -146,6 +166,7 @@ void main() {
           title: 'Test Intent',
           description: 'A test intent',
           parameters: [parameter],
+          phrases: ['Test Intent', 'Test Action'],
           isEligibleForSearch: false,
           authenticationPolicy: AuthenticationPolicy.requiresAuthentication,
         );
@@ -159,6 +180,7 @@ void main() {
             'title': 'Test Intent',
             'description': 'A test intent',
             'parameters': [parameter.toMap()],
+            'phrases': ['Test Intent', 'Test Action'],
             'isEligibleForSearch': false,
             'isEligibleForPrediction': true,
             'authenticationPolicy': 'requiresAuthentication',
@@ -176,6 +198,7 @@ void main() {
         final map = intent.toMap();
 
         expect(map['parameters'], isEmpty);
+        expect(map['phrases'], isEmpty);
       });
     });
 
@@ -189,12 +212,14 @@ void main() {
 
         final copy = original.copyWith(
           title: 'Modified Title',
+          phrases: ['Modified Phrase'],
           isEligibleForSearch: false,
         );
 
         expect(copy.identifier, equals('original_intent'));
         expect(copy.title, equals('Modified Title'));
         expect(copy.description, equals('Original description'));
+        expect(copy.phrases, equals(['Modified Phrase']));
         expect(copy.isEligibleForSearch, isFalse);
         expect(copy.isEligibleForPrediction, isTrue);
       });
@@ -204,6 +229,7 @@ void main() {
           identifier: 'original_intent',
           title: 'Original Title',
           description: 'Original description',
+          phrases: ['Original Phrase'],
           isEligibleForSearch: false,
         );
 
@@ -212,6 +238,7 @@ void main() {
         expect(copy.identifier, equals(original.identifier));
         expect(copy.title, equals(original.title));
         expect(copy.description, equals(original.description));
+        expect(copy.phrases, equals(original.phrases));
         expect(copy.isEligibleForSearch, equals(original.isEligibleForSearch));
       });
     });
@@ -222,12 +249,14 @@ void main() {
           identifier: 'test_intent',
           title: 'Test Intent',
           description: 'Test description',
+          phrases: ['Test Phrase'],
         );
 
         const intent2 = AppIntent(
           identifier: 'test_intent',
           title: 'Test Intent',
           description: 'Test description',
+          phrases: ['Test Phrase'],
         );
 
         expect(intent1, equals(intent2));
@@ -267,6 +296,7 @@ void main() {
           title: 'Roundtrip Intent',
           description: 'Testing roundtrip conversion',
           parameters: [parameter],
+          phrases: ['Roundtrip Intent', 'Test Roundtrip'],
           isEligibleForSearch: false,
           isEligibleForPrediction: false,
           authenticationPolicy: AuthenticationPolicy.requiresUnlockedDevice,
