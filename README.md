@@ -792,6 +792,58 @@ relevanceScore: 1.5  // ❌ Invalid: greater than 1.0
 relevanceScore: -0.1 // ❌ Invalid: less than 0.0
 ```
 
+## Apple Documentation References
+
+For deeper understanding of the underlying iOS concepts, refer to these official Apple resources:
+
+### Core App Intents Framework
+- **[App Intents Framework](https://developer.apple.com/documentation/appintents)** - Complete framework documentation
+- **[App Intent Protocol](https://developer.apple.com/documentation/appintents/appintent)** - Core protocol documentation
+- **[Intent Result](https://developer.apple.com/documentation/appintents/intentresult)** - Understanding intent return values
+
+### Siri Integration
+- **[Making App Intents Available to Siri](https://developer.apple.com/documentation/appintents/making-app-intents-available-to-siri)** - Core Siri integration guide
+- **[App Shortcuts](https://developer.apple.com/documentation/appintents/appshortcut)** - AppShortcut protocol documentation
+- **[App Shortcuts Provider](https://developer.apple.com/documentation/appintents/appshortcutsprovider)** - Managing app shortcuts
+- **[Shortcuts App Integration](https://developer.apple.com/documentation/appintents/making-your-app-available-with-app-intents)** - Shortcuts app integration
+
+### Parameters and Data Types
+- **[App Intent Parameter](https://developer.apple.com/documentation/appintents/appintent/parameter/)** - Parameter protocol documentation
+- **[Intent Parameter](https://developer.apple.com/documentation/appintents/intentparameter)** - Intent parameter wrapper
+- **[App Entity](https://developer.apple.com/documentation/appintents/appentity)** - Custom entity parameters
+- **[Parameter Summary](https://developer.apple.com/documentation/appintents/parametersummary)** - Parameter display configuration
+
+### Intent Donation and Learning
+- **[Making App Intents Available to Siri](https://developer.apple.com/documentation/appintents/making-app-intents-available-to-siri)** - Core donation and prediction guide
+- **[App Intents and User Activity](https://developer.apple.com/documentation/appintents/making-your-app-available-with-app-intents)** - Integration patterns
+- **[Siri Tips and Suggestions](https://developer.apple.com/documentation/sirikit/donating_shortcuts_to_siri)** - Improving suggestions and learning
+
+### Navigation and App Opening
+- **[Opening Your App](https://developer.apple.com/documentation/appintents/making-app-intents-available-to-siri#Open-your-app-through-an-app-intent)** - App opening patterns
+- **[Opens Intent Protocol](https://developer.apple.com/documentation/appintents/opensintent)** - Protocol for opening apps
+- **[App Intent Execution](https://developer.apple.com/documentation/appintents/making-your-app-available-with-app-intents)** - Managing app state during intent execution
+
+### Authentication and Security
+- **[Intent Authentication](https://developer.apple.com/documentation/appintents/making-app-intents-available-to-siri#Require-authentication-for-an-app-intent)** - Securing your intents
+- **[Authentication Policy](https://developer.apple.com/documentation/appintents/intentauthenticationpolicy)** - Authentication policy options
+- **[App Intents Privacy](https://developer.apple.com/documentation/appintents/making-your-app-available-with-app-intents#Privacy-considerations)** - Privacy best practices
+
+### Advanced Topics
+- **[Interactive Widgets](https://developer.apple.com/documentation/widgetkit/making-a-configurable-widget)** - Widget integration with App Intents
+- **[App Extensions](https://developer.apple.com/documentation/appintents/making-your-app-available-with-app-intents#App-extensions)** - Extension-based intents
+- **[Intent Phrases](https://developer.apple.com/documentation/appintents/making-app-intents-available-to-siri#Use-phrases-to-customize-what-users-can-say)** - Custom phrases and recognition
+- **[App Intents Testing](https://developer.apple.com/documentation/appintents/making-your-app-available-with-app-intents#Testing-your-app-intent)** - Testing and debugging
+
+### WWDC Sessions
+- **[WWDC 2022: Dive into App Intents](https://developer.apple.com/videos/play/wwdc2022/10032/)** - Introduction to App Intents
+- **[WWDC 2022: Implement App Shortcuts with App Intents](https://developer.apple.com/videos/play/wwdc2022/10170/)** - Practical implementation
+- **[WWDC 2023: Explore enhancements to App Intents](https://developer.apple.com/videos/play/wwdc2023/10103/)** - Latest features and improvements
+
+### Design Guidelines
+- **[Human Interface Guidelines: Siri](https://developer.apple.com/design/human-interface-guidelines/siri-interactions)** - Designing for Siri interactions
+- **[App Shortcuts Guidelines](https://developer.apple.com/design/human-interface-guidelines/app-shortcuts)** - User experience patterns for shortcuts
+- **[Accessibility in Siri](https://developer.apple.com/design/human-interface-guidelines/accessibility)** - Inclusive voice interface design
+
 ## Contributing
 
 This package is an independent Flutter plugin for Apple App Intents integration.
