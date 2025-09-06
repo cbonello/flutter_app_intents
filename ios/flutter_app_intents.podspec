@@ -6,9 +6,9 @@ Pod::Spec.new do |s|
 A Flutter plugin that provides a bridge to Apple's App Intents framework,
 enabling integration with Siri, Shortcuts, and other system experiences.
                        DESC
-  s.homepage         = 'https://github.com/flutter/packages/tree/main/packages/flutter_app_intents'
+  s.homepage         = 'https://github.com/cbonello/flutter_app_intents'
   s.license          = { :file => '../LICENSE' }
-  s.author           = { 'Flutter Team' => 'flutter-dev@googlegroups.com' }
+  s.author           = { 'Your Company' => 'email@example.com' }
   s.source           = { :path => '.' }
   s.source_files = 'Classes/**/*'
   s.dependency 'Flutter'
