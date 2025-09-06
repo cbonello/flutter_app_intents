@@ -136,6 +136,12 @@ class _MyHomePageState extends State<MyHomePage> {
           .identifier('increment_counter')
           .title('Increment Counter')
           .description('Increments the counter by one')
+          .phrases([
+            'Increment Counter',
+            'Increase Counter', 
+            'Add to Counter',
+            'Bump Counter',
+          ])
           .parameter(
             const AppIntentParameter(
               name: 'amount',
@@ -154,6 +160,12 @@ class _MyHomePageState extends State<MyHomePage> {
           .identifier('reset_counter')
           .title('Reset Counter')
           .description('Resets the counter to zero')
+          .phrases([
+            'Reset Counter',
+            'Clear Counter',
+            'Zero Counter',
+            'Start Over',
+          ])
           .build();
 
       // Create query intent with search eligibility
@@ -162,6 +174,13 @@ class _MyHomePageState extends State<MyHomePage> {
           .identifier('get_counter')
           .title('Get Counter Value')
           .description('Returns the current counter value')
+          .phrases([
+            'Get Counter Value',
+            'Check Counter',
+            "What's the Counter",
+            'Current Counter',
+            'Counter Status',
+          ])
           .eligibleForSearch(eligible: true)
           .build();
 
@@ -346,9 +365,10 @@ class _MyHomePageState extends State<MyHomePage> {
                     SizedBox(height: 8),
                     // Example voice commands that will trigger the intents
                     Text(
-                      '• "Increment counter with Flutter App Intents Example"\n'
-                      '• "Reset counter with Flutter App Intents Example"\n'
-                      '• "Get counter from Flutter App Intents Example"',
+                      '• "Increment Counter" or "Add to Counter"\n'
+                      '• "Reset Counter" or "Clear Counter"\n'
+                      '• "Check Counter" or "Counter Status"\n'
+                      '• "Increase Counter amount 5" (with parameter)',
                       style: TextStyle(color: Colors.white, fontSize: 13),
                       textAlign: TextAlign.left,
                     ),
