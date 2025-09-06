@@ -42,7 +42,7 @@ struct AppShortcuts: AppShortcutsProvider {
                     intent: OneStringParameterIntent(intentIdentifier: intent.identifier, intentConfig: intent.asConfigDict()),
                     phrases: [
                         intent.intentTitle,
-                        "\\(intent.intentTitle) \\(param.name)"
+                        "\(intent.intentTitle) \(param.name)"
                     ]
                 )
             case .integer:
@@ -50,7 +50,7 @@ struct AppShortcuts: AppShortcutsProvider {
                     intent: OneIntegerParameterIntent(intentIdentifier: intent.identifier, intentConfig: intent.asConfigDict()),
                     phrases: [
                         intent.intentTitle,
-                        "\\(intent.intentTitle) \\(param.name)"
+                        "\(intent.intentTitle) \(param.name)"
                     ]
                 )
             case .boolean:
@@ -58,7 +58,7 @@ struct AppShortcuts: AppShortcutsProvider {
                     intent: OneBooleanParameterIntent(intentIdentifier: intent.identifier, intentConfig: intent.asConfigDict()),
                     phrases: [
                         intent.intentTitle,
-                        "\\(intent.intentTitle) \\(param.name)"
+                        "\(intent.intentTitle) \(param.name)"
                     ]
                 )
             case .double:
@@ -66,7 +66,7 @@ struct AppShortcuts: AppShortcutsProvider {
                     intent: OneDoubleParameterIntent(intentIdentifier: intent.identifier, intentConfig: intent.asConfigDict()),
                     phrases: [
                         intent.intentTitle,
-                        "\\(intent.intentTitle) \\(param.name)"
+                        "\(intent.intentTitle) \(param.name)"
                     ]
                 )
             default:
