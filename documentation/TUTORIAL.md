@@ -1,5 +1,7 @@
 # Flutter App Intents Tutorial: Simple Counter with Siri Integration
 
+> **Note:** This tutorial guides you through a simplified version of the counter example. For a more advanced implementation with multiple intents and parameter handling, please refer to the `example/counter` directory in this project.
+
 This tutorial will guide you through creating a simple Flutter counter app that can be controlled by Siri voice commands using the `flutter_app_intents` plugin.
 
 ## Prerequisites
@@ -191,7 +193,7 @@ class _CounterHomePageState extends State<CounterHomePage> {
             const Card(
               color: Colors.green,
               child: Padding(
-                padding: EdgeInsets.all(16),
+                padding: const EdgeInsets.all(16),
                 child: Text(
                   'Try saying:\n"Hey Siri, increment counter with counter intents tutorial"',
                   style: TextStyle(
@@ -217,20 +219,15 @@ class _CounterHomePageState extends State<CounterHomePage> {
 
 ## Step 5: Create iOS App Intent Implementation
 
-Create the file `ios/Runner/AppDelegate.swift` and replace its contents:
+For Siri to discover our intents, we need to declare them statically in Swift. We'll separate our App Intents logic from the `AppDelegate` to keep the code organized.
 
-> **Note:** This file contains several important components that work together to enable Siri integration. Each part is explained after the code.
+### 5.1: Update AppDelegate.swift
+
+First, ensure your `ios/Runner/AppDelegate.swift` file is clean and only contains the standard Flutter setup. Replace its contents with the following:
 
 ```swift
 import Flutter
 import UIKit
-import AppIntents
-import flutter_app_intents
-
-// Simple error for App Intents
-enum AppIntentError: Error {
-    case executionFailed(String)
-}
 
 @main
 @objc class AppDelegate: FlutterAppDelegate {
@@ -241,6 +238,20 @@ enum AppIntentError: Error {
     GeneratedPluginRegistrant.register(with: self)
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }
+}
+```
+
+### 5.2: Create AppShortcuts.swift
+
+Next, create a new file named `ios/Runner/AppShortcuts.swift`. This file will contain the App Intent definition and the App Shortcuts provider.
+
+```swift
+import AppIntents
+import flutter_app_intents
+
+// Simple error for App Intents
+enum AppIntentError: Error {
+    case executionFailed(String)
 }
 
 // App Intent that bridges to Flutter plugin
@@ -274,9 +285,9 @@ struct CounterAppShortcuts: AppShortcutsProvider {
         AppShortcut(
             intent: CounterIntent(),
             phrases: [
-                "Increment counter with \\(.applicationName)",
-                "Add one with \\(.applicationName)",
-                "Count up using \\(.applicationName)"
+                "Increment counter with \(.applicationName)",
+                "Add one with \(.applicationName)",
+                "Count up using \(.applicationName)"
             ],
             shortTitle: "Increment",
             systemImageName: "plus.circle"
@@ -287,12 +298,10 @@ struct CounterAppShortcuts: AppShortcutsProvider {
 
 ### Understanding the Swift Code Components
 
-Let's break down each part of the `AppDelegate.swift` file:
+Let's break down each part of the `AppShortcuts.swift` file:
 
 #### 1. **Imports and Error Handling**
 ```swift
-import Flutter
-import UIKit
 import AppIntents
 import flutter_app_intents
 
@@ -304,105 +313,59 @@ enum AppIntentError: Error {
 - **`import flutter_app_intents`**: The Flutter plugin's native iOS module
 - **`AppIntentError`**: Custom error type for handling intent failures
 
-#### 2. **App Delegate (Standard Flutter Setup)**
+#### 2. **App Intent Definition (`CounterIntent`)**
 ```swift
-@main
-@objc class AppDelegate: FlutterAppDelegate {
-  override func application(
-    _ application: UIApplication,
-    didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
-  ) -> Bool {
-    GeneratedPluginRegistrant.register(with: self)
-    return super.application(application, didFinishLaunchingWithOptions: launchOptions)
-  }
-}
-```
-- **Standard Flutter app setup** - registers plugins and initializes the app
-- **No changes needed** from default Flutter template
-
-#### 3. **App Intent Definition**
-```swift
-@available(iOS 16.0, *)
+@available(iOS 16.0, *) 
 struct CounterIntent: AppIntent {
     static var title: LocalizedStringResource = "Increment Counter"
     static var description = IntentDescription("Increment the counter by one")
     static var isDiscoverable = true
     
     func perform() async throws -> some IntentResult & ReturnsValue<String> {
-        // Implementation here
+        // ...
     }
 }
 ```
-
-**Key properties explained:**
 - **`@available(iOS 16.0, *)`**: Ensures this only runs on iOS 16+
 - **`static var title`**: What Siri will say/display to users
 - **`static var description`**: Detailed description for the Shortcuts app
 - **`static var isDiscoverable`**: Makes the intent visible in Shortcuts app
 - **`ReturnsValue<String>`**: Tells iOS this intent returns a text response
 
-#### 4. **Intent Performance (The Bridge to Flutter)**
-```swift
-func perform() async throws -> some IntentResult & ReturnsValue<String> {
-    let plugin = FlutterAppIntentsPlugin.shared
-    let result = await plugin.handleIntentInvocation(
-        identifier: "increment_counter", 
-        parameters: [:]
-    )
-    
-    if let success = result["success"] as? Bool, success {
-        let value = result["value"] as? String ?? "Counter incremented"
-        return .result(value: value)
-    } else {
-        let errorMessage = result["error"] as? String ?? "Failed to increment counter"
-        throw AppIntentError.executionFailed(errorMessage)
-    }
-}
-```
-
-**This is where the magic happens:**
+#### 3. **Intent Performance (The Bridge to Flutter)**
+The `perform()` function is where the magic happens:
 1. **Gets the plugin instance**: `FlutterAppIntentsPlugin.shared`
 2. **Calls Flutter code**: Using `handleIntentInvocation` with the identifier `"increment_counter"`
 3. **Handles the response**: Checks if Flutter returned success or error
-4. **Returns result to Siri**: Either success message or throws an error
+4. **Returns result to Siri**: Either a success message or throws an error
 
-#### 5. **App Shortcuts Provider (Makes Intents Discoverable)**
+#### 4. **App Shortcuts Provider (`CounterAppShortcuts`)**
 ```swift
-@available(iOS 16.0, *)
+@available(iOS 16.0, *) 
 struct CounterAppShortcuts: AppShortcutsProvider {
     static var appShortcuts: [AppShortcut] {
-        AppShortcut(
-            intent: CounterIntent(),
-            phrases: [
-                "Increment counter with \\(.applicationName)",
-                "Add one with \\(.applicationName)",
-                "Count up using \\(.applicationName)"
-            ],
-            shortTitle: "Increment",
-            systemImageName: "plus.circle"
-        )
+        // ...
     }
 }
 ```
-
-**This tells iOS about your shortcuts:**
+This struct tells iOS about your shortcuts:
 - **`AppShortcut`**: Defines a shortcut that appears in the Shortcuts app
 - **`intent`**: Links to the `CounterIntent` we defined above
 - **`phrases`**: The exact words users can say to Siri
-  - **`\\(.applicationName)`**: Automatically replaced with your app's name
+  - `\(.applicationName)`: Automatically replaced with your app's name
 - **`shortTitle`**: Short name shown in Shortcuts app
 - **`systemImageName`**: iOS system icon to display
 
 ### How It All Works Together
 
-1. **iOS discovers your intents** via `CounterAppShortcuts`
-2. **User says voice command** matching one of the phrases
-3. **iOS calls `CounterIntent.perform()`**
-4. **Swift calls Flutter** via `FlutterAppIntentsPlugin.shared.handleIntentInvocation()`
-5. **Flutter processes the request** using the handler you registered in `main.dart`
-6. **Flutter returns result** back to Swift
-7. **Swift returns result to iOS/Siri**
-8. **Siri speaks the response** and optionally opens your app
+1. **iOS discovers your intents** via `CounterAppShortcuts`.
+2. **User says a voice command** matching one of the phrases.
+3. **iOS calls `CounterIntent.perform()`**.
+4. **Swift calls your Flutter code** via `FlutterAppIntentsPlugin.shared.handleIntentInvocation()`.
+5. **Flutter processes the request** using the handler you registered in `main.dart`.
+6. **Flutter returns a result** back to Swift.
+7. **Swift returns the result to iOS/Siri**.
+8. **Siri speaks the response** and optionally opens your app.
 
 ## Step 6: Build and Run
 
@@ -420,57 +383,57 @@ struct CounterAppShortcuts: AppShortcutsProvider {
 
 ## Step 7: Test Siri Integration
 
-1. **Make sure the app is installed** on your device (not just running in debug mode)
+1. **Make sure the app is installed** on your device (not just running in debug mode).
 
-2. **Open the Shortcuts app** on your iOS device and you should see "Counter Intents Tutorial" in the "App Shortcuts" section
+2. **Open the Shortcuts app** on your iOS device. You should see "Counter Intents Tutorial" in the "App Shortcuts" section.
 
 3. **Test with Siri:**
-   - Say: "Hey Siri, increment counter with counter intents tutorial"
-   - Say: "Hey Siri, add one with counter intents tutorial"
-   - Say: "Hey Siri, count up using counter intents tutorial"
+   - "Hey Siri, increment counter with counter intents tutorial"
+   - "Hey Siri, add one with counter intents tutorial"
+   - "Hey Siri, count up using counter intents tutorial"
 
-4. **The app should open** and the counter should increment
+4. **The app should open** and the counter should increment.
 
 ## Troubleshooting
 
 ### Common Issues:
 
 1. **Shortcuts don't appear:**
-   - Make sure iOS deployment target is 16.0+
-   - Rebuild and reinstall the app
-   - Check iOS Settings > Siri & Search > [Your App] > Learn from this App is enabled
+   - Make sure your iOS deployment target is 16.0+.
+   - Rebuild and reinstall the app.
+   - Check iOS Settings > Siri & Search > [Your App] > "Learn from this App" is enabled.
 
 2. **Siri doesn't recognize commands:**
-   - Try the exact phrases from the AppShortcuts definition
-   - Make sure the app name matches what Siri expects
-   - Check that Siri is enabled for your app in Settings
+   - Try the exact phrases from the `AppShortcuts` definition.
+   - Make sure the app name matches what Siri expects.
+   - Check that Siri is enabled for your app in Settings.
 
 3. **Build errors:**
-   - Ensure Xcode is updated to support iOS 16+ features
-   - Check that all deployment targets are set to 16.0+
-   - Clean build folder in Xcode: Product > Clean Build Folder
+   - Ensure Xcode is updated to support iOS 16+ features.
+   - Check that all deployment targets are set to 16.0+.
+   - Clean the build folder in Xcode: Product > Clean Build Folder.
 
 ### Debug Tips:
 
-- Check the console output when running the app for any error messages
-- Use Xcode's debugger to see if the Swift intents are being called
-- Verify that the Flutter intent handlers are being registered correctly
+- Check the console output when running the app for any error messages.
+- Use Xcode's debugger to see if the Swift intents are being called.
+- Verify that the Flutter intent handlers are being registered correctly.
 
 ## What's Next?
 
 Now that you have a basic working example, you can:
 
-1. **Add more intents** (reset counter, get counter value, etc.)
-2. **Add parameters** to intents for more complex interactions
-3. **Implement different return types** (with dialogs, opening specific screens, etc.)
-4. **Add intent donations** to improve Siri's learning and suggestions
+1. **Add more intents** (reset counter, get counter value, etc.).
+2. **Add parameters** to intents for more complex interactions.
+3. **Implement different return types** (with dialogs, opening specific screens, etc.).
+4. **Add intent donations** to improve Siri's learning and suggestions.
 
 ## Key Concepts Learned
 
-- **App Intents Framework**: iOS 16+ feature for Siri integration
-- **Flutter-iOS Bridge**: How Flutter communicates with native iOS code
-- **Intent Registration**: Both Flutter (functional) and iOS (declarative) sides
-- **App Shortcuts Provider**: Makes intents discoverable by iOS
-- **Voice Phrases**: Natural language commands for Siri
+- **App Intents Framework**: iOS 16+ feature for Siri integration.
+- **Flutter-iOS Bridge**: How Flutter communicates with native iOS code.
+- **Intent Registration**: Both Flutter (functional) and iOS (declarative) sides.
+- **App Shortcuts Provider**: Makes intents discoverable by iOS.
+- **Voice Phrases**: Natural language commands for Siri.
 
 Congratulations! You now have a working Flutter app with Siri integration using App Intents.
