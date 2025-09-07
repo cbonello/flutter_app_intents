@@ -840,7 +840,7 @@ For deeper understanding of the underlying iOS concepts, refer to these official
 - **[WWDC 2023: Explore enhancements to App Intents](https://developer.apple.com/videos/play/wwdc2023/10103/)** - Latest features and improvements
 
 ### Design Guidelines
-- **[Human Interface Guidelines: Siri](https://developer.apple.com/design/human-interface-guidelines/siri-interactions)** - Designing for Siri interactions
+- **[Human Interface Guidelines: Siri](https://developer.apple.com/design/human-interface-guidelines/technologies/siri/)** - Designing for Siri interactions
 - **[App Shortcuts Guidelines](https://developer.apple.com/design/human-interface-guidelines/app-shortcuts)** - User experience patterns for shortcuts
 - **[Accessibility in Siri](https://developer.apple.com/design/human-interface-guidelines/accessibility)** - Inclusive voice interface design
 
