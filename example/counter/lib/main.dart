@@ -126,6 +126,7 @@ class _MyHomePageState extends State<MyHomePage> {
       setState(() {
         _status = 'App Intents are only supported on iOS';
       });
+
       return;
     }
 
@@ -138,7 +139,7 @@ class _MyHomePageState extends State<MyHomePage> {
           .description('Increments the counter by one')
           .phrases([
             'Increment Counter',
-            'Increase Counter', 
+            'Increase Counter',
             'Add to Counter',
             'Bump Counter',
           ])
@@ -401,6 +402,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   itemCount: _registeredIntents.length,
                   itemBuilder: (context, index) {
                     final intent = _registeredIntents[index];
+
                     return Card(
                       child: ListTile(
                         title: Text(intent.title),
