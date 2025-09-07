@@ -24,18 +24,21 @@ class MyApp extends StatelessWidget {
           final args =
               ModalRoute.of(context)?.settings.arguments
                   as Map<String, dynamic>?;
+
           return ProfilePage(userId: args?['userId'] ?? 'current');
         },
         '/chat': (context) {
           final args =
               ModalRoute.of(context)?.settings.arguments
                   as Map<String, dynamic>?;
+
           return ChatPage(contactName: args?['contactName'] ?? 'Unknown');
         },
         '/search': (context) {
           final args =
               ModalRoute.of(context)?.settings.arguments
                   as Map<String, dynamic>?;
+
           return SearchPage(query: args?['query'] ?? '');
         },
         '/settings': (context) => const SettingsPage(),
@@ -67,6 +70,7 @@ class _NavigationHomePageState extends State<NavigationHomePage> {
       setState(() {
         _status = 'App Intents are only supported on iOS';
       });
+
       return;
     }
 
@@ -334,6 +338,7 @@ class _NavigationHomePageState extends State<NavigationHomePage> {
                   itemCount: _registeredIntents.length,
                   itemBuilder: (context, index) {
                     final intent = _registeredIntents[index];
+
                     return Card(
                       child: ListTile(
                         leading: const Icon(Icons.navigation),
