@@ -31,13 +31,13 @@ class AppIntentParameter extends Equatable {
 
   @override
   List<Object?> get props => [
-        name,
-        title,
-        type,
-        description,
-        isOptional,
-        defaultValue,
-      ];
+    name,
+    title,
+    type,
+    description,
+    isOptional,
+    defaultValue,
+  ];
 
   /// Convert to a map for platform channel communication
   Map<String, dynamic> toMap() {
@@ -52,6 +52,7 @@ class AppIntentParameter extends Equatable {
   }
 
   /// Create AppIntentParameter from map
+  // ignore: prefer_constructors_over_static_methods
   static AppIntentParameter fromMap(Map<String, dynamic> map) {
     return AppIntentParameter(
       name: map['name'] as String,
