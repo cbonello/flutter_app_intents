@@ -207,7 +207,7 @@ class FlutterAppIntentsClient {
   /// your registered intents. This includes:
   /// - New intents that were registered
   /// - Modified intent configurations
-  /// - Updated phrases or parameters
+  /// - Updated parameters or configurations
   /// - Changes to eligibility settings
   ///
   /// Typically called automatically after intent registration, but can be
@@ -234,7 +234,7 @@ class FlutterAppIntentsClient {
   /// Call this method after successfully executing an intent to teach Siri
   /// when and how users typically invoke your intents. This improves:
   /// - Proactive Siri suggestions at relevant times/locations
-  /// - Better voice recognition for your custom phrases
+  /// - Better voice recognition and user experience
   /// - More accurate predictions in Shortcuts app
   /// - Enhanced user experience through learning
   ///
@@ -291,7 +291,6 @@ class AppIntentBuilder {
   String? _title;
   String? _description;
   final List<AppIntentParameter> _parameters = [];
-  final List<String> _phrases = [];
   bool _isEligibleForSearch = true;
   bool _isEligibleForPrediction = true;
   AuthenticationPolicy _authenticationPolicy = AuthenticationPolicy.none;
@@ -320,7 +319,7 @@ class AppIntentBuilder {
   /// - Shortcuts app as the action name
   /// - Siri suggestions and search results
   /// - System settings and intent lists
-  /// - Default voice command if no custom phrases provided
+  /// - Voice commands based on the intent title
   ///
   /// Should be concise, descriptive, and user-friendly (e.g., 'Increment
   /// Counter', 'Send Message', 'Start Workout').
@@ -371,29 +370,6 @@ class AppIntentBuilder {
     return this;
   }
 
-  /// Set custom phrases for Siri voice commands
-  ///
-  /// Define alternative ways users can invoke this intent via voice.
-  /// Provides more natural and flexible voice interactions than using
-  /// just the title as the voice command.
-  ///
-  /// Examples for an increment intent:
-  /// - ['Increment Counter', 'Add to Counter', 'Bump Counter']
-  /// - ['Increase Counter', 'Counter Up', 'Plus One']
-  ///
-  /// Benefits:
-  /// - Multiple natural ways to say the same thing
-  /// - Localization support (provide phrases in user's language)
-  /// - Context-specific terminology that matches your app
-  ///
-  /// Optional - if not provided, the title will be used as the voice command.
-  AppIntentBuilder phrases(List<String> phrases) {
-    _phrases
-      ..clear()
-      ..addAll(phrases);
-
-    return this;
-  }
 
   /// Set whether the intent can appear in Spotlight search results
   ///
@@ -480,7 +456,6 @@ class AppIntentBuilder {
       title: _title!,
       description: _description!,
       parameters: _parameters,
-      phrases: _phrases,
       isEligibleForSearch: _isEligibleForSearch,
       isEligibleForPrediction: _isEligibleForPrediction,
       authenticationPolicy: _authenticationPolicy,

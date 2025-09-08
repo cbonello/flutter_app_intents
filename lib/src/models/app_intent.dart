@@ -10,7 +10,6 @@ class AppIntent extends Equatable {
     required this.title,
     required this.description,
     this.parameters = const [],
-    this.phrases = const [],
     this.isEligibleForSearch = true,
     this.isEligibleForPrediction = true,
     this.authenticationPolicy = AuthenticationPolicy.none,
@@ -33,10 +32,6 @@ class AppIntent extends Equatable {
                 })
                 .toList() ??
             [],
-        phrases = (map['phrases'] as List<dynamic>?)
-                ?.map((p) => p as String)
-                .toList() ??
-            [],
         isEligibleForSearch = map['isEligibleForSearch'] as bool? ?? true,
         isEligibleForPrediction = 
             map['isEligibleForPrediction'] as bool? ?? true,
@@ -57,8 +52,6 @@ class AppIntent extends Equatable {
   /// Parameters that can be passed to the intent
   final List<AppIntentParameter> parameters;
 
-  /// Custom phrases for Siri voice commands (optional)
-  final List<String> phrases;
 
   /// Whether the intent can appear in Spotlight search results
   final bool isEligibleForSearch;
@@ -75,7 +68,6 @@ class AppIntent extends Equatable {
         title,
         description,
         parameters,
-        phrases,
         isEligibleForSearch,
         isEligibleForPrediction,
         authenticationPolicy,
@@ -87,7 +79,6 @@ class AppIntent extends Equatable {
     String? title,
     String? description,
     List<AppIntentParameter>? parameters,
-    List<String>? phrases,
     bool? isEligibleForSearch,
     bool? isEligibleForPrediction,
     AuthenticationPolicy? authenticationPolicy,
@@ -97,7 +88,6 @@ class AppIntent extends Equatable {
       title: title ?? this.title,
       description: description ?? this.description,
       parameters: parameters ?? this.parameters,
-      phrases: phrases ?? this.phrases,
       isEligibleForSearch: isEligibleForSearch ?? this.isEligibleForSearch,
       isEligibleForPrediction: 
           isEligibleForPrediction ?? this.isEligibleForPrediction,
@@ -112,7 +102,6 @@ class AppIntent extends Equatable {
       'title': title,
       'description': description,
       'parameters': parameters.map((p) => p.toMap()).toList(),
-      'phrases': phrases,
       'isEligibleForSearch': isEligibleForSearch,
       'isEligibleForPrediction': isEligibleForPrediction,
       'authenticationPolicy': authenticationPolicy.name,

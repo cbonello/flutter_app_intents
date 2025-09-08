@@ -80,13 +80,6 @@ class _NavigationHomePageState extends State<NavigationHomePage> {
           .identifier('open_profile')
           .title('Open Profile')
           .description('Navigate to user profile page')
-          .phrases([
-            'Open Profile',
-            'Show Profile',
-            'Go to Profile',
-            'View Profile',
-            'Display Profile',
-          ])
           .parameter(
             const AppIntentParameter(
               name: 'userId',
@@ -102,13 +95,6 @@ class _NavigationHomePageState extends State<NavigationHomePage> {
           .identifier('open_chat')
           .title('Open Chat')
           .description('Open chat with a contact')
-          .phrases([
-            'Open Chat',
-            'Start Chat',
-            'Begin Chat',
-            'Message Someone',
-            'Send Message',
-          ])
           .parameter(
             const AppIntentParameter(
               name: 'contactName',
@@ -122,13 +108,6 @@ class _NavigationHomePageState extends State<NavigationHomePage> {
           .identifier('search_content')
           .title('Search Content')
           .description('Search for content in the app')
-          .phrases([
-            'Search Content',
-            'Find Content',
-            'Look for Content',
-            'Search App',
-            'Find Something',
-          ])
           .parameter(
             const AppIntentParameter(
               name: 'query',
@@ -142,13 +121,6 @@ class _NavigationHomePageState extends State<NavigationHomePage> {
           .identifier('open_settings')
           .title('Open Settings')
           .description('Navigate to app settings')
-          .phrases([
-            'Open Settings',
-            'Show Settings',
-            'Go to Settings',
-            'App Settings',
-            'Preferences',
-          ])
           .build();
 
       // Register all navigation intents
