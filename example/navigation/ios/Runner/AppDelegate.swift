@@ -51,11 +51,14 @@ struct OpenProfileIntent: AppIntent {
     static var isDiscoverable = true
     static var openAppWhenRun = true  // Ensures app opens for navigation
     
+    @Parameter(title: "User ID", description: "The user ID to open profile for", default: "current")
+    var userId: String?
+    
     func perform() async throws -> some IntentResult & ReturnsValue<String> & OpensIntent {
         let plugin = FlutterAppIntentsPlugin.shared
         let result = await plugin.handleIntentInvocation(
             identifier: "open_profile",
-            parameters: ["userId": "current"]  // Default user ID
+            parameters: ["userId": userId ?? "current"]
         )
         
         if let success = result["success"] as? Bool, success {
@@ -79,11 +82,14 @@ struct OpenChatIntent: AppIntent {
     static var isDiscoverable = true
     static var openAppWhenRun = true  // Ensures app opens for navigation
     
+    @Parameter(title: "Contact Name", description: "The name of the contact to chat with", default: "Demo User")
+    var contactName: String?
+    
     func perform() async throws -> some IntentResult & ReturnsValue<String> & OpensIntent {
         let plugin = FlutterAppIntentsPlugin.shared
         let result = await plugin.handleIntentInvocation(
             identifier: "open_chat",
-            parameters: ["contactName": "Demo User"]  // Default contact for demo
+            parameters: ["contactName": contactName ?? "Demo User"]
         )
         
         if let success = result["success"] as? Bool, success {
@@ -107,11 +113,14 @@ struct SearchContentIntent: AppIntent {
     static var isDiscoverable = true
     static var openAppWhenRun = true  // Ensures app opens for navigation
     
+    @Parameter(title: "Search Query", description: "What to search for", default: "photos")
+    var query: String?
+    
     func perform() async throws -> some IntentResult & ReturnsValue<String> & OpensIntent {
         let plugin = FlutterAppIntentsPlugin.shared
         let result = await plugin.handleIntentInvocation(
             identifier: "search_content",
-            parameters: ["query": "photos"]  // Default search query for demo
+            parameters: ["query": query ?? "photos"]
         )
         
         if let success = result["success"] as? Bool, success {

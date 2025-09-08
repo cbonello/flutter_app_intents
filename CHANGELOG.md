@@ -7,17 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.3.0] - 2025-01-09
 
-### ⚠️ Breaking Changes
-- **REMOVED**: Misleading `phrases()` method from `AppIntentBuilder`
-  - The Dart `phrases()` method was non-functional - iOS requires static Swift declarations for App Intents discovery
-  - Phrases must now be defined in Swift `AppShortcut` implementations (as they always were)
-  - **Migration**: Remove `.phrases([...])` calls from your Dart `AppIntentBuilder` code
-  - See documentation for proper Swift `AppShortcut` phrase implementation
-
 ### Fixed
 - Addressed linter warnings to improve code quality and maintainability
-- Removed misleading documentation that suggested Dart code could control Siri phrases
-- Updated all examples to remove non-functional `.phrases()` calls
+- Removed misleading `phrases()` method from `AppIntentBuilder` that was non-functional
+- Updated all examples to use proper Swift `AppShortcut` phrase implementation
+- Clarified documentation about how phrases actually work in iOS App Intents
 
 ## [0.2.0] - 2025-09-05
 
