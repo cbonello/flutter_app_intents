@@ -139,7 +139,7 @@ class FlutterAppIntentsService {
         try {
           final result = await handler(identifier, parameters);
           return result.toMap();
-        } catch (e) {
+        } on Object catch (e) {
           return AppIntentResult.failed(
             error: 'Intent handler failed: $e',
           ).toMap();
