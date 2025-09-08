@@ -1,3 +1,7 @@
+// Static methods are used for better readability and to provide a more
+// expressive API for creating results.
+// ignore_for_file: prefer_constructors_over_static_methods
+
 import 'package:equatable/equatable.dart';
 
 /// Represents the result of executing an App Intent
