@@ -5,10 +5,19 @@ All notable changes to the Flutter App Intents package will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.3.0] - 2025-01-09
+
+### ⚠️ Breaking Changes
+- **REMOVED**: Misleading `phrases()` method from `AppIntentBuilder`
+  - The Dart `phrases()` method was non-functional - iOS requires static Swift declarations for App Intents discovery
+  - Phrases must now be defined in Swift `AppShortcut` implementations (as they always were)
+  - **Migration**: Remove `.phrases([...])` calls from your Dart `AppIntentBuilder` code
+  - See documentation for proper Swift `AppShortcut` phrase implementation
 
 ### Fixed
-- Addressed linter warnings to improve code quality and maintainability.
+- Addressed linter warnings to improve code quality and maintainability
+- Removed misleading documentation that suggested Dart code could control Siri phrases
+- Updated all examples to remove non-functional `.phrases()` calls
 
 ## [0.2.0] - 2025-09-05
 
