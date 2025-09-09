@@ -1,7 +1,9 @@
 name: flutter_app_intents
 description: "A Flutter plugin for integrating Apple App Intents with your iOS applications."
+repository: https://github.com/cbonello/flutter_app_intents
+issue_tracker: https://github.com/cbonello/flutter_app_intents/issues
+homepage: https://github.com/cbonello/flutter_app_intents/blob/main/README.md
 version: 0.3.0
-publish_to: none
 license: MIT
 
 environment:
