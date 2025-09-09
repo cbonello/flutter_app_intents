@@ -23,6 +23,13 @@ This example uses the **hybrid approach** with:
 2. **Flutter handlers** (`lib/main.dart`) 
 3. **Bridge communication** via the plugin
 
+## Screenshots
+
+| App Interface | iOS Shortcuts |
+|---------------|---------------|
+| <img src="screenshots/app_interface.png" alt="Counter App Interface" width="250"> | <img src="screenshots/ios_shortcuts.png" alt="iOS Shortcuts" width="250"> |
+| Counter app | iOS Shortcuts app |
+
 ## Quick Start
 
 ### Prerequisites

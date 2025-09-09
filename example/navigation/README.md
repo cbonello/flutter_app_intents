@@ -26,6 +26,30 @@ This example uses the **hybrid approach** with:
 3. **Bridge communication** via the plugin
 4. **Flutter navigation** using named routes
 
+## Screenshots
+
+### App Interface
+*Screenshot showing the home page with navigation buttons for Profile, Chat, Search, and Settings*
+
+### Navigation Pages
+*Screenshots showing the different pages: Profile page, Chat page, Search page, and Settings page*
+
+### Siri Navigation
+*Screenshot of Siri responding to "Open my profile in navigation example"*
+
+### iOS Shortcuts for Navigation  
+*Screenshot of the Shortcuts app showing available navigation shortcuts*
+
+### Deep Linking in Action
+*Screenshot showing a page opened via voice command with parameters (e.g., "Chat with Alice")*
+
+## Screenshots
+
+| App Interface | iOS Shortcuts |
+|---------------|---------------|
+| <img src="screenshots/app_interface.png" alt="Counter App Interface" width="250"> | <img src="screenshots/ios_shortcuts.png" alt="iOS Shortcuts" width="250"> |
+| Navigation app | iOS Shortcuts app |
+
 ## Quick Start
 
 ### Prerequisites

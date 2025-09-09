@@ -1,18 +1,20 @@
 import type {ReactNode} from 'react';
 import clsx from 'clsx';
+import useBaseUrl from '@docusaurus/useBaseUrl';
 import Heading from '@theme/Heading';
 import styles from './styles.module.css';
 
 type FeatureItem = {
   title: string;
-  Svg: React.ComponentType<React.ComponentProps<'svg'>>;
+  Svg?: React.ComponentType<React.ComponentProps<'svg'>>;
+  image?: string;
   description: ReactNode;
 };
 
 const FeatureList: FeatureItem[] = [
   {
     title: 'Siri Integration',
-    Svg: require('@site/static/img/undraw_docusaurus_mountain.svg').default,
+    image: '/img/siri.png',
     description: (
       <>
         Create custom voice commands for your Flutter app that work seamlessly with Siri.
@@ -22,7 +24,7 @@ const FeatureList: FeatureItem[] = [
   },
   {
     title: 'Shortcuts Support',
-    Svg: require('@site/static/img/undraw_docusaurus_tree.svg').default,
+    image: '/img/shortcut.png',
     description: (
       <>
         Allow users to create custom shortcuts for your app&apos;s functionality.
@@ -32,7 +34,7 @@ const FeatureList: FeatureItem[] = [
   },
   {
     title: 'Type-Safe API',
-    Svg: require('@site/static/img/undraw_docusaurus_react.svg').default,
+    image: '/img/api.png',
     description: (
       <>
         Built with Flutter and Dart in mind, providing a strongly typed API
@@ -42,11 +44,16 @@ const FeatureList: FeatureItem[] = [
   },
 ];
 
-function Feature({title, Svg, description}: FeatureItem) {
+function Feature({title, Svg, image, description}: FeatureItem) {
+  const imageUrl = useBaseUrl(image || '');
   return (
     <div className={clsx('col col--4')}>
       <div className="text--center">
-        <Svg className={styles.featureSvg} role="img" />
+        {Svg ? (
+          <Svg className={styles.featureSvg} role="img" />
+        ) : (
+          <img src={imageUrl} className={styles.featureSvg} alt={title} />
+        )}
       </div>
       <div className="text--center padding-horiz--md">
         <Heading as="h3">{title}</Heading>

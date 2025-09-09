@@ -62,7 +62,7 @@ const config: Config = {
       title: 'Flutter App Intents',
       logo: {
         alt: 'Flutter App Intents Logo',
-        src: 'img/logo.svg',
+        src: 'img/logo.png',
       },
       items: [
         {

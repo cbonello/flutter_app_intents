@@ -4,6 +4,10 @@ sidebar_position: 1
 
 # Flutter App Intents
 
+<p align="center">
+  <img src="/img/logo.png" alt="Flutter App Intents Logo" width="200" height="200" />
+</p>
+
 A Flutter plugin for integrating Apple App Intents with your iOS applications. This package provides a streamlined way to define, register, and handle custom intents, enabling powerful integrations with Siri and the Shortcuts app.
 
 ## Features
