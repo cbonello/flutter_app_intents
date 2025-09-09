@@ -5,7 +5,49 @@ All notable changes to the Flutter App Intents package will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.3.0] - 2025-01-09
+## [0.4.0] - 2025-09-09
+
+### Added
+- **Brand Identity**: Complete visual branding overhaul with custom logo design
+  - Flutter App Intents logo combining Flutter bird with iOS voice/microphone elements
+  - Cohesive blue color scheme (#007AFF iOS blue, #02569B Flutter blue)
+  - Custom feature icons: microphone (Siri), lightning bolt (Shortcuts), shield (Type-Safe API)
+- **Website Enhancement**: Comprehensive Docusaurus website improvements
+  - Custom logo integration in navbar and hero section
+  - Blue color theme replacing default green
+  - Professional homepage with branded feature icons
+  - Enhanced visual hierarchy and drop shadows
+- **Documentation Screenshots**: Visual documentation with example screenshots
+  - Counter example: App interface, iOS Shortcuts, Siri integration screenshots
+  - Side-by-side table layout for better visual organization
+  - Proper image sizing and responsive design
+
+### Enhanced
+- **Website Design**: Complete visual redesign
+  - Replaced default Docusaurus illustrations with custom branded icons
+  - Improved CTA button styling with white background and blue text
+  - Logo drop shadows for depth and professional appearance
+  - Optimized image sizes for better performance
+- **Documentation Quality**: Improved example documentation
+  - Added comprehensive Screenshots sections to example READMEs
+  - Visual walkthrough of App Intents functionality
+  - Table-based layout for better space utilization
+- **Asset Management**: Clean and organized static assets
+  - Removed unused default Docusaurus images
+  - Optimized website static directory structure
+  - Consistent naming conventions for branding assets
+
+### Improved
+- **User Experience**: Enhanced developer onboarding
+  - Visual examples showing actual app interfaces
+  - Clear demonstration of Siri integration workflow
+  - Professional presentation increasing confidence in the package
+- **Brand Consistency**: Unified visual identity across all documentation
+  - Consistent blue color palette throughout
+  - Matching feature icons and main logo design
+  - Professional appearance suitable for production use
+
+## [0.3.0] - 2025-09-07
 
 ### Fixed
 - Addressed linter warnings to improve code quality and maintainability
