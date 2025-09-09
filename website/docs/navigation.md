@@ -173,18 +173,22 @@ struct AppShortcuts: AppShortcutsProvider {
             AppShortcut(
                 intent: OpenProfileIntent(),
                 phrases: [
-                    "Open my profile in ${applicationName}",
-                    "Show profile using ${applicationName}",
-                    "Go to profile with ${applicationName}"
-                ]
+                    LocalizedStringResource("open_profile_phrase_1", defaultValue: "Open my profile in \(.applicationName)"),
+                    LocalizedStringResource("open_profile_phrase_2", defaultValue: "Show profile using \(.applicationName)"),
+                    LocalizedStringResource("open_profile_phrase_3", defaultValue: "Go to profile with \(.applicationName)")
+                ],
+                shortTitle: LocalizedStringResource("open_profile_title", defaultValue: "Open Profile"),
+                systemImageName: "person.circle"
             ),
             AppShortcut(
                 intent: OpenChatIntent(),
                 phrases: [
-                    "Chat with \\(.contactName) using ${applicationName}",
-                    "Open chat with \\(.contactName) in ${applicationName}",
-                    "Message \\(.contactName) with ${applicationName}"
-                ]
+                    LocalizedStringResource("open_chat_phrase_1", defaultValue: "Chat with \(.contactName) using \(.applicationName)"),
+                    LocalizedStringResource("open_chat_phrase_2", defaultValue: "Open chat with \(.contactName) in \(.applicationName)"),
+                    LocalizedStringResource("open_chat_phrase_3", defaultValue: "Message \(.contactName) with \(.applicationName)")
+                ],
+                shortTitle: LocalizedStringResource("open_chat_title", defaultValue: "Open Chat"), 
+                systemImageName: "message.circle"
             )
         ]
     }

@@ -584,15 +584,16 @@ struct AppShortcuts: AppShortcutsProvider {
             AppShortcut(
                 intent: MyCounterIntent(),
                 phrases: [
-                    "Increment counter with ${applicationName}",
-                    "Add one with ${applicationName}",
-                    "Count up using ${applicationName}"
+                    "Increment counter with \(.applicationName)",
+                    "Add one with \(.applicationName)",
+                    "Count up using \(.applicationName)"
                 ]
             )
         ]
     }
 }
 ```
+
 
 ### Info.plist Configuration
 

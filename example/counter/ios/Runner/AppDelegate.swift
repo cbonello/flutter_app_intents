@@ -159,7 +159,7 @@ struct CounterAppShortcuts: AppShortcutsProvider {
             intent: ResetIntent(),
             phrases: [
                 "Reset counter with \(.applicationName)",
-                "Clear counter using \(.applicationName)", 
+                "Clear counter using \(.applicationName)",
                 "Zero counter in \(.applicationName)"
             ],
             shortTitle: "Reset",
