@@ -598,6 +598,98 @@ struct AppShortcuts: AppShortcutsProvider {
 }
 ```
 
+### App Shortcuts Phrase Best Practices
+
+When defining phrases for your App Shortcuts, follow these best practices for optimal user experience and Siri recognition:
+
+#### 1. Include App Name for Disambiguation
+**✅ Recommended:**
+```swift
+phrases: [
+    "Increment counter with \(.applicationName)",
+    "Add one using \(.applicationName)",
+    "Count up in \(.applicationName)"
+]
+```
+
+**❌ Avoid:**
+```swift
+phrases: [
+    "Increment counter",  // Too generic, conflicts with other apps
+    "Add one"             // Ambiguous without context
+]
+```
+
+#### 2. Use Natural Prepositions
+Choose prepositions that sound natural in conversation:
+- **"with \(.applicationName)"** - Most common, works for actions
+- **"using \(.applicationName)"** - Good for tool-like actions  
+- **"in \(.applicationName)"** - Natural for location-based commands
+- **"from \(.applicationName)"** - Perfect for queries and data retrieval
+
+#### 3. Provide Multiple Variations
+Offer 3-5 phrase variations to accommodate different user preferences:
+```swift
+phrases: [
+    "Increment counter with \(.applicationName)",      // Formal
+    "Add one using \(.applicationName)",               // Casual
+    "Count up in \(.applicationName)",                 // Alternative verb
+    "Bump counter with \(.applicationName)",           // Colloquial
+    "Increase count using \(.applicationName)"         // Descriptive
+]
+```
+
+#### 4. Keep Phrases Concise but Descriptive
+- **Ideal length**: 3-6 words (excluding app name)
+- **Be specific**: "Increment counter" vs. "Do something"
+- **Avoid filler words**: Skip "please", "can you", "I want to"
+
+#### 5. Alternative Patterns
+
+**App Name at Beginning** (less common but valid):
+```swift
+phrases: [
+    "Use \(.applicationName) to increment counter",
+    "Tell \(.applicationName) to reset timer"
+]
+```
+
+**Action-First Pattern** (most natural):
+```swift
+phrases: [
+    "Start workout with \(.applicationName)",
+    "Send message using \(.applicationName)",
+    "Check weather in \(.applicationName)"
+]
+```
+
+#### 6. Testing Your Phrases
+- **Test with Siri**: Speak each phrase to ensure recognition
+- **Try variations**: Users might not say exactly what you expect
+- **Check conflicts**: Ensure phrases don't overlap with system commands
+- **User feedback**: Monitor which phrases users actually use
+
+#### 7. Common Phrase Patterns by Intent Type
+
+**Action Intents:**
+```swift
+"[Action] [Object] with \(.applicationName)"
+"[Verb] [Noun] using \(.applicationName)"
+```
+
+**Query Intents:**
+```swift
+"Get [Data] from \(.applicationName)"
+"Check [Status] in \(.applicationName)"
+"What's [Information] using \(.applicationName)"
+```
+
+**Navigation Intents:**
+```swift
+"Open [Page] in \(.applicationName)"
+"Go to [Section] using \(.applicationName)"
+"Show [Content] with \(.applicationName)"
+```
 
 ### Info.plist Configuration
 
