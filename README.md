@@ -633,6 +633,52 @@ phrases: [
 2. **Provide comprehensive variations** to cover common use cases
 3. **Create multiple intent types** for different scenarios instead of one dynamic intent
 
+#### 📊 Phrase Quantity Limits and Guidelines
+
+While Apple doesn't publish exact hard limits, there are practical constraints on the number of phrases:
+
+**Recommended Limits:**
+- **Per AppShortcut**: 3-5 phrases (optimal), up to 8 phrases (maximum recommended)
+- **Total per app**: 50-100 phrases across all shortcuts (practical limit)
+- **Quality over quantity**: Focus on natural, distinct variations rather than exhaustive lists
+
+```swift
+// ✅ GOOD - Focused, natural variations (4 phrases)
+AppShortcut(
+    intent: SendMessageIntent(),
+    phrases: [
+        "Send message to \(.contactName) with \(.applicationName)",
+        "Text \(.contactName) using \(.applicationName)",
+        "Message \(.contactName) in \(.applicationName)",
+        "Write to \(.contactName) with \(.applicationName)"
+    ]
+)
+
+// ❌ EXCESSIVE - Too many similar phrases (impacts performance)
+AppShortcut(
+    intent: SendMessageIntent(),
+    phrases: [
+        "Send message to \(.contactName) with \(.applicationName)",
+        "Send a message to \(.contactName) with \(.applicationName)",
+        "Send text message to \(.contactName) with \(.applicationName)",
+        "Send a text message to \(.contactName) with \(.applicationName)",
+        // ... 15+ more variations
+    ]
+)
+```
+
+**Performance Impact:**
+- **More phrases = longer Siri processing time**
+- **Diminishing returns**: Beyond 5-8 phrases, recognition accuracy may decrease
+- **Memory usage**: Each phrase consumes system resources
+- **User confusion**: Too many options can overwhelm users
+
+**Best Strategy:**
+1. **Start with 3-4 core phrases** that feel most natural
+2. **Test with real users** to see which phrases they actually use
+3. **Add variations based on user feedback** rather than guessing
+4. **Remove unused phrases** to optimize performance
+
 #### 1. Include App Name for Disambiguation
 **✅ Recommended:**
 ```swift
