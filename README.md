@@ -602,6 +602,37 @@ struct AppShortcuts: AppShortcutsProvider {
 
 When defining phrases for your App Shortcuts, follow these best practices for optimal user experience and Siri recognition:
 
+#### ⚠️ Important Limitation: Static Phrases Only
+
+**App Shortcuts phrases CANNOT be defined dynamically.** This is a fundamental limitation of Apple's App Intents framework:
+
+```swift
+// ❌ DOES NOT WORK - phrases must be static literals
+phrases: [
+    "\(userDefinedPhrase) with \(.applicationName)",     // Won't compile
+    dynamicPhraseVariable,                               // Won't compile
+    generatePhrase()                                     // Won't compile
+]
+
+// ✅ WORKS - static phrases with dynamic parameters
+phrases: [
+    "Send message to \(.contactName) with \(.applicationName)",    // ✅ Parameter is dynamic
+    "Set timer for \(.duration) using \(.applicationName)",       // ✅ Parameter is dynamic
+    "Play \(.songName) in \(.applicationName)"                    // ✅ Parameter is dynamic
+]
+```
+
+**Why phrases must be static:**
+- **Compile-time registration**: iOS requires phrases for Siri's speech recognition engine at build time
+- **App Store review**: Apple analyzes all possible voice commands during app review
+- **Performance**: Siri's recognition is optimized based on the known phrase list
+- **Security**: Prevents apps from creating potentially malicious or conflicting commands dynamically
+
+**Workarounds for dynamic content:**
+1. **Use parameters** for the dynamic parts (user names, amounts, etc.)
+2. **Provide comprehensive variations** to cover common use cases
+3. **Create multiple intent types** for different scenarios instead of one dynamic intent
+
 #### 1. Include App Name for Disambiguation
 **✅ Recommended:**
 ```swift
