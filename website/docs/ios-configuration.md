@@ -174,6 +174,145 @@ struct AppShortcuts: AppShortcutsProvider {
 }
 ```
 
+## App Shortcuts Phrase Best Practices
+
+When defining phrases for your App Shortcuts, follow these best practices for optimal user experience and Siri recognition:
+
+### ⚠️ Important Limitation: Static Phrases Only
+
+**App Shortcuts phrases CANNOT be defined dynamically.** This is a fundamental limitation of Apple's App Intents framework:
+
+```swift
+// ❌ DOES NOT WORK - phrases must be static literals
+phrases: [
+    "\(userDefinedPhrase) with \(.applicationName)",     // Won't compile
+    dynamicPhraseVariable,                               // Won't compile
+    generatePhrase()                                     // Won't compile
+]
+
+// ✅ WORKS - static phrases with dynamic parameters
+phrases: [
+    "Send message to \(.contactName) with \(.applicationName)",    // ✅ Parameter is dynamic
+    "Set timer for \(.duration) using \(.applicationName)",       // ✅ Parameter is dynamic
+    "Play \(.songName) in \(.applicationName)"                    // ✅ Parameter is dynamic
+]
+```
+
+**Why phrases must be static:**
+- **Compile-time registration**: iOS requires phrases for Siri's speech recognition engine at build time
+- **App Store review**: Apple analyzes all possible voice commands during app review
+- **Performance**: Siri's recognition is optimized based on the known phrase list
+- **Security**: Prevents apps from creating potentially malicious or conflicting commands dynamically
+
+### 📊 Phrase Quantity Limits and Guidelines
+
+While Apple doesn't publish exact hard limits, there are practical constraints on the number of phrases:
+
+**Recommended Limits:**
+- **Per AppShortcut**: 3-5 phrases (optimal), up to 8 phrases (maximum recommended)
+- **Total per app**: 50-100 phrases across all shortcuts (practical limit)
+- **Quality over quantity**: Focus on natural, distinct variations rather than exhaustive lists
+
+```swift
+// ✅ GOOD - Focused, natural variations (4 phrases)
+AppShortcut(
+    intent: SendMessageIntent(),
+    phrases: [
+        "Send message to \(.contactName) with \(.applicationName)",
+        "Text \(.contactName) using \(.applicationName)",
+        "Message \(.contactName) in \(.applicationName)",
+        "Write to \(.contactName) with \(.applicationName)"
+    ]
+)
+
+// ❌ EXCESSIVE - Too many similar phrases (impacts performance)
+AppShortcut(
+    intent: SendMessageIntent(),
+    phrases: [
+        "Send message to \(.contactName) with \(.applicationName)",
+        "Send a message to \(.contactName) with \(.applicationName)",
+        "Send text message to \(.contactName) with \(.applicationName)",
+        "Send a text message to \(.contactName) with \(.applicationName)",
+        // ... 15+ more variations
+    ]
+)
+```
+
+### Include App Name for Disambiguation
+
+**✅ Recommended:**
+```swift
+phrases: [
+    "Increment counter with \(.applicationName)",
+    "Add one using \(.applicationName)",
+    "Count up in \(.applicationName)"
+]
+```
+
+**❌ Avoid:**
+```swift
+phrases: [
+    "Increment counter",  // Too generic, conflicts with other apps
+    "Add one"             // Ambiguous without context
+]
+```
+
+### Use Natural Prepositions
+
+Choose prepositions that sound natural in conversation:
+- **"with \(.applicationName)"** - Most common, works for actions
+- **"using \(.applicationName)"** - Good for tool-like actions  
+- **"in \(.applicationName)"** - Natural for location-based commands
+- **"from \(.applicationName)"** - Perfect for queries and data retrieval
+
+### Provide Multiple Variations
+
+Offer 3-5 phrase variations to accommodate different user preferences:
+```swift
+phrases: [
+    "Increment counter with \(.applicationName)",      // Formal
+    "Add one using \(.applicationName)",               // Casual
+    "Count up in \(.applicationName)",                 // Alternative verb
+    "Bump counter with \(.applicationName)",           // Colloquial
+    "Increase count using \(.applicationName)"         // Descriptive
+]
+```
+
+### Keep Phrases Concise but Descriptive
+
+- **Ideal length**: 3-6 words (excluding app name)
+- **Be specific**: "Increment counter" vs. "Do something"
+- **Avoid filler words**: Skip "please", "can you", "I want to"
+
+### Common Phrase Patterns by Intent Type
+
+**Action Intents:**
+```swift
+"[Action] [Object] with \(.applicationName)"
+"[Verb] [Noun] using \(.applicationName)"
+```
+
+**Query Intents:**
+```swift
+"Get [Data] from \(.applicationName)"
+"Check [Status] in \(.applicationName)"
+"What's [Information] using \(.applicationName)"
+```
+
+**Navigation Intents:**
+```swift
+"Open [Page] in \(.applicationName)"
+"Go to [Section] using \(.applicationName)"
+"Show [Content] with \(.applicationName)"
+```
+
+### Testing Your Phrases
+
+- **Test with Siri**: Speak each phrase to ensure recognition
+- **Try variations**: Users might not say exactly what you expect
+- **Check conflicts**: Ensure phrases don't overlap with system commands
+- **User feedback**: Monitor which phrases users actually use
+
 ## Important Notes
 
 - **Static intents must match Flutter handlers** - ensure identifier consistency
