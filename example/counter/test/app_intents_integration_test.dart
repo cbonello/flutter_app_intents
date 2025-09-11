@@ -48,9 +48,9 @@ void main() {
 
       // Verify that the example demonstrates flutter_app_intents features
       expect(find.textContaining('Siri'), findsWidgets);
-      expect(find.textContaining('increment'), findsOneWidget);
-      expect(find.textContaining('reset'), findsOneWidget);
-      expect(find.textContaining('get'), findsOneWidget);
+      expect(find.textContaining('Increment'), findsOneWidget);
+      expect(find.textContaining('Reset'), findsOneWidget);
+      expect(find.textContaining('Check'), findsOneWidget);
     });
 
     testWidgets(
@@ -225,9 +225,9 @@ void main() {
         expect(find.text('Try these Siri commands:'), findsOneWidget);
 
         // 3. Multiple intent types (with and without parameters)
-        expect(find.textContaining('increment'), findsOneWidget);
-        expect(find.textContaining('reset'), findsOneWidget);
-        expect(find.textContaining('get'), findsOneWidget);
+        expect(find.textContaining('Increment'), findsOneWidget);
+        expect(find.textContaining('Reset'), findsOneWidget);
+        expect(find.textContaining('Check'), findsOneWidget);
 
         // 4. Manual fallbacks alongside voice commands
         expect(find.byType(FloatingActionButton), findsOneWidget);
