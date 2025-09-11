@@ -59,15 +59,17 @@ flutter run
 
 1. **Manual Testing**: Use the buttons in the app interface to test queries
 
-2. **Siri Commands**:
+2. **iOS Shortcuts**: Check the Shortcuts app for available weather actions
+
+3. **Enable Siri**: ⚠️ **IMPORTANT** - In Shortcuts app, tap "Weather Example Shortcuts" and toggle ON the Siri switch (it's OFF by default)
+
+4. **Siri Commands**:
    - "Get weather from Weather Example"
    - "Check temperature in San Francisco using Weather Example"
    - "What's the forecast for tomorrow in Weather Example"
    - "Is it raining in New York with Weather Example"
 
-3. **iOS Shortcuts**: Check the Shortcuts app for available weather actions
-
-4. **Settings**: Go to Settings > Siri & Search > App Shortcuts
+5. **Settings**: Go to Settings > Siri & Search > App Shortcuts
 
 ## Implementation Details
 

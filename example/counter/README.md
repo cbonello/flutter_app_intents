@@ -49,14 +49,16 @@ flutter run
 
 1. **Manual Testing**: Use the floating action button to increment the counter
 
-2. **Siri Commands**:
+2. **iOS Shortcuts**: Check the Shortcuts app for available actions
+
+3. **Enable Siri**: ⚠️ **IMPORTANT** - In Shortcuts app, tap "Counter Example Shortcuts" and toggle ON the Siri switch (it's OFF by default)
+
+4. **Siri Commands**:
    - "Increment counter with Counter Example"
    - "Reset counter with Counter Example"
    - "Get counter from Counter Example"
 
-3. **iOS Shortcuts**: Check the Shortcuts app for available actions
-
-4. **Settings**: Go to Settings > Siri & Search > App Shortcuts
+5. **Settings**: Go to Settings > Siri & Search > App Shortcuts
 
 ## Implementation Details
 

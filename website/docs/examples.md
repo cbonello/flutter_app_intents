@@ -108,9 +108,10 @@ flutter run
 ### Testing App Intents
 
 1. **Shortcuts App**: Check for your app's shortcuts under "App Shortcuts"
-2. **Siri Commands**: Use voice commands with your app name
-3. **Settings**: Go to Settings > Siri & Search > App Shortcuts
-4. **Manual Testing**: Use in-app buttons to test functionality
+2. **Enable Siri**: ⚠️ **IMPORTANT** - In Shortcuts app, tap your app's shortcuts and toggle ON the Siri switch (it's OFF by default)
+3. **Siri Commands**: Use voice commands with your app name
+4. **Settings**: Go to Settings > Siri & Search > App Shortcuts
+5. **Manual Testing**: Use in-app buttons to test functionality
 
 ## Common Troubleshooting
 
@@ -121,9 +122,10 @@ flutter run
 4. Try restarting the Shortcuts app
 
 **Siri not recognizing commands?**
-1. Use exact app name in voice commands
-2. Try manual shortcuts first to help Siri learn
-3. Add custom phrases in Settings > Siri & Search
+1. **Enable Siri toggle first**: In Shortcuts app → [Your App] Shortcuts → Toggle ON the Siri switch
+2. Use exact app name in voice commands
+3. Try manual shortcuts first to help Siri learn
+4. Add custom phrases in Settings > Siri & Search
 
 For detailed troubleshooting, see the [Troubleshooting](troubleshooting) section.
 

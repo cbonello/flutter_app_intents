@@ -69,15 +69,17 @@ flutter run
 
 1. **Manual Testing**: Use the buttons on the home page
 
-2. **Siri Commands**:
+2. **iOS Shortcuts**: Check the Shortcuts app for available navigation actions
+
+3. **Enable Siri**: ⚠️ **IMPORTANT** - In Shortcuts app, tap "Navigation Example Shortcuts" and toggle ON the Siri switch (it's OFF by default)
+
+4. **Siri Commands**:
    - "Open my profile in navigation example"
    - "Chat with Alice using navigation example"
    - "Search for photos in navigation example"
    - "Open settings with navigation example"
 
-3. **iOS Shortcuts**: Check the Shortcuts app for available navigation actions
-
-4. **Settings**: Go to Settings > Siri & Search > App Shortcuts
+5. **Settings**: Go to Settings > Siri & Search > App Shortcuts
 
 ## Implementation Details
 

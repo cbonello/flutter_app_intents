@@ -921,16 +921,17 @@ This plugin only works on iOS 16.0+. Make sure you're testing on a compatible de
 
 ### Intents not appearing in Siri/Shortcuts
 
-**Most Common Issue**: Missing static App Intents in main app target
+**Most Common Issues**: Missing static App Intents or disabled Siri integration
 
 1. **Verify static intents are declared** in your `AppDelegate.swift` (see iOS Configuration above)
 2. **Ensure AppShortcutsProvider exists** in your main app target
-3. **Check intent identifiers match** between static Swift intents and Flutter handlers
-4. **Restart the app completely** after adding static intents
-5. Ensure intents are registered successfully on Flutter side
-6. Check that `isEligibleForPrediction` is `true`
-7. Try donating the intent after manual execution
-8. Restart the Shortcuts app
+3. **Enable Siri for App Shortcuts**: In iOS Shortcuts app → [Your App] Shortcuts → Toggle ON the Siri switch (it's OFF by default)
+4. **Check intent identifiers match** between static Swift intents and Flutter handlers
+5. **Restart the app completely** after adding static intents
+6. Ensure intents are registered successfully on Flutter side
+7. Check that `isEligibleForPrediction` is `true`
+8. Try donating the intent after manual execution
+9. Restart the Shortcuts app
 
 **Architecture Note**: iOS App Intents framework requires static intent declarations at compile time for Siri/Shortcuts discovery. Dynamic registration from Flutter plugins alone is not sufficient.
 
