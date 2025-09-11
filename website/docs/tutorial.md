@@ -81,3 +81,10 @@ FlutterAppIntents.setIntentHandler((identifier, parameters) async {
 ```
 
 That's it! You can now run your app and test your new Siri integration.
+
+## Testing Your App Intent
+
+1. **Check Shortcuts App**: Look for your app's shortcuts under "App Shortcuts"
+2. **Enable Siri**: ⚠️ **IMPORTANT** - In Shortcuts app, tap your app's shortcuts and toggle ON the Siri switch (it's OFF by default)
+3. **Test with Siri**: Try saying "Say Hello John" to test your intent
+4. **Troubleshooting**: If it doesn't work, see the [Troubleshooting](troubleshooting) guide
