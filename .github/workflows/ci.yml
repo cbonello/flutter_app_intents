@@ -1,0 +1,109 @@
+name: CI - Test Examples
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  test-examples:
+    name: Test Examples
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        example: [counter, navigation, weather]
+        
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.8.1'
+          channel: 'stable'
+          cache: true
+          
+      - name: Print Flutter version
+        run: flutter --version
+        
+      - name: Get main package dependencies
+        run: flutter pub get
+        
+      - name: Analyze main package
+        run: flutter analyze
+        
+      - name: Get ${{ matrix.example }} example dependencies
+        working-directory: ./example/${{ matrix.example }}
+        run: flutter pub get
+        
+      - name: Analyze ${{ matrix.example }} example
+        working-directory: ./example/${{ matrix.example }}
+        run: flutter analyze
+        
+      - name: Run ${{ matrix.example }} example tests
+        working-directory: ./example/${{ matrix.example }}
+        run: flutter test
+        
+      - name: Build ${{ matrix.example }} example (iOS - check compilation)
+        working-directory: ./example/${{ matrix.example }}
+        run: flutter build ios --simulator --no-codesign
+
+  package-test:
+    name: Test Main Package
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.8.1'
+          channel: 'stable'
+          cache: true
+          
+      - name: Get dependencies
+        run: flutter pub get
+        
+      - name: Analyze package
+        run: flutter analyze
+        
+      - name: Run package tests
+        run: flutter test
+        
+      - name: Check package formatting
+        run: dart format --set-exit-if-changed .
+        
+      - name: Dry run pub publish
+        run: dart pub publish --dry-run
+
+  website-build:
+    name: Build Website
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: 'website/package-lock.json'
+          
+      - name: Install website dependencies
+        working-directory: ./website
+        run: npm ci
+        
+      - name: Build website
+        working-directory: ./website
+        run: npm run build
+        
+      - name: Test website build
+        run: test -d website/build && echo "Website build successful"
