@@ -20,6 +20,7 @@ const sidebars: SidebarsConfig = {
   tutorialSidebar: [
     'intro',
     'getting-started',
+    'examples',
     'ios-configuration',
     'navigation',
     'intent-donation',

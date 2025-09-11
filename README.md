@@ -883,18 +883,27 @@ Control when intents can be executed:
 Our [Step-by-Step Tutorial](documentation/TUTORIAL.md) walks you through building a complete counter app with Siri integration from scratch.
 
 ### 🔍 Example Apps
-Check out the [example apps](example/) for complete implementations showing:
+Check out the [example apps](example/) for complete implementations showing different App Intent patterns:
 
-### Action Intents
+#### 1. [Counter Example](example/counter/) - Action Intents
 - Counter increment/reset/query intents
 - Parameter handling with type safety
 - Error management and validation
+- Action-based voice commands
 
-### Navigation Intents  
+#### 2. [Navigation Example](example/navigation/) - Navigation Intents  
 - Deep linking with parameters
 - Search navigation patterns
 - Settings page navigation
 - App focusing and lifecycle management
+- Multi-page Flutter navigation
+
+#### 3. [Weather Example](example/weather/) - Query Intents
+- Background data queries with voice responses
+- Weather information retrieval
+- Temperature and forecast queries
+- Boolean rain checks without opening app
+- `ProvidesDialog` for Siri speech output
 
 ### Advanced Features
 - Basic and enhanced intent donation

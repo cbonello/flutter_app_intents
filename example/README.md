@@ -1,6 +1,6 @@
 # Flutter App Intents Examples
 
-This folder contains two complete example applications demonstrating different use cases for the `flutter_app_intents` package with Apple App Intents, enabling features like Siri voice commands, Shortcuts, and Spotlight search.
+This folder contains three complete example applications demonstrating different use cases for the `flutter_app_intents` package with Apple App Intents, enabling features like Siri voice commands, Shortcuts, and Spotlight search.
 
 ## Examples Overview
 
@@ -36,18 +36,36 @@ This folder contains two complete example applications demonstrating different u
 - Multi-page Flutter navigation
 - Route configuration and argument passing
 
+### 3. [Weather Example](./weather/)
+**Query-based App Intents** - Demonstrates background data queries with voice responses.
+
+**Features:**
+- Get current weather information
+- Check specific temperature data
+- Retrieve multi-day forecasts
+- Boolean rain checks
+- Background operation without opening app
+
+**Best for learning:**
+- Query intents with `ProvidesDialog`
+- Background data processing
+- Voice response formatting
+- Multiple parameter types
+- Information retrieval patterns
+
 ## Choosing the Right Example
 
 | Use Case | Example | Intent Type | Return Type |
 |----------|---------|-------------|-------------|
 | Perform app actions | Counter | Action Intent | `ReturnsValue<String>` |
 | Navigate to app pages | Navigation | Navigation Intent | `OpensIntent` |
-| Background operations | Counter | Action Intent | `ReturnsValue<String>` |
+| Query data with voice | Weather | Query Intent | `ProvidesDialog` |
+| Background operations | Weather | Query Intent | `ProvidesDialog` |
 | Deep linking | Navigation | Navigation Intent | `OpensIntent` |
 
 ## Architecture
 
-Both examples demonstrate the **hybrid approach** required for Flutter App Intents:
+All examples demonstrate the **hybrid approach** required for Flutter App Intents:
 
 1. **Static Swift App Intents** (`ios/Runner/AppDelegate.swift`) - Required for iOS discovery
 2. **Flutter handlers** (`lib/main.dart`) - Your app's business logic
@@ -72,6 +90,13 @@ flutter run
 **Navigation Example (Deep Linking):**
 ```bash
 cd navigation
+flutter pub get
+flutter run
+```
+
+**Weather Example (Query Intents):**
+```bash
+cd weather
 flutter pub get
 flutter run
 ```

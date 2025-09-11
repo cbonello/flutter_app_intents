@@ -123,6 +123,7 @@ Future<AppIntentResult> handleIncrementIntent(Map<String, dynamic> parameters) a
 
 ## Next Steps
 
+- Explore complete [Examples](examples) with Counter, Navigation, and Weather apps
 - Follow our [Step-by-Step Tutorial](tutorial) for a complete walkthrough
 - Learn about [Navigation with App Intents](navigation)
 - Explore [Enhanced Intent Donation](intent-donation)

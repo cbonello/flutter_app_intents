@@ -5,6 +5,38 @@ All notable changes to the Flutter App Intents package will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.0] - 2025-09-10
+
+### Added
+- **Weather Example - Query & Data Pattern**: Complete third example demonstrating background data queries
+  - Background weather information retrieval without opening app
+  - Voice responses optimized for Siri speech with `ProvidesDialog`
+  - Multiple parameter types: location (string), days (integer), optional parameters
+  - Boolean queries with yes/no voice responses (rain checks)
+  - Multi-day forecast queries with formatted voice output
+  - Query intent pattern using `needsToContinueInApp: false` for background operation
+- **Complete App Intent Pattern Coverage**: Now includes all three core patterns
+  - Action Intents (Counter example) - perform app operations
+  - Navigation Intents (Navigation example) - deep linking and routing  
+  - Query Intents (Weather example) - background data retrieval with voice responses
+- **Comprehensive Test Suite**: Weather example includes 21 passing tests
+  - Mock implementations for all intent handlers
+  - Parameter validation and error handling tests
+  - Data formatting and response generation tests
+  - AppIntentResult creation and conversion tests
+- **Enhanced Documentation**: Complete integration across all documentation
+  - Updated main README with all three examples
+  - New comprehensive Examples page on website with pattern comparison
+  - Updated Getting Started guide and website navigation
+  - Screenshots placeholder structure for weather example
+
+### Enhanced
+- **Examples Organization**: Improved structure and categorization
+  - Clear intent type classifications (Action, Navigation, Query)
+  - Detailed feature lists and learning objectives for each example
+  - Comparison table showing use cases and return types
+  - Enhanced architectural explanations with background operation patterns
+
 ## [0.4.0] - 2025-09-09
 
 ### Added

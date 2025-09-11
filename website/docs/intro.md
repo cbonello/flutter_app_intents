@@ -26,16 +26,17 @@ To use this plugin, add `flutter_app_intents` as a dependency in your `pubspec.y
 
 ```yaml
 dependencies:
-  flutter_app_intents: ^0.2.0
+  flutter_app_intents: ^0.5.0
 ```
 
 Then, follow the instructions in the [Tutorial](tutorial) to set up and use the plugin.
 
-## Example
+## Examples
 
-This package includes two example apps:
-- **Counter**: A simple app demonstrating basic intent registration and handling.
-- **Navigation**: A more complex app showcasing navigation, parameter passing, and deep linking.
+This package includes three example apps:
+- **Counter**: A simple app demonstrating action-based intent registration and handling.
+- **Navigation**: A navigation app showcasing deep linking, parameter passing, and multi-page routing.
+- **Weather**: A query app demonstrating background data queries with voice responses and Siri speech output.
 
 ## Contributing
 

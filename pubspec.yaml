@@ -3,7 +3,7 @@ description: "A Flutter plugin for integrating Apple App Intents with your iOS a
 repository: https://github.com/cbonello/flutter_app_intents
 issue_tracker: https://github.com/cbonello/flutter_app_intents/issues
 homepage: https://github.com/cbonello/flutter_app_intents/blob/main/README.md
-version: 0.4.0
+version: 0.5.0
 license: MIT
 
 environment:
