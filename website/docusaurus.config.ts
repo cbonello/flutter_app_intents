@@ -15,14 +15,14 @@ const config: Config = {
   },
 
   // Set the production url of your site here
-  url: 'https://christophebonello.github.io',
+  url: 'https://cbonello.github.io',
   // Set the /<baseUrl>/ pathname under which your site is served
   // For GitHub pages deployment, it is often '/<projectName>/'
   baseUrl: '/flutter_app_intents/',
 
   // GitHub pages deployment config.
   // If you aren't using GitHub pages, you don't need these.
-  organizationName: 'christophebonello', // Usually your GitHub org/user name.
+  organizationName: 'cbonello', // Usually your GitHub org/user name.
   projectName: 'flutter_app_intents', // Usually your repo name.
 
   onBrokenLinks: 'throw',

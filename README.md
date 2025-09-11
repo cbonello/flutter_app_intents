@@ -22,6 +22,10 @@ A Flutter plugin for integrating Apple App Intents with your iOS applications. T
 - **Type-Safe API**: Strongly typed Dart API with comprehensive error handling
 - **Enhanced Intent Donation**: Advanced intent donation with metadata, relevance scoring, and batch processing for improved Siri learning
 
+## Documentation
+
+📖 **[Complete Documentation](https://cbonello.github.io/flutter_app_intents/)** - Visit our comprehensive documentation website with tutorials, examples, and API reference.
+
 ## Requirements
 
 - iOS 16.0 or later
