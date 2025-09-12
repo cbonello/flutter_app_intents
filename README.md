@@ -4,12 +4,6 @@
   <img src="assets/logo.png" alt="Flutter App Intents Logo" width="200" height="200">
 </p>
 
-<p align="center">
-  <a href="https://github.com/christophebonello/flutter_app_intents/actions/workflows/ci.yml">
-    <img src="https://github.com/christophebonello/flutter_app_intents/workflows/CI%20-%20Test%20Examples/badge.svg" alt="CI Status">
-  </a>
-</p>
-
 A Flutter plugin for integrating Apple App Intents with your iOS applications. This plugin enables your Flutter app to work seamlessly with Siri, Shortcuts, Spotlight, and other system experiences on iOS 16.0 and later.
 
 ## Features
