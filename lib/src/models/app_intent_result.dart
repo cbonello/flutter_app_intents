@@ -31,12 +31,12 @@ class AppIntentResult extends Equatable {
 
   @override
   List<Object?> get props => [
-    success,
-    value,
-    error,
-    needsToContinueInApp,
-    opensIntent,
-  ];
+        success,
+        value,
+        error,
+        needsToContinueInApp,
+        opensIntent,
+      ];
 
   /// Create a successful result
   static AppIntentResult successful({

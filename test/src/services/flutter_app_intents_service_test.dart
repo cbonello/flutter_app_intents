@@ -19,33 +19,33 @@ void main() {
       methodCalls.clear();
       TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
           .setMockMethodCallHandler(channel, (MethodCall methodCall) async {
-            methodCalls.add(methodCall);
+        methodCalls.add(methodCall);
 
-            switch (methodCall.method) {
-              case 'registerIntent':
-              case 'registerIntents':
-              case 'unregisterIntent':
-              case 'updateShortcuts':
-              case 'donateIntent':
-              case 'donateIntentWithMetadata':
-              case 'donateIntentBatch':
-                return true;
-              case 'getRegisteredIntents':
-                return <Map<String, dynamic>>[
-                  {
-                    'identifier': 'test_intent',
-                    'title': 'Test Intent',
-                    'description': 'A test intent',
-                    'parameters': <Map<String, dynamic>>[],
-                    'isEligibleForSearch': true,
-                    'isEligibleForPrediction': true,
-                    'authenticationPolicy': 'none',
-                  },
-                ];
-              default:
-                return null;
-            }
-          });
+        switch (methodCall.method) {
+          case 'registerIntent':
+          case 'registerIntents':
+          case 'unregisterIntent':
+          case 'updateShortcuts':
+          case 'donateIntent':
+          case 'donateIntentWithMetadata':
+          case 'donateIntentBatch':
+            return true;
+          case 'getRegisteredIntents':
+            return <Map<String, dynamic>>[
+              {
+                'identifier': 'test_intent',
+                'title': 'Test Intent',
+                'description': 'A test intent',
+                'parameters': <Map<String, dynamic>>[],
+                'isEligibleForSearch': true,
+                'isEligibleForPrediction': true,
+                'authenticationPolicy': 'none',
+              },
+            ];
+          default:
+            return null;
+        }
+      });
     });
 
     tearDown(() {
@@ -140,8 +140,8 @@ void main() {
         test('handles platform exception', () async {
           TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
               .setMockMethodCallHandler(channel, (MethodCall methodCall) async {
-                throw PlatformException(code: 'ERROR', message: 'Test error');
-              });
+            throw PlatformException(code: 'ERROR', message: 'Test error');
+          });
 
           const intent = AppIntent(
             identifier: 'test_intent',
@@ -166,9 +166,9 @@ void main() {
         test('handles null response', () async {
           TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
               .setMockMethodCallHandler(
-                channel,
-                (MethodCall methodCall) async => null,
-              );
+            channel,
+            (MethodCall methodCall) async => null,
+          );
 
           const intent = AppIntent(
             identifier: 'test_intent',
@@ -266,9 +266,9 @@ void main() {
         test('returns empty list when null response', () async {
           TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
               .setMockMethodCallHandler(
-                channel,
-                (MethodCall methodCall) async => null,
-              );
+            channel,
+            (MethodCall methodCall) async => null,
+          );
 
           final intents = await FlutterAppIntentsService.getRegisteredIntents();
 
@@ -278,27 +278,27 @@ void main() {
         test('handles complex intent data', () async {
           TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
               .setMockMethodCallHandler(
-                channel,
-                (MethodCall methodCall) async => <Map<String, dynamic>>[
+            channel,
+            (MethodCall methodCall) async => <Map<String, dynamic>>[
+              <String, dynamic>{
+                'identifier': 'complex_intent',
+                'title': 'Complex Intent',
+                'description': 'A complex test intent',
+                'parameters': <Map<String, dynamic>>[
                   <String, dynamic>{
-                    'identifier': 'complex_intent',
-                    'title': 'Complex Intent',
-                    'description': 'A complex test intent',
-                    'parameters': <Map<String, dynamic>>[
-                      <String, dynamic>{
-                        'name': 'amount',
-                        'title': 'Amount',
-                        'type': 'integer',
-                        'isOptional': true,
-                        'defaultValue': 42,
-                      },
-                    ],
-                    'isEligibleForSearch': false,
-                    'isEligibleForPrediction': true,
-                    'authenticationPolicy': 'requiresAuthentication',
+                    'name': 'amount',
+                    'title': 'Amount',
+                    'type': 'integer',
+                    'isOptional': true,
+                    'defaultValue': 42,
                   },
                 ],
-              );
+                'isEligibleForSearch': false,
+                'isEligibleForPrediction': true,
+                'authenticationPolicy': 'requiresAuthentication',
+              },
+            ],
+          );
 
           final intents = await FlutterAppIntentsService.getRegisteredIntents();
 
@@ -402,12 +402,12 @@ void main() {
 
           final result =
               await FlutterAppIntentsService.donateIntentWithMetadata(
-                'enhanced_intent',
-                parameters,
-                relevanceScore: 0.8,
-                context: {'feature': 'counter', 'userAction': true},
-                timestamp: DateTime.fromMillisecondsSinceEpoch(1000000),
-              );
+            'enhanced_intent',
+            parameters,
+            relevanceScore: 0.8,
+            context: {'feature': 'counter', 'userAction': true},
+            timestamp: DateTime.fromMillisecondsSinceEpoch(1000000),
+          );
 
           expect(result, isTrue);
           expect(methodCalls, hasLength(1));
@@ -433,9 +433,9 @@ void main() {
         test('handles default values correctly', () async {
           final result =
               await FlutterAppIntentsService.donateIntentWithMetadata(
-                'simple_intent',
-                {},
-              );
+            'simple_intent',
+            {},
+          );
 
           expect(result, isTrue);
           final arguments = Map<String, dynamic>.from(
@@ -543,18 +543,17 @@ void main() {
 
           // Simulate platform calling back
           await TestDefaultBinaryMessengerBinding
-              .instance
-              .defaultBinaryMessenger
+              .instance.defaultBinaryMessenger
               .handlePlatformMessage(
-                'flutter_app_intents',
-                const StandardMethodCodec().encodeMethodCall(
-                  const MethodCall('handleIntent', {
-                    'identifier': 'test_intent',
-                    'parameters': {'key': 'value'},
-                  }),
-                ),
-                (data) {},
-              );
+            'flutter_app_intents',
+            const StandardMethodCodec().encodeMethodCall(
+              const MethodCall('handleIntent', {
+                'identifier': 'test_intent',
+                'parameters': {'key': 'value'},
+              }),
+            ),
+            (data) {},
+          );
 
           expect(handlerCalled, isTrue);
           expect(receivedIdentifier, equals('test_intent'));
@@ -574,15 +573,14 @@ void main() {
 
           // Simulate platform call with null arguments
           await TestDefaultBinaryMessengerBinding
-              .instance
-              .defaultBinaryMessenger
+              .instance.defaultBinaryMessenger
               .handlePlatformMessage(
-                'flutter_app_intents',
-                const StandardMethodCodec().encodeMethodCall(
-                  const MethodCall('handleIntent'),
-                ),
-                (data) {},
-              );
+            'flutter_app_intents',
+            const StandardMethodCodec().encodeMethodCall(
+              const MethodCall('handleIntent'),
+            ),
+            (data) {},
+          );
 
           expect(handlerCalled, isFalse);
         });
@@ -600,18 +598,17 @@ void main() {
 
           // Simulate platform call with malformed arguments
           await TestDefaultBinaryMessengerBinding
-              .instance
-              .defaultBinaryMessenger
+              .instance.defaultBinaryMessenger
               .handlePlatformMessage(
-                'flutter_app_intents',
-                const StandardMethodCodec().encodeMethodCall(
-                  const MethodCall('handleIntent', {
-                    'identifier': null,
-                    'parameters': null,
-                  }),
-                ),
-                (data) {},
-              );
+            'flutter_app_intents',
+            const StandardMethodCodec().encodeMethodCall(
+              const MethodCall('handleIntent', {
+                'identifier': null,
+                'parameters': null,
+              }),
+            ),
+            (data) {},
+          );
 
           expect(handlerCalled, isFalse);
         });
@@ -626,18 +623,17 @@ void main() {
 
           // This should not throw and should return error result
           await TestDefaultBinaryMessengerBinding
-              .instance
-              .defaultBinaryMessenger
+              .instance.defaultBinaryMessenger
               .handlePlatformMessage(
-                'flutter_app_intents',
-                const StandardMethodCodec().encodeMethodCall(
-                  const MethodCall('handleIntent', {
-                    'identifier': 'test_intent',
-                    'parameters': <String, dynamic>{},
-                  }),
-                ),
-                (data) {},
-              );
+            'flutter_app_intents',
+            const StandardMethodCodec().encodeMethodCall(
+              const MethodCall('handleIntent', {
+                'identifier': 'test_intent',
+                'parameters': <String, dynamic>{},
+              }),
+            ),
+            (data) {},
+          );
 
           // Test passes if no exception is thrown
         });

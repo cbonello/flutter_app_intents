@@ -387,10 +387,7 @@ void main() {
         );
 
         expect(
-          () => FlutterAppIntentsService.donateIntentWithMetadata(
-            'intent',
-            {},
-          ),
+          () => FlutterAppIntentsService.donateIntentWithMetadata('intent', {}),
           throwsA(isA<UnsupportedError>()),
         );
       });

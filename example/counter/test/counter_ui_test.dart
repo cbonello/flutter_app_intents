@@ -136,23 +136,19 @@ void main() {
     });
 
     group('Responsive behavior', () {
-      testWidgets(
-        'App works in different screen sizes',
-        (tester) async {
-          tester.view.physicalSize = const Size(400, 600);
-          tester.view.devicePixelRatio = 1.0;
+      testWidgets('App works in different screen sizes', (tester) async {
+        tester.view.physicalSize = const Size(400, 600);
+        tester.view.devicePixelRatio = 1.0;
 
-          await tester.pumpWidget(const MyApp());
-          await tester.pumpAndSettle();
+        await tester.pumpWidget(const MyApp());
+        await tester.pumpAndSettle();
 
-          // UI functionality should still work despite minor overflow
-          expect(find.text('Flutter App Intents Example'), findsWidgets);
-          expect(find.byType(FloatingActionButton), findsOneWidget);
+        // UI functionality should still work despite minor overflow
+        expect(find.text('Flutter App Intents Example'), findsWidgets);
+        expect(find.byType(FloatingActionButton), findsOneWidget);
 
-          addTearDown(tester.view.reset);
-        },
-        skip: true,
-      ); // Minor overflow on small screens (13px)
+        addTearDown(tester.view.reset);
+      }, skip: true); // Minor overflow on small screens (13px)
 
       testWidgets('Scrollable content works correctly', (tester) async {
         await tester.pumpWidget(const MyApp());

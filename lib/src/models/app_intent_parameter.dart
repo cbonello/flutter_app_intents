@@ -31,13 +31,13 @@ class AppIntentParameter extends Equatable {
 
   @override
   List<Object?> get props => [
-    name,
-    title,
-    type,
-    description,
-    isOptional,
-    defaultValue,
-  ];
+        name,
+        title,
+        type,
+        description,
+        isOptional,
+        defaultValue,
+      ];
 
   /// Convert to a map for platform channel communication
   Map<String, dynamic> toMap() {

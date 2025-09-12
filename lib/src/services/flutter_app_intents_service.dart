@@ -112,8 +112,7 @@ class FlutterAppIntentsService {
     Future<AppIntentResult> Function(
       String identifier,
       Map<String, dynamic> parameters,
-    )
-    handler,
+    ) handler,
   ) {
     _channel.setMethodCallHandler((call) async {
       if (call.method == 'handleIntent') {
@@ -329,16 +328,15 @@ class IntentDonation extends Equatable {
 
   @override
   List<Object?> get props => [
-    identifier,
-    parameters,
-    relevanceScore,
-    context,
-    timestamp,
-  ];
+        identifier,
+        parameters,
+        relevanceScore,
+        context,
+        timestamp,
+      ];
 
   @override
-  String toString() =>
-      'IntentDonation('
+  String toString() => 'IntentDonation('
       'identifier: $identifier, '
       'parameters: $parameters, '
       'relevanceScore: $relevanceScore, '

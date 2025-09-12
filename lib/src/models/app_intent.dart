@@ -20,20 +20,18 @@ class AppIntent extends Equatable {
       : identifier = map['identifier'] as String,
         title = map['title'] as String,
         description = map['description'] as String,
-        parameters = (map['parameters'] as List<dynamic>?)
-                ?.map((p) {
-                  if (p is Map<String, dynamic>) {
-                    return AppIntentParameter.fromMap(p);
-                  } else {
-                    return AppIntentParameter.fromMap(
-                      Map<String, dynamic>.from(p as Map<Object?, Object?>),
-                    );
-                  }
-                })
-                .toList() ??
+        parameters = (map['parameters'] as List<dynamic>?)?.map((p) {
+              if (p is Map<String, dynamic>) {
+                return AppIntentParameter.fromMap(p);
+              } else {
+                return AppIntentParameter.fromMap(
+                  Map<String, dynamic>.from(p as Map<Object?, Object?>),
+                );
+              }
+            }).toList() ??
             [],
         isEligibleForSearch = map['isEligibleForSearch'] as bool? ?? true,
-        isEligibleForPrediction = 
+        isEligibleForPrediction =
             map['isEligibleForPrediction'] as bool? ?? true,
         authenticationPolicy = AuthenticationPolicy.values.firstWhere(
           (policy) => policy.name == map['authenticationPolicy'],
@@ -51,7 +49,6 @@ class AppIntent extends Equatable {
 
   /// Parameters that can be passed to the intent
   final List<AppIntentParameter> parameters;
-
 
   /// Whether the intent can appear in Spotlight search results
   final bool isEligibleForSearch;
@@ -89,7 +86,7 @@ class AppIntent extends Equatable {
       description: description ?? this.description,
       parameters: parameters ?? this.parameters,
       isEligibleForSearch: isEligibleForSearch ?? this.isEligibleForSearch,
-      isEligibleForPrediction: 
+      isEligibleForPrediction:
           isEligibleForPrediction ?? this.isEligibleForPrediction,
       authenticationPolicy: authenticationPolicy ?? this.authenticationPolicy,
     );

@@ -16,46 +16,71 @@ void main() {
       };
     }
 
-    Future<List<Map<String, dynamic>>> fetchMockForecastData(String location, int days) async {
+    Future<List<Map<String, dynamic>>> fetchMockForecastData(
+      String location,
+      int days,
+    ) async {
       await Future.delayed(const Duration(milliseconds: 100));
-      return List.generate(days, (index) => {
-        'day': index + 1,
-        'high': 75 + (index * 2),
-        'low': 60 + index,
-        'condition': ['Sunny', 'Partly Cloudy', 'Cloudy'][index % 3],
-        'precipitation_chance': [10, 30, 60][index % 3],
-      });
+      return List.generate(
+        days,
+        (index) => {
+          'day': index + 1,
+          'high': 75 + (index * 2),
+          'low': 60 + index,
+          'condition': ['Sunny', 'Partly Cloudy', 'Cloudy'][index % 3],
+          'precipitation_chance': [10, 30, 60][index % 3],
+        },
+      );
     }
 
-    String formatMockCurrentWeatherResponse(Map<String, dynamic> data, String location) {
+    String formatMockCurrentWeatherResponse(
+      Map<String, dynamic> data,
+      String location,
+    ) {
       final temp = data['temperature'];
       final condition = data['condition'];
       final humidity = data['humidity'];
       final wind = data['wind_speed'];
-      
+
       return 'Current weather in $location: $temp degrees and $condition. '
-             'Humidity is $humidity percent with winds at $wind miles per hour.';
+          'Humidity is $humidity percent with winds at $wind miles per hour.';
     }
 
-    String formatMockForecastResponse(List<Map<String, dynamic>> forecast, String location, int days) {
+    String formatMockForecastResponse(
+      List<Map<String, dynamic>> forecast,
+      String location,
+      int days,
+    ) {
       final buffer = StringBuffer('$days-day forecast for $location: ');
-      
+
       for (int i = 0; i < forecast.length; i++) {
         final day = forecast[i];
-        final dayName = i == 0 ? 'Today' : i == 1 ? 'Tomorrow' : 'Day ${i + 1}';
-        buffer.write('$dayName: High ${day['high']}, Low ${day['low']}, ${day['condition']}. ');
+        final dayName = i == 0
+            ? 'Today'
+            : i == 1
+            ? 'Tomorrow'
+            : 'Day ${i + 1}';
+        buffer.write(
+          '$dayName: High ${day['high']}, Low ${day['low']}, ${day['condition']}. ',
+        );
       }
-      
+
       return buffer.toString();
     }
 
     // Mock intent handlers that match the app's functionality
-    Future<AppIntentResult> handleMockCurrentWeather(Map<String, dynamic> parameters) async {
+    Future<AppIntentResult> handleMockCurrentWeather(
+      Map<String, dynamic> parameters,
+    ) async {
       try {
-        final location = parameters['location'] as String? ?? 'current location';
+        final location =
+            parameters['location'] as String? ?? 'current location';
         final weatherData = await fetchMockWeatherData(location);
-        final response = formatMockCurrentWeatherResponse(weatherData, location);
-        
+        final response = formatMockCurrentWeatherResponse(
+          weatherData,
+          location,
+        );
+
         return AppIntentResult.successful(
           value: response,
           needsToContinueInApp: false,
@@ -65,40 +90,54 @@ void main() {
       }
     }
 
-    Future<AppIntentResult> handleMockTemperature(Map<String, dynamic> parameters) async {
+    Future<AppIntentResult> handleMockTemperature(
+      Map<String, dynamic> parameters,
+    ) async {
       try {
-        final location = parameters['location'] as String? ?? 'current location';
+        final location =
+            parameters['location'] as String? ?? 'current location';
         final weatherData = await fetchMockWeatherData(location);
-        final response = 'The current temperature in $location is ${weatherData['temperature']}°F';
-        
+        final response =
+            'The current temperature in $location is ${weatherData['temperature']}°F';
+
         return AppIntentResult.successful(value: response);
       } catch (e) {
         return AppIntentResult.failed(error: 'Failed to get temperature: $e');
       }
     }
 
-    Future<AppIntentResult> handleMockForecast(Map<String, dynamic> parameters) async {
+    Future<AppIntentResult> handleMockForecast(
+      Map<String, dynamic> parameters,
+    ) async {
       try {
-        final location = parameters['location'] as String? ?? 'current location';
+        final location =
+            parameters['location'] as String? ?? 'current location';
         final days = parameters['days'] as int? ?? 3;
         final forecastData = await fetchMockForecastData(location, days);
-        final response = formatMockForecastResponse(forecastData, location, days);
-        
+        final response = formatMockForecastResponse(
+          forecastData,
+          location,
+          days,
+        );
+
         return AppIntentResult.successful(value: response);
       } catch (e) {
         return AppIntentResult.failed(error: 'Failed to get forecast: $e');
       }
     }
 
-    Future<AppIntentResult> handleMockRainCheck(Map<String, dynamic> parameters) async {
+    Future<AppIntentResult> handleMockRainCheck(
+      Map<String, dynamic> parameters,
+    ) async {
       try {
-        final location = parameters['location'] as String? ?? 'current location';
+        final location =
+            parameters['location'] as String? ?? 'current location';
         final weatherData = await fetchMockWeatherData(location);
         final isRaining = weatherData['precipitation'] as bool;
-        final response = isRaining 
+        final response = isRaining
             ? 'Yes, it is currently raining in $location'
             : 'No, it is not raining in $location right now';
-        
+
         return AppIntentResult.successful(value: response);
       } catch (e) {
         return AppIntentResult.failed(error: 'Failed to check rain: $e');
@@ -122,17 +161,20 @@ void main() {
         expect(result.needsToContinueInApp, isFalse);
       });
 
-      test('should use default location when location parameter is null', () async {
-        // Arrange
-        final parameters = <String, dynamic>{};
+      test(
+        'should use default location when location parameter is null',
+        () async {
+          // Arrange
+          final parameters = <String, dynamic>{};
 
-        // Act
-        final result = await handleMockCurrentWeather(parameters);
+          // Act
+          final result = await handleMockCurrentWeather(parameters);
 
-        // Assert
-        expect(result.success, isTrue);
-        expect(result.value, contains('current location'));
-      });
+          // Assert
+          expect(result.success, isTrue);
+          expect(result.value, contains('current location'));
+        },
+      );
 
       test('should handle exceptions gracefully', () async {
         // Arrange
@@ -346,7 +388,7 @@ void main() {
         expect(forecast[0]['day'], equals(1));
         expect(forecast[1]['day'], equals(2));
         expect(forecast[2]['day'], equals(3));
-        
+
         for (final day in forecast) {
           expect(day, containsPair('high', isA<int>()));
           expect(day, containsPair('low', isA<int>()));

@@ -267,9 +267,7 @@ class _MyHomePageState extends State<MyHomePage> {
     final resultValue = 'Current counter value is $_counter';
 
     // Return current state as result
-    return AppIntentResult.successful(
-      value: resultValue,
-    );
+    return AppIntentResult.successful(value: resultValue);
   }
 
   /// Manual counter increment for traditional UI interaction.

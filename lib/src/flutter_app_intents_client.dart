@@ -57,7 +57,7 @@ class FlutterAppIntentsClient {
       _instance ??= FlutterAppIntentsClient._();
 
   final Map<String, Future<AppIntentResult> Function(Map<String, dynamic>)>
-  _intentHandlers = {};
+      _intentHandlers = {};
 
   /// Register a single intent with its execution handler
   ///
@@ -137,7 +137,7 @@ class FlutterAppIntentsClient {
   /// Returns: true if all registrations succeeded, false otherwise
   Future<bool> registerIntents(
     Map<AppIntent, Future<AppIntentResult> Function(Map<String, dynamic>)>
-    intentsWithHandlers,
+        intentsWithHandlers,
   ) async {
     // Store all handlers
     for (final entry in intentsWithHandlers.entries) {
@@ -369,7 +369,6 @@ class AppIntentBuilder {
 
     return this;
   }
-
 
   /// Set whether the intent can appear in Spotlight search results
   ///

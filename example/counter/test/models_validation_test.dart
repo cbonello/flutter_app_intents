@@ -136,78 +136,72 @@ void main() {
       });
     });
 
-    group(
-      'Service Error Handling',
-      () {
-        test('FlutterAppIntentsService methods handle platform correctly', () {
-          // These tests verify the service handles non-iOS platforms gracefully
-          // by throwing appropriate UnsupportedError exceptions
-          const testIntent = AppIntent(
-            identifier: 'test',
-            title: 'Test',
-            description: 'Test intent',
-          );
+    group('Service Error Handling', () {
+      test('FlutterAppIntentsService methods handle platform correctly', () {
+        // These tests verify the service handles non-iOS platforms gracefully
+        // by throwing appropriate UnsupportedError exceptions
+        const testIntent = AppIntent(
+          identifier: 'test',
+          title: 'Test',
+          description: 'Test intent',
+        );
 
-          // All service methods should throw UnsupportedError on non-iOS
-          expect(
-            () => FlutterAppIntentsService.registerIntent(testIntent),
-            throwsA(isA<UnsupportedError>()),
-          );
+        // All service methods should throw UnsupportedError on non-iOS
+        expect(
+          () => FlutterAppIntentsService.registerIntent(testIntent),
+          throwsA(isA<UnsupportedError>()),
+        );
 
-          expect(
-            () => FlutterAppIntentsService.registerIntents([testIntent]),
-            throwsA(isA<UnsupportedError>()),
-          );
+        expect(
+          () => FlutterAppIntentsService.registerIntents([testIntent]),
+          throwsA(isA<UnsupportedError>()),
+        );
 
-          expect(
-            () => FlutterAppIntentsService.unregisterIntent('test'),
-            throwsA(isA<UnsupportedError>()),
-          );
+        expect(
+          () => FlutterAppIntentsService.unregisterIntent('test'),
+          throwsA(isA<UnsupportedError>()),
+        );
 
-          expect(
-            FlutterAppIntentsService.getRegisteredIntents(),
-            throwsA(isA<UnsupportedError>()),
-          );
+        expect(
+          FlutterAppIntentsService.getRegisteredIntents(),
+          throwsA(isA<UnsupportedError>()),
+        );
 
-          expect(
-            FlutterAppIntentsService.updateShortcuts(),
-            throwsA(isA<UnsupportedError>()),
-          );
+        expect(
+          FlutterAppIntentsService.updateShortcuts(),
+          throwsA(isA<UnsupportedError>()),
+        );
 
-          expect(
-            () => FlutterAppIntentsService.donateIntent('test', {}),
-            throwsA(isA<UnsupportedError>()),
-          );
-        });
+        expect(
+          () => FlutterAppIntentsService.donateIntent('test', {}),
+          throwsA(isA<UnsupportedError>()),
+        );
+      });
 
-        testWidgets('FlutterAppIntentsClient delegates to service correctly', (
-          tester,
-        ) async {
-          final client = FlutterAppIntentsClient.instance;
+      testWidgets('FlutterAppIntentsClient delegates to service correctly', (
+        tester,
+      ) async {
+        final client = FlutterAppIntentsClient.instance;
 
-          // Client methods should delegate to service and handle errors
-          const testIntent = AppIntent(
-            identifier: 'test',
-            title: 'Test',
-            description: 'Test intent',
-          );
+        // Client methods should delegate to service and handle errors
+        const testIntent = AppIntent(
+          identifier: 'test',
+          title: 'Test',
+          description: 'Test intent',
+        );
 
-          expect(
-            () => client.registerIntent(testIntent, (params) async {
-              return AppIntentResult.successful();
-            }),
-            throwsA(isA<UnsupportedError>()),
-          );
+        expect(
+          () => client.registerIntent(testIntent, (params) async {
+            return AppIntentResult.successful();
+          }),
+          throwsA(isA<UnsupportedError>()),
+        );
 
-          expect(
-            client.getRegisteredIntents(),
-            throwsA(isA<UnsupportedError>()),
-          );
+        expect(client.getRegisteredIntents(), throwsA(isA<UnsupportedError>()));
 
-          expect(client.updateShortcuts(), throwsA(isA<UnsupportedError>()));
-        });
-      },
-    );
+        expect(client.updateShortcuts(), throwsA(isA<UnsupportedError>()));
+      });
+    });
 
     group('Data Integrity', () {
       test('Models maintain equality contract correctly', () {
