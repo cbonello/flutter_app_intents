@@ -1,19 +1,19 @@
-/// Weather App Intents Example - Query & Data Patterns
-///
-/// This example demonstrates query-based App Intents that can retrieve and
-/// provide information without opening the app interface. It showcases:
-///
-/// - Query intents with ProvidesDialog for voice responses
-/// - Multiple parameter types (location, date, enum)
-/// - Background data processing without UI
-/// - Proper voice output formatting for Siri
-/// - Enhanced intent donation with metadata
-///
-/// Voice Commands Examples:
-/// - "Get weather from Weather Example"
-/// - "Check temperature in San Francisco using Weather Example"
-/// - "What's the forecast for tomorrow in Weather Example"
-/// - "Is it raining in New York with Weather Example"
+// Weather App Intents Example - Query & Data Patterns
+//
+// This example demonstrates query-based App Intents that can retrieve and
+// provide information without opening the app interface. It showcases:
+//
+// - Query intents with ProvidesDialog for voice responses
+// - Multiple parameter types (location, date, enum)
+// - Background data processing without UI
+// - Proper voice output formatting for Siri
+// - Enhanced intent donation with metadata
+//
+// Voice Commands Examples:
+// - "Get weather from Weather Example"
+// - "Check temperature in San Francisco using Weather Example"
+// - "What's the forecast for tomorrow in Weather Example"
+// - "Is it raining in New York with Weather Example"
 
 import 'package:flutter/material.dart';
 import 'package:flutter_app_intents/flutter_app_intents.dart';
