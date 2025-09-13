@@ -93,7 +93,7 @@ class MyApp extends StatelessWidget {
   }
   
   Future<void> _setupAppIntents() async {
-    final client = Flutter App IntentsClient.instance;
+    final client = FlutterAppIntentsClient.instance;
     
     // Create an intent using the builder
     final incrementIntent = AppIntentBuilder()
