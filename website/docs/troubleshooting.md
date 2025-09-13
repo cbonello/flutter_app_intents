@@ -16,7 +16,8 @@ This plugin only works on iOS 16.0+. Make sure you're testing on a compatible de
 
 1. **Verify static intents are declared** in your `AppDelegate.swift` (see [iOS Configuration](ios-configuration))
 2. **Ensure AppShortcutsProvider exists** in your main app target
-3. **Enable Siri for App Shortcuts**: In iOS Shortcuts app → [Your App] Shortcuts → Toggle ON the Siri switch (it's OFF by default)
+3. **Enable Siri for App Shortcuts**: In iOS Shortcuts app → [Your App] Shortcuts → Toggle ON the Siri switch (it's OFF by default)  
+   📱 **See the [Tutorial](tutorial#step-2-enable-siri-critical-step) for detailed screenshots** showing exactly how to enable Siri
 4. **Check intent identifiers match** between static Swift intents and Flutter handlers
 5. **Restart the app completely** after adding static intents
 6. Ensure intents are registered successfully on Flutter side
@@ -28,7 +29,8 @@ This plugin only works on iOS 16.0+. Make sure you're testing on a compatible de
 
 ### Voice commands not recognized
 
-1. **Enable Siri toggle first**: In Shortcuts app → [Your App] Shortcuts → Toggle ON the Siri switch
+1. **Enable Siri toggle first**: In Shortcuts app → [Your App] Shortcuts → Toggle ON the Siri switch  
+   📱 **See the [Tutorial](tutorial#step-2-enable-siri-critical-step) with screenshots** for the exact steps
 2. Use simple, clear command phrases
 3. Test different phrasings
 4. Check Siri's language settings
