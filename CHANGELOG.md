@@ -5,6 +5,42 @@ All notable changes to the Flutter App Intents package will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.0] - 2025-09-12
+
+### Added
+- **Swift Package Manager Support**: Full SPM integration for advanced iOS development
+  - `Package.swift` configuration file with proper iOS 16.0+ platform support
+  - SPM-specific documentation (`SPM_README.md`) with installation and usage instructions
+  - Website documentation page for Swift Package Manager integration
+  - Support for both Xcode Package Dependencies and Package.swift inclusion
+- **Enhanced Documentation Website**: Comprehensive Swift Package Manager documentation
+  - New dedicated SPM page in website documentation
+  - Updated installation instructions across all documentation pages
+  - Clear guidance on when to use SPM vs standard Flutter plugin installation
+
+### Fixed
+- **Security Vulnerabilities**: Resolved webpack-dev-server security issues
+  - Updated webpack-dev-server from vulnerable 4.15.2 to secure 5.2.2 via npm overrides
+  - Fixed CVE-2025-30359 vulnerabilities in development dependencies
+  - Zero security vulnerabilities now reported by npm audit
+- **Website Navigation Issues**: Fixed GitHub repository URL redirects
+  - Corrected navbar GitHub link from christophebonello to cbonello repository
+  - Fixed footer GitHub link to point to correct repository
+  - Fixed documentation edit links to correct repository
+  - Fixed broken logo display in documentation pages
+- **CI/CD Pipeline**: Removed failing CI workflow, keeping website deployment
+  - Removed problematic ci.yml workflow that was causing analyze phase errors
+  - Maintained deploy-docs.yml for reliable GitHub Pages deployment
+  - Simplified CI/CD pipeline focused on documentation deployment
+
+### Infrastructure
+- **Git Configuration**: Added Swift Package Manager build directories to .gitignore
+  - Added `.build/` and `.swiftpm/` to prevent SPM build artifacts from being committed
+  - Maintains clean repository while supporting SPM development workflows
+- **Package Management**: Updated all documentation to reference version 0.6.0
+  - Updated version numbers across README, documentation, and Package.swift
+  - Consistent version references in all installation instructions
+
 ## [0.5.0] - 2025-09-10
 
 ### Added

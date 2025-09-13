@@ -32,9 +32,23 @@ Add this to your package's `pubspec.yaml` file:
 
 ```yaml
 dependencies:
-  flutter_app_intents:
-    path: packages/flutter_app_intents
+  flutter_app_intents: ^0.6.0
 ```
+
+### Swift Package Manager (Advanced)
+
+For iOS developers who want to use the native Swift components directly, this package also supports Swift Package Manager:
+
+```swift
+// In Package.swift
+dependencies: [
+    .package(url: "https://github.com/cbonello/flutter_app_intents", from: "0.6.0")
+]
+```
+
+Or add via Xcode: **File → Add Package Dependencies** → `https://github.com/cbonello/flutter_app_intents`
+
+> **Note:** SPM support is provided for advanced use cases. Most Flutter developers should use the standard plugin installation above. See [SPM_README.md](SPM_README.md) for detailed SPM integration instructions.
 
 ## Architecture Overview
 

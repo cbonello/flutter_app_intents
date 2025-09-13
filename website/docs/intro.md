@@ -22,14 +22,31 @@ A Flutter plugin for integrating Apple App Intents with your iOS applications. T
 
 ## Getting Started
 
-To use this plugin, add `flutter_app_intents` as a dependency in your `pubspec.yaml` file.
+### Flutter Plugin Installation
+
+Add this to your package's `pubspec.yaml` file:
 
 ```yaml
 dependencies:
-  flutter_app_intents: ^0.5.0
+  flutter_app_intents: ^0.6.0
 ```
 
-Then, follow the instructions in the [Tutorial](tutorial) to set up and use the plugin.
+### Swift Package Manager (Advanced)
+
+For iOS developers who want to use the native Swift components directly, this package also supports Swift Package Manager:
+
+**Via Xcode:** File → Add Package Dependencies → `https://github.com/cbonello/flutter_app_intents`
+
+**Via Package.swift:**
+```swift
+dependencies: [
+    .package(url: "https://github.com/cbonello/flutter_app_intents", from: "0.6.0")
+]
+```
+
+> **Note:** SPM support is provided for advanced use cases. Most Flutter developers should use the standard plugin installation above.
+
+Then, follow the instructions in the [Getting Started](getting-started) guide to set up and use the plugin.
 
 ## Examples
 
