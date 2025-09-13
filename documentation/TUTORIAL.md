@@ -26,7 +26,7 @@ Edit `pubspec.yaml` and add the dependency:
 dependencies:
   flutter:
     sdk: flutter
-  flutter_app_intents: ^0.1.0  # Use the latest version
+  flutter_app_intents: ^0.6.0  # Use the latest version
   cupertino_icons: ^1.0.8
 ```
 
@@ -387,12 +387,19 @@ This struct tells iOS about your shortcuts:
 
 2. **Open the Shortcuts app** on your iOS device. You should see "Counter Intents Tutorial" in the "App Shortcuts" section.
 
-3. **Test with Siri:**
+3. **⚠️ CRITICAL STEP - Enable Siri (OFF by default):**
+   - In the Shortcuts app, tap "Counter Intents Tutorial >"
+   - Tap the **info icon (ⓘ)** in the top-right corner
+   - **Toggle ON the Siri switch** (it's OFF by default!)
+   - Make sure the toggle is **green**
+   - **Without this step, voice commands will NOT work!**
+
+4. **Test with Siri:**
    - "Hey Siri, increment counter with counter intents tutorial"
    - "Hey Siri, add one with counter intents tutorial"
    - "Hey Siri, count up using counter intents tutorial"
 
-4. **The app should open** and the counter should increment.
+5. **The app should open** and the counter should increment.
 
 ## Troubleshooting
 
@@ -404,9 +411,11 @@ This struct tells iOS about your shortcuts:
    - Check iOS Settings > Siri & Search > [Your App] > "Learn from this App" is enabled.
 
 2. **Siri doesn't recognize commands:**
+   - **FIRST: Check that Siri toggle is ON** in Shortcuts app → [Your App] → Info icon → Siri toggle (green)
    - Try the exact phrases from the `AppShortcuts` definition.
    - Make sure the app name matches what Siri expects.
    - Check that Siri is enabled for your app in Settings.
+   - Restart the Shortcuts app completely.
 
 3. **Build errors:**
    - Ensure Xcode is updated to support iOS 16+ features.
