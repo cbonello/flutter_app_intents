@@ -15,7 +15,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // Verify the home page loads
-      expect(find.text('Navigation App Intents'), findsOneWidget);
+      expect(find.text('Navigation App Intents Example'), findsOneWidget);
       expect(find.text('Manual Navigation:'), findsOneWidget);
     });
 

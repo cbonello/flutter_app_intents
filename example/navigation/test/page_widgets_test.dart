@@ -150,7 +150,7 @@ void main() {
         await tester.pumpWidget(const MaterialApp(home: NavigationHomePage()));
         await tester.pumpAndSettle();
 
-        expect(find.text('Navigation App Intents'), findsOneWidget);
+        expect(find.text('Navigation App Intents Example'), findsOneWidget);
         expect(find.text('App Intents Status:'), findsOneWidget);
         expect(find.text('Manual Navigation:'), findsOneWidget);
       });

@@ -202,7 +202,7 @@ void main() {
         await tester.pumpAndSettle();
 
         expect(find.byType(Scaffold), findsOneWidget);
-        expect(find.text('Flutter App Intents Example'), findsWidgets);
+        expect(find.text('Counter App Intents Example'), findsWidgets);
       });
     });
 

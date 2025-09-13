@@ -12,8 +12,8 @@ void main() {
     testWidgets('App builds and displays correct title', (tester) async {
       await tester.pumpWidget(const MyApp());
 
-      expect(find.text('Flutter App Intents Example'), findsOneWidget);
-      expect(find.text('Flutter App Intents Example'), findsWidgets);
+      expect(find.text('Counter App Intents Example'), findsOneWidget);
+      expect(find.text('Counter App Intents Example'), findsWidgets);
     });
 
     testWidgets('Home page displays initial state correctly', (tester) async {

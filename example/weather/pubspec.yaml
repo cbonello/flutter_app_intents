@@ -1,4 +1,4 @@
-name: weather_app_intents
+name: weather_example
 description: "A new Flutter project."
 publish_to: 'none'
 version: 1.0.0+1
@@ -7,16 +7,16 @@ environment:
   sdk: ^3.9.0
 
 dependencies:
+  cupertino_icons: ^1.0.8
   flutter:
     sdk: flutter
   flutter_app_intents:
     path: ../../
-  cupertino_icons: ^1.0.8
 
 dev_dependencies:
+  flutter_lints: ^5.0.0
   flutter_test:
     sdk: flutter
-  flutter_lints: ^5.0.0
 
 flutter:
   uses-material-design: true

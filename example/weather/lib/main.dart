@@ -28,7 +28,7 @@ class WeatherApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Weather App Intents',
+      title: 'Weather App Intents Example',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
         useMaterial3: true,
@@ -383,7 +383,7 @@ class _WeatherHomePageState extends State<WeatherHomePage> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        title: const Text('Weather App Intents'),
+        title: const Text('Weather App Intents Example'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),

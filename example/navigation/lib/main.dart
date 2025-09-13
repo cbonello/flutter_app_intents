@@ -219,7 +219,7 @@ class _NavigationHomePageState extends State<NavigationHomePage> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        title: const Text('Navigation App Intents'),
+        title: const Text('Navigation App Intents Example'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
