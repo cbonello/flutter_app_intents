@@ -63,6 +63,41 @@ iOS Shortcuts/Siri → Static Swift Intent → Flutter Plugin Bridge → Your Fl
 
 The static Swift intents act as a bridge, calling your Flutter handlers when executed.
 
+## Simple Example
+
+Create a voice-controlled counter app in just a few steps:
+
+```dart
+// 1. Register your intent
+final client = FlutterAppIntentsClient.instance;
+final intent = AppIntentBuilder()
+    .identifier('increment_counter')
+    .title('Increment Counter')
+    .build();
+
+await client.registerIntent(intent, (parameters) async {
+  // Your business logic here
+  incrementCounter();
+  return AppIntentResult.successful(value: 'Counter incremented!');
+});
+```
+
+```swift
+// 2. Add static intent to iOS (AppDelegate.swift)
+import AppIntents
+
+struct IncrementCounterIntent: AppIntent {
+    static var title: LocalizedStringResource = "Increment Counter"
+
+    func perform() async throws -> some IntentResult {
+        await FlutterAppIntentsPlugin.shared.handleIntent("increment_counter", [:])
+        return .result()
+    }
+}
+```
+
+**Result:** Say *"Hey Siri, increment counter"* and your Flutter function runs! 🎉
+
 ## Quick Start
 
 > 📖 **New to App Intents?** Check out our [Step-by-Step Tutorial](documentation/TUTORIAL.md) for a complete walkthrough from `flutter create` to working Siri integration!
