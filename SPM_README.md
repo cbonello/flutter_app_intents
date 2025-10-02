@@ -107,8 +107,8 @@ Then follow the setup instructions in the main [README](README.md).
 ## Documentation
 
 - [Main Documentation](README.md) - Complete plugin documentation
-- [Flutter Integration Guide](docs/flutter_integration.md) - Flutter-specific setup
-- [iOS Configuration](docs/ios_configuration.md) - Native iOS setup guide
+- [Flutter Integration Guide](https://cbonello.github.io/flutter_app_intents/docs/getting-started) - Flutter-specific setup
+- [iOS Configuration](https://cbonello.github.io/flutter_app_intents/docs/ios-configuration) - Native iOS setup guide
 
 ## Support
 
