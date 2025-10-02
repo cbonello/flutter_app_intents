@@ -137,8 +137,12 @@ class _CounterHomePageState extends State<CounterHomePage> {
       _counter++;
     });
 
-    // Donate the intent to help Siri learn
-    await _client.donateIntent('increment_counter', parameters);
+    // Donate the intent to help Siri learn (enhanced donation)
+    await _client.donateIntentWithMetadata(
+      'increment_counter',
+      parameters,
+      relevanceScore: 0.8, // Give it a good relevance score
+    );
 
     return AppIntentResult.successful(
       value: 'Counter incremented to $_counter',
@@ -216,6 +220,8 @@ class _CounterHomePageState extends State<CounterHomePage> {
   }
 }
 ```
+
+> **Note:** The status message and the UI card in the example above include a suggested Siri command with the app name "counter intents tutorial". When you test with Siri, make sure to use your app's actual display name, which might be different.
 
 ## Step 5: Create iOS App Intent Implementation
 
