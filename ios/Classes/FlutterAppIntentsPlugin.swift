@@ -66,6 +66,17 @@ public class FlutterAppIntentsPlugin: NSObject, FlutterPlugin {
         }
     }
     
+    /// Registers a single App Intent from Flutter
+    ///
+    /// Creates a dynamic AppIntent instance and stores it in a thread-safe manner.
+    /// The intent becomes available for Siri voice commands and Shortcuts app integration.
+    ///
+    /// - Parameters:
+    ///   - call: Flutter method call containing intent configuration (identifier, title, description)
+    ///   - result: Callback to return registration success (true) or error
+    ///
+    /// - Note: Thread-safe - Uses barrier write to intentQueue for concurrent access protection
+    /// - Throws: INVALID_ARGUMENTS if required fields missing, REGISTRATION_FAILED if creation fails
     private func registerIntent(call: FlutterMethodCall, result: @escaping FlutterResult) {
         guard let arguments = call.arguments as? [String: Any],
               let identifier = arguments["identifier"] as? String,
@@ -105,6 +116,17 @@ public class FlutterAppIntentsPlugin: NSObject, FlutterPlugin {
         }
     }
     
+    /// Registers multiple App Intents in a single batch operation
+    ///
+    /// Creates multiple dynamic AppIntent instances and stores them atomically.
+    /// More efficient than calling registerIntent multiple times.
+    ///
+    /// - Parameters:
+    ///   - call: Flutter method call containing array of intent configurations
+    ///   - result: Callback returning success (true) or partial failure with error details
+    ///
+    /// - Note: Thread-safe - Uses single barrier write for all intents
+    /// - Throws: INVALID_ARGUMENTS if structure invalid, PARTIAL_REGISTRATION_FAILED if some intents fail
     private func registerIntents(call: FlutterMethodCall, result: @escaping FlutterResult) {
         guard let arguments = call.arguments as? [String: Any],
               let intentsArray = arguments["intents"] as? [[String: Any]] else {
@@ -159,6 +181,16 @@ public class FlutterAppIntentsPlugin: NSObject, FlutterPlugin {
         }
     }
     
+    /// Unregisters a previously registered App Intent
+    ///
+    /// Removes the intent from active registry and updates the Shortcuts app.
+    ///
+    /// - Parameters:
+    ///   - call: Flutter method call containing intent identifier to remove
+    ///   - result: Callback returning success (true) or error
+    ///
+    /// - Note: Thread-safe - Uses barrier write to intentQueue
+    /// - Throws: INVALID_ARGUMENTS if identifier missing
     private func unregisterIntent(call: FlutterMethodCall, result: @escaping FlutterResult) {
         guard let arguments = call.arguments as? [String: Any],
               let identifier = arguments["identifier"] as? String else {
@@ -182,6 +214,13 @@ public class FlutterAppIntentsPlugin: NSObject, FlutterPlugin {
         result(true)
     }
     
+    /// Retrieves all currently registered App Intents
+    ///
+    /// Returns the configuration data for all intents registered from Flutter.
+    ///
+    /// - Parameter result: Callback returning array of intent configurations
+    ///
+    /// - Note: Thread-safe - Uses synchronous read from intentQueue
     private func getRegisteredIntents(result: @escaping FlutterResult) {
         // Thread-safe read
         intentQueue.sync {
@@ -190,13 +229,30 @@ public class FlutterAppIntentsPlugin: NSObject, FlutterPlugin {
         }
     }
     
+    /// Manually triggers an update of the App Shortcuts registry
+    ///
+    /// Forces iOS to refresh the shortcuts displayed in the Shortcuts app.
+    /// Normally called automatically after registration/unregistration.
+    ///
+    /// - Parameter result: Callback returning success (true)
     private func updateShortcuts(result: @escaping FlutterResult) {
         Task {
             await updateAppShortcuts()
             result(true)
         }
     }
-    
+
+    /// Donates an intent execution to iOS for Siri learning
+    ///
+    /// Records that this intent was used, helping Siri predict and suggest it in the future.
+    /// Uses default relevance scoring.
+    ///
+    /// - Parameters:
+    ///   - call: Flutter method call with intent identifier and parameters used
+    ///   - result: Callback returning success or error
+    ///
+    /// - Note: Thread-safe - Reads intent from intentQueue
+    /// - Throws: INVALID_ARGUMENTS if data missing, INTENT_NOT_FOUND if intent not registered
     private func donateIntent(call: FlutterMethodCall, result: @escaping FlutterResult) {
         guard let arguments = call.arguments as? [String: Any],
               let identifier = arguments["identifier"] as? String,
@@ -224,6 +280,17 @@ public class FlutterAppIntentsPlugin: NSObject, FlutterPlugin {
         }
     }
     
+    /// Donates an intent with enhanced metadata for improved Siri learning
+    ///
+    /// Records intent usage with custom relevance score and context data.
+    /// Provides richer information to iOS for better prediction accuracy.
+    ///
+    /// - Parameters:
+    ///   - call: Flutter method call with identifier, parameters, and metadata (relevance, context, timestamp)
+    ///   - result: Callback returning success or error
+    ///
+    /// - Note: Thread-safe - Reads intent from intentQueue
+    /// - Throws: INVALID_ARGUMENTS if data missing, INTENT_NOT_FOUND if intent not registered
     private func donateIntentWithMetadata(call: FlutterMethodCall, result: @escaping FlutterResult) {
         guard let arguments = call.arguments as? [String: Any],
               let identifier = arguments["identifier"] as? String,
@@ -263,6 +330,17 @@ public class FlutterAppIntentsPlugin: NSObject, FlutterPlugin {
         }
     }
     
+    /// Donates multiple intent executions in a single batch operation
+    ///
+    /// Efficiently records multiple intent uses at once. Each donation includes
+    /// full metadata (relevance, context, timestamp).
+    ///
+    /// - Parameters:
+    ///   - call: Flutter method call with array of donation data
+    ///   - result: Callback returning success or partial failure with error details
+    ///
+    /// - Note: Thread-safe - Reads each intent from intentQueue individually
+    /// - Throws: INVALID_ARGUMENTS if structure invalid, PARTIAL_DONATION_FAILED if some donations fail
     private func donateIntentBatch(call: FlutterMethodCall, result: @escaping FlutterResult) {
         guard let arguments = call.arguments as? [String: Any],
               let donations = arguments["donations"] as? [[String: Any]] else {
@@ -347,6 +425,18 @@ public class FlutterAppIntentsPlugin: NSObject, FlutterPlugin {
     
     // MARK: - Helper Methods
     
+    /// Creates a dynamic AppIntent instance from Flutter configuration
+    ///
+    /// Constructs the appropriate intent type based on parameter configuration.
+    ///
+    /// - Parameters:
+    ///   - identifier: Unique identifier for the intent
+    ///   - title: Human-readable title displayed in Shortcuts app
+    ///   - description: Longer description of intent's purpose
+    ///   - arguments: Full configuration including parameters and authentication policy
+    ///
+    /// - Returns: Configured DynamicAppIntent ready for execution
+    /// - Throws: Intent creation errors if configuration is invalid
     private func createDynamicIntent(identifier: String, title: String, description: String, arguments: [String: Any]) throws -> DynamicAppIntent {
         let intent = DynamicAppIntent(
             identifier: identifier,
@@ -356,7 +446,13 @@ public class FlutterAppIntentsPlugin: NSObject, FlutterPlugin {
         )
         return intent
     }
-    
+
+    /// Updates the App Shortcuts registry with current intents
+    ///
+    /// Notifies iOS that shortcuts have changed. The system automatically refreshes
+    /// the Shortcuts app to reflect registered intents.
+    ///
+    /// - Note: Thread-safe - Reads intent count from intentQueue
     private func updateAppShortcuts() async {
         // App shortcuts are automatically managed by iOS when AppShortcutsProvider.appShortcuts changes
         // The system will refresh shortcuts when it detects changes to the provider
@@ -364,12 +460,29 @@ public class FlutterAppIntentsPlugin: NSObject, FlutterPlugin {
         print("App shortcuts updated with \(count) intents")
     }
 
+    /// Returns list of currently active intent identifiers
+    ///
+    /// Used for logging and debugging. Actual shortcut management is handled
+    /// automatically by iOS 16+ AppIntent framework.
+    ///
+    /// - Returns: Array of registered intent identifiers
+    /// - Note: Thread-safe - Reads from intentQueue
     private func createAppShortcuts() -> [String] {
         // Return intent identifiers for logging purposes
         // Actual shortcuts are managed automatically by iOS 16+ AppIntent framework
         return intentQueue.sync { Array(activeIntents.keys) }
     }
-    
+
+    /// Donates an intent to iOS system for Siri predictions
+    ///
+    /// Primary donation method that attempts modern AppIntents donation first,
+    /// then falls back to legacy INIntent donation if needed.
+    ///
+    /// - Parameters:
+    ///   - intent: The dynamic intent that was executed
+    ///   - parameters: Parameters used during execution
+    ///
+    /// - Note: Automatically creates relevance metadata from intent and parameters
     private func donateIntentToSystem(intent: DynamicAppIntent, parameters: [String: Any]) async {
         // Use modern iOS 16+ App Intents donation system
         do {
@@ -389,6 +502,16 @@ public class FlutterAppIntentsPlugin: NSObject, FlutterPlugin {
         }
     }
     
+    /// Creates the appropriate intent instance for donation
+    ///
+    /// Constructs an intent with parameters populated from execution data.
+    /// Handles different parameter types (string, int, bool, double).
+    ///
+    /// - Parameters:
+    ///   - intent: The dynamic intent definition
+    ///   - parameters: Runtime parameter values from execution
+    ///
+    /// - Returns: Intent instance ready for donation (AppIntent or legacy INIntent)
     private func createIntentForDonation(intent: DynamicAppIntent, parameters: [String: Any]) -> Any {
         guard let intentProtocol = intent.actualIntent as? DynamicAppIntentProtocol else {
             return NoParameterIntent(intentIdentifier: intent.identifier, intentConfig: intent.asConfigDict())
@@ -421,11 +544,21 @@ public class FlutterAppIntentsPlugin: NSObject, FlutterPlugin {
         return donationIntent
     }
     
+    /// Creates rich donation metadata for Siri learning
+    ///
+    /// Assembles comprehensive context including relevance score, parameters,
+    /// and usage patterns to improve Siri's prediction accuracy.
+    ///
+    /// - Parameters:
+    ///   - intent: The intent being donated
+    ///   - parameters: Execution parameters
+    ///
+    /// - Returns: DonationMetadata with calculated relevance and context
     private func createDonationMetadata(intent: DynamicAppIntent, parameters: [String: Any]) -> DonationMetadata {
         // Create rich metadata for better Siri learning
         let relevanceScore = calculateRelevanceScore(intent: intent, parameters: parameters)
         let context = buildDonationContext(intent: intent, parameters: parameters)
-        
+
         return DonationMetadata(
             relevanceScore: relevanceScore,
             context: context,
@@ -433,7 +566,22 @@ public class FlutterAppIntentsPlugin: NSObject, FlutterPlugin {
             location: nil // Could be enhanced with location data
         )
     }
-    
+
+    /// Calculates relevance score for intent donation
+    ///
+    /// Determines how likely this intent should be predicted by Siri.
+    /// Scores range from 0.5 to 1.0, with higher scores increasing prediction likelihood.
+    ///
+    /// Scoring factors:
+    /// - Base score: 0.5
+    /// - Has parameters: +0.2 (more specific intents are more relevant)
+    /// - Frequently used patterns: +0.3 (common intents get priority)
+    ///
+    /// - Parameters:
+    ///   - intent: The intent to score
+    ///   - parameters: Parameters used in execution
+    ///
+    /// - Returns: Relevance score clamped to [0.0, 1.0]
     private func calculateRelevanceScore(intent: DynamicAppIntent, parameters: [String: Any]) -> Double {
         // Calculate relevance based on various factors
         // Start at base score and adjust up or down
@@ -454,26 +602,44 @@ public class FlutterAppIntentsPlugin: NSObject, FlutterPlugin {
         return min(max(score, 0.0), 1.0)
     }
     
+    /// Builds context dictionary for intent donation
+    ///
+    /// Assembles metadata about the intent execution for Siri learning.
+    /// Includes intent identity, parameters, and usage patterns.
+    ///
+    /// - Parameters:
+    ///   - intent: The executed intent
+    ///   - parameters: Runtime parameters
+    ///
+    /// - Returns: Context dictionary for donation metadata
     private func buildDonationContext(intent: DynamicAppIntent, parameters: [String: Any]) -> [String: Any] {
         var context: [String: Any] = [:]
-        
+
         // Add intent metadata
         context["intentType"] = intent.identifier
         context["intentTitle"] = intent.intentTitle
         context["timestamp"] = Date().timeIntervalSince1970
-        
+
         // Add parameter information
         if !parameters.isEmpty {
             context["parameters"] = parameters
             context["parameterCount"] = parameters.count
         }
-        
+
         // Add usage context (could be enhanced with user context)
         context["usagePattern"] = "manual_invocation"
-        
+
         return context
     }
-    
+
+    /// Fallback donation using legacy INIntent API
+    ///
+    /// Used when modern AppIntent donation fails. Provides backward compatibility
+    /// with older iOS shortcut donation mechanisms.
+    ///
+    /// - Parameters:
+    ///   - intent: The dynamic intent to donate
+    ///   - parameters: Execution parameters
     private func donateLegacyIntent(intent: DynamicAppIntent, parameters: [String: Any]) async {
         // Fallback to legacy INIntent donation for compatibility
         let legacyIntent = createLegacyIntent(intent: intent, parameters: parameters)
@@ -493,6 +659,16 @@ public class FlutterAppIntentsPlugin: NSObject, FlutterPlugin {
         }
     }
     
+    /// Creates a legacy INIntent for backward-compatible donation
+    ///
+    /// Maps dynamic intents to appropriate legacy INIntent types based on identifier patterns.
+    /// Used as fallback when modern AppIntent donation is unavailable.
+    ///
+    /// - Parameters:
+    ///   - intent: The dynamic intent to convert
+    ///   - parameters: Runtime parameters (currently unused but available for future enhancement)
+    ///
+    /// - Returns: Legacy INIntent with suggested invocation phrase
     private func createLegacyIntent(intent: DynamicAppIntent, parameters: [String: Any]) -> INIntent {
         // Create a more appropriate legacy intent based on the action type
         if intent.identifier.contains("search") || intent.identifier.contains("find") {
