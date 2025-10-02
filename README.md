@@ -65,6 +65,8 @@ The static Swift intents act as a bridge, calling your Flutter handlers when exe
 
 ## Simple Example
 
+> **Note:** This example shows the core logic, but a complete implementation requires a corresponding static intent in your iOS app's `AppDelegate.swift`. See the [iOS Configuration](#ios-configuration) section for details.
+
 Create a voice-controlled counter app in just a few steps:
 
 ```dart
