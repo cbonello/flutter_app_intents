@@ -175,7 +175,6 @@ class FlutterAppIntentsService {
     return donateIntentWithMetadata(
       identifier,
       parameters,
-      // relevanceScore: 1,
     );
   }
 
