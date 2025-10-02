@@ -32,7 +32,7 @@ Add this to your package's `pubspec.yaml` file:
 
 ```yaml
 dependencies:
-  flutter_app_intents: ^0.6.0
+  flutter_app_intents: ^0.7.0
 ```
 
 ### Swift Package Manager (Advanced)
@@ -42,7 +42,7 @@ For iOS developers who want to use the native Swift components directly, this pa
 ```swift
 // In Package.swift
 dependencies: [
-    .package(url: "https://github.com/cbonello/flutter_app_intents", from: "0.6.0")
+    .package(url: "https://github.com/cbonello/flutter_app_intents", from: "0.7.0")
 ]
 ```
 

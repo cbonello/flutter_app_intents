@@ -23,7 +23,9 @@ public class FlutterAppIntentsPlugin: NSObject, FlutterPlugin {
     private var registeredIntents: [String: Any] = [:]
     /// Active dynamic intent instances ready for execution
     internal var activeIntents: [String: DynamicAppIntent] = [:]
-    
+    /// Serial queue for thread-safe access to shared dictionaries
+    private let intentQueue = DispatchQueue(label: "com.flutter_app_intents.queue", attributes: .concurrent)
+
     /// Singleton instance to handle intent registry across the app
     public static let shared = FlutterAppIntentsPlugin()
     
@@ -76,9 +78,6 @@ public class FlutterAppIntentsPlugin: NSObject, FlutterPlugin {
         }
         
         do {
-            // Store the intent configuration
-            registeredIntents[identifier] = arguments
-            
             // Create and register the dynamic App Intent
             let intent = try createDynamicIntent(
                 identifier: identifier,
@@ -86,14 +85,18 @@ public class FlutterAppIntentsPlugin: NSObject, FlutterPlugin {
                 description: description,
                 arguments: arguments
             )
-            
-            activeIntents[identifier] = intent
-            
+
+            // Thread-safe storage of intent configuration and instance
+            intentQueue.async(flags: .barrier) {
+                self.registeredIntents[identifier] = arguments
+                self.activeIntents[identifier] = intent
+            }
+
             // Update App Shortcuts to include this intent
             Task {
                 await updateAppShortcuts()
             }
-            
+
             result(true)
         } catch {
             result(FlutterError(code: "REGISTRATION_FAILED",
@@ -112,27 +115,33 @@ public class FlutterAppIntentsPlugin: NSObject, FlutterPlugin {
         }
         
         var registrationErrors: [String] = []
-        
+        var intentsToRegister: [(String, Any, DynamicAppIntent)] = []
+
         for intentDict in intentsArray {
             guard let identifier = intentDict["identifier"] as? String,
                   let title = intentDict["title"] as? String,
                   let description = intentDict["description"] as? String else {
                 continue
             }
-            
+
             do {
-                registeredIntents[identifier] = intentDict
-                
                 let intent = try createDynamicIntent(
                     identifier: identifier,
                     title: title,
                     description: description,
                     arguments: intentDict
                 )
-                
-                activeIntents[identifier] = intent
+                intentsToRegister.append((identifier, intentDict, intent))
             } catch {
                 registrationErrors.append("Failed to register \(identifier): \(error.localizedDescription)")
+            }
+        }
+
+        // Thread-safe batch storage
+        intentQueue.async(flags: .barrier) {
+            for (identifier, intentDict, intent) in intentsToRegister {
+                self.registeredIntents[identifier] = intentDict
+                self.activeIntents[identifier] = intent
             }
         }
         
@@ -158,21 +167,27 @@ public class FlutterAppIntentsPlugin: NSObject, FlutterPlugin {
                               details: nil))
             return
         }
-        
-        registeredIntents.removeValue(forKey: identifier)
-        activeIntents.removeValue(forKey: identifier)
-        
+
+        // Thread-safe removal
+        intentQueue.async(flags: .barrier) {
+            self.registeredIntents.removeValue(forKey: identifier)
+            self.activeIntents.removeValue(forKey: identifier)
+        }
+
         // Update App Shortcuts to remove this intent
         Task {
             await updateAppShortcuts()
         }
-        
+
         result(true)
     }
     
     private func getRegisteredIntents(result: @escaping FlutterResult) {
-        let intents = Array(registeredIntents.values)
-        result(intents)
+        // Thread-safe read
+        intentQueue.sync {
+            let intents = Array(registeredIntents.values)
+            result(intents)
+        }
     }
     
     private func updateShortcuts(result: @escaping FlutterResult) {
@@ -191,14 +206,17 @@ public class FlutterAppIntentsPlugin: NSObject, FlutterPlugin {
                               details: nil))
             return
         }
-        
-        guard let intent = activeIntents[identifier] else {
+
+        // Thread-safe read
+        let intent = intentQueue.sync { activeIntents[identifier] }
+
+        guard let intent = intent else {
             result(FlutterError(code: "INTENT_NOT_FOUND",
                               message: "Intent \(identifier) not registered",
                               details: nil))
             return
         }
-        
+
         // Donate the intent to the system for prediction
         Task {
             await donateIntentToSystem(intent: intent, parameters: parameters)
@@ -216,19 +234,22 @@ public class FlutterAppIntentsPlugin: NSObject, FlutterPlugin {
                               details: nil))
             return
         }
-        
-        guard let intent = activeIntents[identifier] else {
+
+        // Thread-safe read
+        let intent = intentQueue.sync { activeIntents[identifier] }
+
+        guard let intent = intent else {
             result(FlutterError(code: "INTENT_NOT_FOUND",
                               message: "Intent \(identifier) not registered",
                               details: nil))
             return
         }
-        
+
         // Extract metadata
         let relevanceScore = metadata["relevanceScore"] as? Double ?? 1.0
         let context = metadata["context"] as? [String: Any] ?? [:]
         let timestamp = metadata["timestamp"] as? Double ?? Date().timeIntervalSince1970
-        
+
         // Enhanced donation with metadata
         Task {
             await donateIntentWithEnhancedMetadata(
@@ -250,23 +271,30 @@ public class FlutterAppIntentsPlugin: NSObject, FlutterPlugin {
                               details: nil))
             return
         }
-        
+
         var donationErrors: [String] = []
-        
+
         Task {
             for donationData in donations {
                 guard let identifier = donationData["identifier"] as? String,
                       let parameters = donationData["parameters"] as? [String: Any],
-                      let metadata = donationData["metadata"] as? [String: Any],
-                      let intent = activeIntents[identifier] else {
+                      let metadata = donationData["metadata"] as? [String: Any] else {
                     donationErrors.append("Invalid donation data for \(donationData["identifier"] ?? "unknown")")
                     continue
                 }
-                
+
+                // Thread-safe read
+                let intent = intentQueue.sync { activeIntents[identifier] }
+
+                guard let intent = intent else {
+                    donationErrors.append("Intent not found: \(identifier)")
+                    continue
+                }
+
                 let relevanceScore = metadata["relevanceScore"] as? Double ?? 1.0
                 let context = metadata["context"] as? [String: Any] ?? [:]
                 let timestamp = metadata["timestamp"] as? Double ?? Date().timeIntervalSince1970
-                
+
                 await donateIntentWithEnhancedMetadata(
                     intent: intent,
                     parameters: parameters,
@@ -275,7 +303,7 @@ public class FlutterAppIntentsPlugin: NSObject, FlutterPlugin {
                     timestamp: Date(timeIntervalSince1970: timestamp / 1000.0)
                 )
             }
-            
+
             if donationErrors.isEmpty {
                 result(true)
             } else {
@@ -332,13 +360,14 @@ public class FlutterAppIntentsPlugin: NSObject, FlutterPlugin {
     private func updateAppShortcuts() async {
         // App shortcuts are automatically managed by iOS when AppShortcutsProvider.appShortcuts changes
         // The system will refresh shortcuts when it detects changes to the provider
-        print("App shortcuts updated with \(activeIntents.count) intents")
+        let count = intentQueue.sync { activeIntents.count }
+        print("App shortcuts updated with \(count) intents")
     }
-    
+
     private func createAppShortcuts() -> [String] {
         // Return intent identifiers for logging purposes
         // Actual shortcuts are managed automatically by iOS 16+ AppIntent framework
-        return Array(activeIntents.keys)
+        return intentQueue.sync { Array(activeIntents.keys) }
     }
     
     private func donateIntentToSystem(intent: DynamicAppIntent, parameters: [String: Any]) async {
@@ -407,19 +436,20 @@ public class FlutterAppIntentsPlugin: NSObject, FlutterPlugin {
     
     private func calculateRelevanceScore(intent: DynamicAppIntent, parameters: [String: Any]) -> Double {
         // Calculate relevance based on various factors
-        var score = 1.0
-        
+        // Start at base score and adjust up or down
+        var score = 0.5
+
         // Boost score for intents with parameters (more specific)
         if !parameters.isEmpty {
             score += 0.2
         }
-        
+
         // Boost score for frequently used intents (could be enhanced with usage tracking)
         // For now, use a simple heuristic based on intent type
         if intent.identifier.contains("increment") || intent.identifier.contains("counter") {
             score += 0.3
         }
-        
+
         // Ensure score is within valid range [0.0, 1.0]
         return min(max(score, 0.0), 1.0)
     }
@@ -962,23 +992,78 @@ struct DonationMetadata {
 @available(iOS 16.0, *)
 class DonationManager {
     static func donate(_ intent: Any, with metadata: DonationMetadata) async throws {
-        if let appIntent = intent as? AppIntent {
-            // For iOS 16+ AppIntents, use modern donation system
-            // AppIntents are automatically donated when executed
-            print("AppIntent donation handled automatically by iOS 16+ system")
+        if let appIntent = intent as? any AppIntent {
+            // For iOS 16+ AppIntents, manually donate with proper context
+            // Note: While AppIntents can be auto-donated during execution,
+            // manual donation allows us to provide rich metadata for better Siri learning
+            do {
+                // Create a legacy INIntent representation for donation
+                // This is necessary because AppIntent protocol doesn't have a direct donation API
+                let legacyIntent = createLegacyIntentFromAppIntent(appIntent, metadata: metadata)
+
+                return try await withCheckedThrowingContinuation { continuation in
+                    let interaction = INInteraction(intent: legacyIntent, response: nil)
+                    interaction.direction = .outgoing
+                    interaction.dateInterval = DateInterval(start: metadata.timestamp, duration: 1.0)
+
+                    interaction.donate { error in
+                        if let error = error {
+                            print("AppIntent donation failed: \(error.localizedDescription)")
+                            continuation.resume(throwing: IntentDonationError.donationFailed(error.localizedDescription))
+                        } else {
+                            print("Successfully donated AppIntent with metadata (relevance: \(metadata.relevanceScore))")
+                            continuation.resume()
+                        }
+                    }
+                }
+            } catch {
+                print("Failed to create legacy intent for AppIntent donation: \(error.localizedDescription)")
+                throw error
+            }
         } else if let legacyIntent = intent as? INIntent {
             // For legacy INIntents, use traditional donation
-            let interaction = INInteraction(intent: legacyIntent, response: nil)
-            interaction.donate { error in
-                if let error = error {
-                    print("Legacy intent donation failed: \(error.localizedDescription)")
-                } else {
-                    print("Successfully donated legacy intent")
+            return try await withCheckedThrowingContinuation { continuation in
+                let interaction = INInteraction(intent: legacyIntent, response: nil)
+                interaction.direction = .outgoing
+                interaction.dateInterval = DateInterval(start: metadata.timestamp, duration: 1.0)
+
+                interaction.donate { error in
+                    if let error = error {
+                        print("Legacy intent donation failed: \(error.localizedDescription)")
+                        continuation.resume(throwing: IntentDonationError.donationFailed(error.localizedDescription))
+                    } else {
+                        print("Successfully donated legacy intent")
+                        continuation.resume()
+                    }
                 }
             }
         } else {
             throw IntentDonationError.unsupportedIntentType
         }
+    }
+
+    /// Creates a legacy INIntent from an AppIntent for donation purposes
+    private static func createLegacyIntentFromAppIntent(_ appIntent: any AppIntent, metadata: DonationMetadata) -> INIntent {
+        // Extract title from AppIntent for invocation phrase
+        let title = String(localized: type(of: appIntent).title)
+
+        // Determine appropriate legacy intent type based on context
+        if let contextType = metadata.context["intentType"] as? String {
+            if contextType.contains("search") || contextType.contains("find") || contextType.contains("query") {
+                let searchIntent = INSearchCallHistoryIntent()
+                searchIntent.suggestedInvocationPhrase = title
+                return searchIntent
+            } else if contextType.contains("start") || contextType.contains("run") || contextType.contains("workout") {
+                let startIntent = INStartWorkoutIntent()
+                startIntent.suggestedInvocationPhrase = title
+                return startIntent
+            }
+        }
+
+        // Default to generic intent
+        let genericIntent = INSearchCallHistoryIntent()
+        genericIntent.suggestedInvocationPhrase = title
+        return genericIntent
     }
 }
 

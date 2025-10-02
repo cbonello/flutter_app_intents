@@ -5,6 +5,38 @@ All notable changes to the Flutter App Intents package will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.7.0] - 2025-10-02
+
+### Fixed
+- **Thread Safety**: Added concurrent dispatch queue for thread-safe access to shared state
+  - Implemented `intentQueue` with `.concurrent` attribute and `.barrier` flags for writes
+  - Protected `registeredIntents` and `activeIntents` dictionaries from race conditions
+  - All dictionary reads now use `.sync` and writes use `.async(flags: .barrier)`
+  - Eliminates potential crashes from concurrent access during intent registration/execution
+- **Intent Donation**: Fixed DonationManager to properly handle AppIntent donations
+  - Implemented actual donation logic for AppIntents using INInteraction API
+  - Added `createLegacyIntentFromAppIntent` method to convert AppIntents for donation
+  - Enhanced donation with proper async/await continuation handling
+  - Added detailed logging with relevance scores and error messages
+  - Fixed non-functional donation path that was only printing without donating
+- **Relevance Score Calculation**: Fixed calculateRelevanceScore logic bug
+  - Changed base score from 1.0 to 0.5 to allow proper score range (0.5-1.0)
+  - Fixed score clamping issue where all scores were being reduced back to 1.0
+  - Enables proper Siri learning with varied relevance scores for better predictions
+
+### Removed
+- **Non-Functional Code**: Removed `ios/Runner/AppShortcuts.swift`
+  - File attempted dynamic shortcut registration which is not supported by iOS
+  - iOS requires AppShortcuts to be statically defined at compile time
+  - Examples correctly use static AppIntent definitions in AppDelegate.swift
+  - Removal simplifies codebase and eliminates confusion about architecture
+
+### Technical Improvements
+- **Concurrency**: Enhanced thread safety across all platform channel methods
+- **Error Handling**: Improved error reporting in donation system with specific failure messages
+- **Code Quality**: Removed dead code that created architectural confusion
+- **Performance**: Optimized concurrent dictionary access with proper synchronization primitives
+
 ## [0.6.0] - 2025-09-12
 
 ### Added

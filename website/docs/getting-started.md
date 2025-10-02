@@ -12,7 +12,7 @@ Add this to your package's `pubspec.yaml` file:
 
 ```yaml
 dependencies:
-  flutter_app_intents: ^0.6.0
+  flutter_app_intents: ^0.7.0
 ```
 
 ### Swift Package Manager (Advanced)

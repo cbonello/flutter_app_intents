@@ -26,7 +26,7 @@ Edit `pubspec.yaml` and add the dependency:
 dependencies:
   flutter:
     sdk: flutter
-  flutter_app_intents: ^0.6.0  # Use the latest version
+  flutter_app_intents: ^0.7.0  # Use the latest version
   cupertino_icons: ^1.0.8
 ```
 
