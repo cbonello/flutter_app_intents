@@ -99,7 +99,7 @@ class FlutterAppIntentsClient {
     _intentHandlers[intent.identifier] = handler;
 
     // Set up the global handler if not already done
-    if (_intentHandlers.length == 1) {
+    if (_intentHandlers.isNotEmpty) {
       FlutterAppIntentsService.setIntentHandler(_handleIntent);
     }
 
