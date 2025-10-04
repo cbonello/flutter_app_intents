@@ -23,7 +23,7 @@ Add the following to your `Package.swift` file:
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/cbonello/flutter_app_intents", from: "0.6.0")
+    .package(url: "https://github.com/cbonello/flutter_app_intents", from: "0.7.0")
 ],
 targets: [
     .target(

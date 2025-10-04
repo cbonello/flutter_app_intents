@@ -14,7 +14,7 @@ A Flutter plugin for integrating Apple App Intents with your iOS applications. T
 - **Visual Intelligence**: Support for visual search results (iOS 2025+)
 - **Widgets and Controls**: Enhanced widget and control center integration
 - **Type-Safe API**: Strongly typed Dart API with comprehensive error handling
-- **Enhanced Intent Donation**: Advanced intent donation with metadata, relevance scoring, and batch processing for improved Siri learning
+- **Intent Donation**: Help Siri learn user patterns for improved predictions and suggestions
 
 ## Documentation
 
@@ -435,13 +435,6 @@ The plugin provides advanced intent donation capabilities to help Siri learn use
 ### Basic Intent Donation
 
 ```dart
-// Simple donation (legacy API)
-await FlutterAppIntentsService.donateIntent('my_intent', {'param': 'value'});
-```
-
-### Enhanced Donation with Metadata
-
-```dart
 // Donate intent for Siri learning
 await FlutterAppIntentsClient.instance.donateIntent(
   'my_intent',
@@ -449,7 +442,7 @@ await FlutterAppIntentsClient.instance.donateIntent(
 );
 ```
 
-### Donation Best Practices
+## Donation Best Practices
 
 Donate intents after successful execution to help Siri learn user patterns:
 
