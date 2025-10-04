@@ -53,22 +53,12 @@ This plugin only works on iOS 16.0+. Make sure you're testing on a compatible de
 4. **Use batch donations**: Group related intents for better learning
 5. **Monitor and adjust**: Regularly review and update relevance scores based on usage analytics
 
-### "Relevance score must be between 0.0 and 1.0"
+### Intent Donation Fails
 
-This validation error occurs when calling `donateIntentWithMetadata()` with invalid relevance scores:
-
-```dart
-// Valid relevance scores
-await FlutterAppIntentsService.donateIntentWithMetadata(
-  'my_intent',
-  parameters,
-  relevanceScore: 0.8, // ✅ Valid: between 0.0 and 1.0
-);
-
-// Invalid relevance scores
-relevanceScore: 1.5  // ❌ Invalid: greater than 1.0
-relevanceScore: -0.1 // ❌ Invalid: less than 0.0
-```
+If `donateIntent()` returns false or fails:
+- Verify the intent identifier matches a registered intent
+- Check that parameters match the intent definition
+- Ensure the intent was successfully registered before donation
 
 ## Debug Steps
 
@@ -121,15 +111,15 @@ Future<AppIntentResult> handleMyIntent(Map<String, dynamic> parameters) async {
 
 ```dart
 // Add logging to donation calls
-try {
-  await FlutterAppIntentsService.donateIntentWithMetadata(
-    'my_intent',
-    parameters,
-    relevanceScore: 0.8,
-  );
+final success = await FlutterAppIntentsClient.instance.donateIntent(
+  'my_intent',
+  parameters,
+);
+
+if (success) {
   print('Intent donated successfully');
-} catch (e) {
-  print('Intent donation failed: $e');
+} else {
+  print('Intent donation failed');
 }
 ```
 
@@ -162,8 +152,8 @@ class IntentLogger {
     }
   }
   
-  static void logIntentDonation(String identifier, double relevanceScore) {
-    print('[INTENT] Donated: $identifier (relevance: $relevanceScore)');
+  static void logIntentDonation(String identifier) {
+    print('[INTENT] Donated: $identifier');
   }
 }
 ```
@@ -208,23 +198,18 @@ Future<AppIntentResult> handleLongOperation(Map<String, dynamic> parameters) asy
 }
 ```
 
-### 2. Batch Operations
+### 2. Avoid Over-Donation
 
-Use batch donation for better performance:
+Don't donate too frequently:
 
 ```dart
-// Instead of multiple individual donations
+// Donate after each successful execution
 for (final intent in intents) {
-  await FlutterAppIntentsService.donateIntent(intent.id, intent.params);
+  await FlutterAppIntentsClient.instance.donateIntent(
+    intent.id,
+    intent.params,
+  );
 }
-
-// Use batch donation
-final donations = intents.map((intent) => IntentDonation.userInitiated(
-  identifier: intent.id,
-  parameters: intent.params,
-)).toList();
-
-await FlutterAppIntentsService.donateIntentBatch(donations);
 ```
 
 ### 3. Memory Management

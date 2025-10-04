@@ -15,9 +15,7 @@ The main client class for managing App Intents:
 - `unregisterIntent(String identifier)` - Remove an intent
 - `getRegisteredIntents()` - Get all registered intents
 - `updateShortcuts()` - Refresh app shortcuts
-- `donateIntent(String identifier, parameters)` - Basic intent donation for prediction
-- `donateIntentWithMetadata(identifier, parameters, {relevanceScore, context, timestamp})` - Enhanced donation with metadata
-- `donateIntentBatch(List&lt;IntentDonation&gt; donations)` - Batch donate multiple intents efficiently
+- `donateIntent(String identifier, parameters)` - Intent donation for Siri learning and predictions
 
 ## AppIntent
 
@@ -144,27 +142,6 @@ Control when intents can be executed:
 
 ## Intent Donation Classes
 
-### IntentDonation
-
-Represents a single intent donation with metadata:
-
-```dart
-const IntentDonation({
-  required String identifier,
-  required Map&lt;String, dynamic&gt; parameters,
-  required double relevanceScore,
-  Map&lt;String, dynamic&gt;? context,
-  DateTime? timestamp,
-});
-```
-
-### Factory Constructors
-
-- `IntentDonation.highRelevance()` - Creates donation with relevance 1.0
-- `IntentDonation.userInitiated()` - Creates donation with relevance 0.9
-- `IntentDonation.mediumRelevance()` - Creates donation with relevance 0.7
-- `IntentDonation.automated()` - Creates donation with relevance 0.5
-- `IntentDonation.lowRelevance()` - Creates donation with relevance 0.3
 
 ## Error Handling
 
@@ -199,21 +176,7 @@ Static service class providing utility methods:
 ### Methods
 
 ```dart
-// Enhanced intent donation
-static Future<void> donateIntentWithMetadata(
-  String identifier,
-  Map&lt;String, dynamic&gt; parameters, {
-  required double relevanceScore,
-  Map&lt;String, dynamic&gt;? context,
-  DateTime? timestamp,
-});
-
-// Batch intent donation
-static Future<void> donateIntentBatch(
-  List&lt;IntentDonation&gt; donations,
-);
-
-// Basic intent donation
+// Intent donation
 static Future<void> donateIntent(
   String identifier,
   Map&lt;String, dynamic&gt; parameters,
@@ -257,13 +220,11 @@ class MyAppIntents {
       
       // Your business logic
       final newValue = await incrementCounter(amount);
-      
-      // Enhanced donation
-      await FlutterAppIntentsService.donateIntentWithMetadata(
+
+      // Donate intent
+      await FlutterAppIntentsClient.instance.donateIntent(
         'increment_counter',
         parameters,
-        relevanceScore: 0.9,
-        context: {'feature': 'counter', 'userAction': true},
       );
       
       return AppIntentResult.successful(

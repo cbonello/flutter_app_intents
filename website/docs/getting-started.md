@@ -118,12 +118,10 @@ Future<AppIntentResult> handleIncrementIntent(Map<String, dynamic> parameters) a
     // Perform your app's logic
     final newValue = incrementCounter(amount);
     
-    // Donate the intent to help Siri learn (enhanced donation)
-    await FlutterAppIntentsService.donateIntentWithMetadata(
+    // Donate the intent to help Siri learn
+    await FlutterAppIntentsClient.instance.donateIntent(
       'increment_counter',
       parameters,
-      relevanceScore: 0.9, // High relevance for user-initiated actions
-      context: {'feature': 'counter', 'userAction': true},
     );
     
     return AppIntentResult.successful(

@@ -171,12 +171,10 @@ Future<AppIntentResult> handleIncrementIntent(Map<String, dynamic> parameters) a
     // Perform your app's logic
     final newValue = incrementCounter(amount);
     
-    // Donate the intent to help Siri learn (enhanced donation)
-    await FlutterAppIntentsService.donateIntentWithMetadata(
+    // Donate the intent to help Siri learn
+    await FlutterAppIntentsClient.instance.donateIntent(
       'increment_counter',
       parameters,
-      relevanceScore: 0.9, // High relevance for user-initiated actions
-      context: {'feature': 'counter', 'userAction': true},
     );
     
     return AppIntentResult.successful(
@@ -365,9 +363,7 @@ The main client class for managing App Intents:
 - `unregisterIntent(String identifier)` - Remove an intent
 - `getRegisteredIntents()` - Get all registered intents
 - `updateShortcuts()` - Refresh app shortcuts
-- `donateIntent(String identifier, parameters)` - Basic intent donation for prediction
-- `donateIntentWithMetadata(identifier, parameters, {relevanceScore, context, timestamp})` - Enhanced donation with metadata
-- `donateIntentBatch(List<IntentDonation> donations)` - Batch donate multiple intents efficiently
+- `donateIntent(String identifier, parameters)` - Intent donation for Siri learning and predictions
 
 ### AppIntent
 
@@ -446,139 +442,39 @@ await FlutterAppIntentsService.donateIntent('my_intent', {'param': 'value'});
 ### Enhanced Donation with Metadata
 
 ```dart
-// Enhanced donation with relevance scoring and context
-await FlutterAppIntentsService.donateIntentWithMetadata(
+// Donate intent for Siri learning
+await FlutterAppIntentsClient.instance.donateIntent(
   'my_intent',
   {'param': 'value'},
-  relevanceScore: 0.8,           // 0.0-1.0 relevance score
-  context: {                     // Additional context for better learning
-    'feature': 'messaging',
-    'userAction': true,
-    'timeOfDay': 'morning',
-  },
-  timestamp: DateTime.now(),     // Optional custom timestamp
 );
-```
-
-### Batch Intent Donation
-
-For better performance when donating multiple intents:
-
-```dart
-final donations = [
-  IntentDonation.highRelevance(
-    identifier: 'send_message',
-    parameters: {'recipient': 'Alice'},
-    context: {'recent_contact': true},
-  ),
-  IntentDonation.userInitiated(
-    identifier: 'set_reminder',
-    parameters: {'title': 'Meeting'},
-    context: {'calendar_event': true},
-  ),
-  IntentDonation.automated(
-    identifier: 'background_sync',
-    parameters: {'sync_type': 'incremental'},
-  ),
-];
-
-await FlutterAppIntentsService.donateIntentBatch(donations);
-```
-
-### IntentDonation Factory Constructors
-
-The `IntentDonation` class provides convenient factory constructors for different use cases:
-
-#### High Relevance (1.0)
-```dart
-IntentDonation.highRelevance(
-  identifier: 'frequent_action',
-  parameters: {'key': 'value'},
-  context: {'usage': 'daily'},
-)
-```
-
-#### User Initiated (0.9)
-```dart
-IntentDonation.userInitiated(
-  identifier: 'manual_action',
-  parameters: {'trigger': 'button_press'},
-)
-```
-
-#### Medium Relevance (0.7)
-```dart
-IntentDonation.mediumRelevance(
-  identifier: 'occasional_action',
-  parameters: {'frequency': 'weekly'},
-)
-```
-
-#### Automated (0.5)
-```dart
-IntentDonation.automated(
-  identifier: 'background_process',
-  parameters: {'type': 'sync'},
-)
-```
-
-#### Low Relevance (0.3)
-```dart
-IntentDonation.lowRelevance(
-  identifier: 'rare_action',
-  parameters: {'last_used': '6_months_ago'},
-)
 ```
 
 ### Donation Best Practices
 
-1. **Use appropriate relevance scores**:
-   - `1.0` for frequently used, critical actions
-   - `0.9` for user-initiated actions
-   - `0.7` for moderately used features
-   - `0.5` for automated/background processes
-   - `0.3` for rarely used features
+Donate intents after successful execution to help Siri learn user patterns:
 
-2. **Provide meaningful context**:
-   ```dart
-   context: {
-     'feature': 'messaging',          // Which app feature
-     'userAction': true,              // User vs system initiated
-     'timeOfDay': 'evening',          // Temporal context
-     'location': 'home',              // Location context
-     'frequency': 'daily',            // Usage frequency
-   }
-   ```
+```dart
+// Execute the intent action
+final result = await performAction();
 
-3. **Donate after successful execution**:
-   ```dart
-   // Execute the intent action
-   final result = await performAction();
-   
-   // Only donate if successful
-   if (result.isSuccess) {
-     await FlutterAppIntentsService.donateIntentWithMetadata(
-       'my_intent',
-       parameters,
-       relevanceScore: 0.8,
-       context: {'success': true},
-     );
-   }
-   ```
+// Donate if successful
+if (result.isSuccess) {
+  await FlutterAppIntentsClient.instance.donateIntent(
+    'my_intent',
+    parameters,
+  );
+}
+```
 
-4. **Use batch donations for multiple related intents**:
-   ```dart
-   // When user completes a workflow involving multiple intents
-   final workflowDonations = userWorkflow.map((step) => 
-     IntentDonation.userInitiated(
-       identifier: step.intentId,
-       parameters: step.parameters,
-       context: {'workflow': 'onboarding', 'step': step.order},
-     )
-   ).toList();
-   
-   await FlutterAppIntentsService.donateIntentBatch(workflowDonations);
-   ```
+**When to donate:**
+- After user successfully completes an action
+- When an intent is invoked via Siri or Shortcuts
+- For frequently-used features to improve predictions
+
+**When not to donate:**
+- After failed operations
+- For background/automated tasks
+- For one-time setup actions
 
 ## iOS Configuration
 
@@ -1014,22 +910,12 @@ This plugin only works on iOS 16.0+. Make sure you're testing on a compatible de
 4. **Use batch donations**: Group related intents for better learning
 5. **Monitor and adjust**: Regularly review and update relevance scores based on usage analytics
 
-### "Relevance score must be between 0.0 and 1.0"
+### Intent Donation Errors
 
-This validation error occurs when calling `donateIntentWithMetadata()` with invalid relevance scores. Ensure your relevance score is within the valid range:
-
-```dart
-// Valid relevance scores
-await FlutterAppIntentsService.donateIntentWithMetadata(
-  'my_intent',
-  parameters,
-  relevanceScore: 0.8, // ✅ Valid: between 0.0 and 1.0
-);
-
-// Invalid relevance scores
-relevanceScore: 1.5  // ❌ Invalid: greater than 1.0
-relevanceScore: -0.1 // ❌ Invalid: less than 0.0
-```
+If intent donation fails, check:
+- The intent identifier matches a registered intent
+- Parameters match the intent's defined parameters
+- The intent was successfully registered before donation
 
 ## Apple Documentation References
 
