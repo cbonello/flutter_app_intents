@@ -137,12 +137,8 @@ class _CounterHomePageState extends State<CounterHomePage> {
       _counter++;
     });
 
-    // Donate the intent to help Siri learn (enhanced donation)
-    await _client.donateIntentWithMetadata(
-      'increment_counter',
-      parameters,
-      relevanceScore: 0.8, // Give it a good relevance score
-    );
+    // Donate the intent to help Siri learn user patterns
+    await _client.donateIntent('increment_counter', parameters);
 
     return AppIntentResult.successful(
       value: 'Counter incremented to $_counter',

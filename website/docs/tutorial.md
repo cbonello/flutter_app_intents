@@ -36,48 +36,38 @@ struct SayHelloIntent: AppIntent {
 
 ## 3. Register the Intent in Dart
 
-In your Dart code, create an `AppIntent` object that matches the Swift definition.
+In your Dart code, create an `AppIntent` using the builder pattern and register it with a handler.
 
 ```dart
 import 'package:flutter_app_intents/flutter_app_intents.dart';
 
-final sayHelloIntent = AppIntent(
-  identifier: 'SayHelloIntent',
-  title: 'Say Hello',
-  parameters: [
-    AppIntentParameter(
-      name: 'name',
-      title: 'Name',
-      type: AppIntentParameterType.string,
-    ),
-  ],
-);
-```
-
-Then, register the intent when your app starts.
-
-```dart
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await FlutterAppIntents.registerIntent(sayHelloIntent);
-  runApp(MyApp());
-}
-```
 
-## 4. Handle the Intent
+  // Get the client instance
+  final client = FlutterAppIntentsClient.instance;
 
-Set up a handler to execute code when your intent is invoked.
+  // Build and register the intent with its handler
+  final sayHelloIntent = AppIntentBuilder()
+      .identifier('SayHelloIntent')
+      .title('Say Hello')
+      .description('Greet someone by name')
+      .parameter(AppIntentParameter(
+        name: 'name',
+        title: 'Name',
+        type: AppIntentParameterType.string,
+      ))
+      .build();
 
-```dart
-FlutterAppIntents.setIntentHandler((identifier, parameters) async {
-  if (identifier == 'SayHelloIntent') {
+  await client.registerIntent(sayHelloIntent, (parameters) async {
     final name = parameters['name'] as String;
     // Show a dialog, navigate, or perform any other action
     print('Hello, $name!');
-    return AppIntentResult.successful();
-  }
-  return AppIntentResult.failed(error: 'Unknown intent');
-});
+    return AppIntentResult.successful(value: 'Greeted $name');
+  });
+
+  runApp(MyApp());
+}
 ```
 
 That's it! You can now run your app and test your new Siri integration.
