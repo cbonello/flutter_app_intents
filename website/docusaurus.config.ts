@@ -23,6 +23,7 @@ const config: Config = {
   projectName: 'flutter_app_intents', // Usually your repo name.
 
   onBrokenLinks: 'warn',
+  // TODO: Migrate to markdown.hooks.onBrokenMarkdownLinks in Docusaurus v4
   onBrokenMarkdownLinks: 'warn',
 
   // Even if you don't use internationalization, you can use this field to set
