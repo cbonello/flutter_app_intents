@@ -106,7 +106,7 @@ dependencies:
   flutter_app_intents: ^0.7.0
 ```
 
-Then follow the setup instructions in the [Getting Started](getting-started) guide.
+Then follow the setup instructions in the [Getting Started](/flutter_app_intents/docs/getting-started) guide.
 
 ## When to Use SPM vs Flutter Plugin
 

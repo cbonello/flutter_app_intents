@@ -46,7 +46,7 @@ dependencies: [
 
 > **Note:** SPM support is provided for advanced use cases. Most Flutter developers should use the standard plugin installation above.
 
-Then, follow the instructions in the [Getting Started](getting-started) guide to set up and use the plugin.
+Then, follow the instructions in the [Getting Started](/flutter_app_intents/docs/getting-started) guide to set up and use the plugin.
 
 ## Examples
 

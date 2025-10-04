@@ -127,7 +127,7 @@ flutter run
 3. Try manual shortcuts first to help Siri learn
 4. Add custom phrases in Settings > Siri & Search
 
-For detailed troubleshooting, see the [Troubleshooting](troubleshooting) section.
+For detailed troubleshooting, see the [Troubleshooting](/flutter_app_intents/docs/troubleshooting) section.
 
 ## Implementation Patterns
 

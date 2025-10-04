@@ -123,4 +123,4 @@ Try saying "Say Hello John" to test your intent. If Siri doesn't respond, double
 If voice commands still don't work after enabling Siri:
 - Restart the Shortcuts app completely
 - Try saying the exact phrase shown in the Shortcuts app
-- Check the [Troubleshooting](troubleshooting) guide for more solutions
+- Check the [Troubleshooting](/flutter_app_intents/docs/troubleshooting) guide for more solutions

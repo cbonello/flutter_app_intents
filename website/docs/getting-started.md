@@ -59,7 +59,7 @@ import 'package:flutter_app_intents/flutter_app_intents.dart';
 
 ### 2. Add static intents to iOS (Required)
 
-⚠️ **First, add static App Intents to your iOS `AppDelegate.swift`** (see [iOS Configuration](ios-configuration) section)
+⚠️ **First, add static App Intents to your iOS `AppDelegate.swift`** (see [iOS Configuration](../ios-configuration))
 
 ### 3. Create and register Flutter handlers
 
@@ -139,8 +139,8 @@ Future<AppIntentResult> handleIncrementIntent(Map<String, dynamic> parameters) a
 
 ## Next Steps
 
-- Explore complete [Examples](examples) with Counter, Navigation, and Weather apps
-- Follow our [Step-by-Step Tutorial](tutorial) for a complete walkthrough
-- Learn about [Navigation with App Intents](navigation)
-- Explore [Enhanced Intent Donation](intent-donation)
-- Check out the [API Reference](api-reference)
+- Explore complete [Examples](/flutter_app_intents/docs/examples) with Counter, Navigation, and Weather apps
+- Follow our [Step-by-Step Tutorial](../tutorial) for a complete walkthrough
+- Learn about [Navigation with App Intents](../navigation)
+- Explore [Enhanced Intent Donation](../intent-donation)
+- Check out the [API Reference](../api-reference)
