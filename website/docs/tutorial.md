@@ -20,16 +20,44 @@ Create a new Swift file in your Xcode project (e.g., `MyAppIntents.swift`) and d
 
 ```swift
 import AppIntents
+import flutter_app_intents
 
 struct SayHelloIntent: AppIntent {
     static var title: LocalizedStringResource = "Say Hello"
+    static var openAppWhenRun: Bool = true
 
     @Parameter(title: "Name")
     var name: String
 
-    func perform() async throws -> some IntentResult {
-        // Your intent logic here
-        return .result(dialog: "Hello, \(name)!")
+    func perform() async throws -> some IntentResult & ReturnsValue<String> {
+        let plugin = FlutterAppIntentsPlugin.shared
+        let result = await plugin.handleIntentInvocation(
+            identifier: "SayHelloIntent",
+            parameters: ["name": name]
+        )
+
+        if let success = result["success"] as? Bool, success {
+            let value = result["value"] as? String ?? "Hello, \(name)!"
+            return .result(value: value)
+        } else {
+            let errorMessage = result["error"] as? String ?? "Failed to say hello"
+            throw NSError(domain: "SayHelloIntent", code: 1, userInfo: [NSLocalizedDescriptionKey: errorMessage])
+        }
+    }
+}
+
+// Define App Shortcuts to enable Siri voice commands
+struct MyAppShortcuts: AppShortcutsProvider {
+    static var appShortcuts: [AppShortcut] {
+        AppShortcut(
+            intent: SayHelloIntent(),
+            phrases: [
+                "Say hello to \(\.$name)",
+                "Greet \(\.$name)"
+            ],
+            shortTitle: "Say Hello",
+            systemImageName: "hand.wave"
+        )
     }
 }
 ```
@@ -107,7 +135,7 @@ You'll see the individual shortcuts for your app (Increment, Reset, Get Counter)
 > **Why this happens**: Apple disables Siri for new App Shortcuts by default for privacy reasons. Users must explicitly enable voice access for each app's shortcuts.
 
 ### Step 3: Test with Siri
-Try saying "Say Hello John" to test your intent. If Siri doesn't respond, double-check that you enabled the Siri toggle in Step 2.
+Try saying **"Say hello to John"** or **"Greet Alice"** to test your intent. If Siri doesn't respond, double-check that you enabled the Siri toggle in Step 2.
 
 ### Step 4: Troubleshooting
 If voice commands still don't work after enabling Siri:
