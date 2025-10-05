@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter_app_intents/src/platform/android_app_actions_platform.dart';
 import 'package:flutter_app_intents/src/platform/app_intents_platform.dart';
 import 'package:flutter_app_intents/src/platform/ios_app_intents_platform.dart';
+import 'package:meta/meta.dart';
 
 /// Cached platform instance (singleton per platform)
 AppIntentsPlatform? _platformInstance;
@@ -33,6 +34,14 @@ AppIntentsPlatform getPlatformInstance() {
       'Current platform: ${Platform.operatingSystem}',
     );
   }
+}
+
+/// Resets the platform instance singleton.
+///
+/// This is intended for testing purposes only.
+@visibleForTesting
+void resetPlatformInstance() {
+  _platformInstance = null;
 }
 
 /// Singleton accessor for the platform instance

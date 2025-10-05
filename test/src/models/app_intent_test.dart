@@ -1,5 +1,7 @@
 import 'package:flutter_app_intents/src/models/app_intent.dart';
 import 'package:flutter_app_intents/src/models/app_intent_parameter.dart';
+import 'package:flutter_app_intents/src/models/intent_category.dart';
+import 'package:flutter_app_intents/src/models/platform_hints.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
@@ -88,6 +90,22 @@ void main() {
         );
       });
 
+      test('creates AppIntent with category and hints from map', () {
+        final map = <String, dynamic>{
+          'identifier': 'test_intent',
+          'title': 'Test Intent',
+          'description': 'Test description',
+          'category': 'fitness',
+          'hints': {'iosSuggestedPhrase': 'Go for a run'},
+        };
+
+        final intent = AppIntent.fromMap(map);
+
+        expect(intent.category, IntentCategory.fitness);
+        expect(intent.hints, isNotNull);
+        expect(intent.hints!.iosSuggestedPhrase, 'Go for a run');
+      });
+
       test('creates AppIntent with defaults when optional fields missing', () {
         final map = <String, dynamic>{
           'identifier': 'minimal_intent',
@@ -166,6 +184,22 @@ void main() {
         );
       });
 
+      test('converts AppIntent with category and hints to map', () {
+        const intent = AppIntent(
+          identifier: 'test_intent',
+          title: 'Test Intent',
+          description: 'A test intent',
+          category: IntentCategory.fitness,
+          hints: PlatformHints(iosSuggestedPhrase: 'Go for a run'),
+        );
+
+        final map = intent.toMap();
+
+        expect(map['category'], 'fitness');
+        expect(map['hints'], isA<Map>());
+        expect(map['hints']['iosSuggestedPhrase'], 'Go for a run');
+      });
+
       test('converts AppIntent with empty parameters', () {
         const intent = AppIntent(
           identifier: 'simple_intent',
@@ -197,6 +231,23 @@ void main() {
         expect(copy.description, equals('Original description'));
         expect(copy.isEligibleForSearch, isFalse);
         expect(copy.isEligibleForPrediction, isTrue);
+      });
+
+      test('creates copy with modified category and hints', () {
+        const original = AppIntent(
+          identifier: 'original_intent',
+          title: 'Original Title',
+          description: 'Original description',
+        );
+
+        final copy = original.copyWith(
+          category: IntentCategory.fitness,
+          hints: const PlatformHints(iosSuggestedPhrase: 'Go for a run'),
+        );
+
+        expect(copy.category, IntentCategory.fitness);
+        expect(copy.hints, isNotNull);
+        expect(copy.hints!.iosSuggestedPhrase, 'Go for a run');
       });
 
       test('creates identical copy when no changes specified', () {

@@ -216,6 +216,41 @@ void main() {
         expect(file.existsSync(), isFalse);
         verifyNever(() => mockShortcutsXmlGenerator.generate(any()));
       });
+
+      test('passes mainActivity parameter to generator', () async {
+        await Directory('android').create();
+        await cliRunner.run(platform: 'android', mainActivity: 'SplashActivity');
+
+        verify(() => mockShortcutsXmlGenerator.mainActivityOverride = 'SplashActivity');
+        verify(() => mockShortcutsXmlGenerator.generate(any()));
+      });
+
+      test('displays warnings from intent extractor', () async {
+        when(() => mockIntentExtractor.warnings).thenReturn([
+          'Warning 1',
+          'Warning 2',
+        ]);
+
+        await Directory('android').create();
+        await cliRunner.run(platform: 'android');
+
+        // Test passes if no exception is thrown - warnings should be displayed but not block generation
+        final file = File('android/app/src/main/res/xml/shortcuts.xml');
+        expect(file.existsSync(), isTrue);
+      });
+
+      test('displays warnings from shortcuts generator', () async {
+        when(() => mockShortcutsXmlGenerator.warnings).thenReturn([
+          'Generator warning',
+        ]);
+
+        await Directory('android').create();
+        await cliRunner.run(platform: 'android');
+
+        // Test passes if no exception is thrown - warnings should be displayed but not block generation
+        final file = File('android/app/src/main/res/xml/shortcuts.xml');
+        expect(file.existsSync(), isTrue);
+      });
     });
   });
 }
