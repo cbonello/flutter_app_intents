@@ -158,7 +158,9 @@ class AppShortcutsProviderGenerator {
   /// - increment_counter -> IncrementCounterIntent
   /// - start_workout -> StartWorkoutIntent
   String _intentStructName(String identifier) {
-    return '${identifier.split('_').map((part) => part[0].toUpperCase() + part.substring(1)).join()}Intent';
+    return '${identifier.split('_').map(
+          (part) => part[0].toUpperCase() + part.substring(1),
+        ).join()}Intent';
   }
 
   /// Generates a short title from the full title
