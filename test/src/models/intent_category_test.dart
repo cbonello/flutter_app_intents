@@ -2,7 +2,7 @@ import 'package:flutter_app_intents/src/models/intent_category.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  group('IntentCategoryExtension', () {
+  group(IntentCategory, () {
     test('androidBII returns non-empty string for all categories', () {
       for (final category in IntentCategory.values) {
         expect(category.androidBII, isNotEmpty);
