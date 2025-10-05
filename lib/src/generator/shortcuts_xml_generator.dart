@@ -1,7 +1,6 @@
 import 'dart:io';
 
 import 'package:flutter_app_intents/src/generator/intent_extractor.dart';
-import 'package:flutter_app_intents/src/models/intent_category.dart';
 import 'package:path/path.dart' as path;
 import 'package:xml/xml.dart';
 
@@ -36,6 +35,7 @@ class ShortcutsXmlGenerator {
   String generate(List<ExtractedIntent> intents) {
     // Clear warnings from previous generation
     warnings.clear();
+
     final builder = XmlBuilder();
 
     builder
@@ -55,6 +55,7 @@ class ShortcutsXmlGenerator {
       );
 
     final document = builder.buildDocument();
+
     return document.toXmlString(pretty: true, indent: '  ');
   }
 
