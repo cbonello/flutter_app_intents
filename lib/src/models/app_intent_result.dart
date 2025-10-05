@@ -4,8 +4,13 @@
 
 import 'package:equatable/equatable.dart';
 
-/// Represents the result of executing an App Intent
+/// Represents the result of executing an App Intent, which can be either
+/// successful or failed.
 class AppIntentResult extends Equatable {
+  /// Creates a new [AppIntentResult].
+  ///
+  /// It is recommended to use the [AppIntentResult.successful] and
+  /// [AppIntentResult.failed] factory methods instead of this constructor.
   const AppIntentResult({
     required this.success,
     this.value,
@@ -14,19 +19,23 @@ class AppIntentResult extends Equatable {
     this.opensIntent,
   });
 
-  /// Whether the intent execution was successful
+  /// Whether the intent execution was successful.
   final bool success;
 
-  /// The result value (if successful)
+  /// The result value, if the operation was successful.
   final dynamic value;
 
-  /// Error message (if failed)
+  /// A description of the error, if the operation failed.
   final String? error;
 
-  /// Whether the intent needs to continue in the app
+  /// Whether the intent needs to continue in the app to complete the action.
+  ///
+  /// If true, the system may open the app.
   final bool needsToContinueInApp;
 
-  /// An intent to open if needed
+  /// An optional intent to open if the action needs to continue in the app.
+  ///
+  /// This can be used to navigate to a specific screen in the app.
   final String? opensIntent;
 
   @override
@@ -38,7 +47,10 @@ class AppIntentResult extends Equatable {
         opensIntent,
       ];
 
-  /// Create a successful result
+  /// Creates a successful result, optionally with a [value].
+  ///
+  /// Use [needsToContinueInApp] to indicate that the app should be opened
+  /// to fully complete the action.
   static AppIntentResult successful({
     dynamic value,
     bool needsToContinueInApp = false,
@@ -52,12 +64,12 @@ class AppIntentResult extends Equatable {
     );
   }
 
-  /// Create a failed result
+  /// Creates a failed result with a required [error] message.
   static AppIntentResult failed({required String error}) {
     return AppIntentResult(success: false, error: error);
   }
 
-  /// Convert to a map for platform channel communication
+  /// Converts this object to a map suitable for platform channel communication.
   Map<String, dynamic> toMap() {
     return {
       'success': success,
@@ -68,7 +80,8 @@ class AppIntentResult extends Equatable {
     };
   }
 
-  /// Create AppIntentResult from map
+  /// Creates an [AppIntentResult] from a map, typically received from a
+  /// platform channel.
   static AppIntentResult fromMap(Map<String, dynamic> map) {
     return AppIntentResult(
       success: map['success'] as bool,

@@ -8,17 +8,21 @@ import 'package:analyzer/dart/element/element.dart';
 import 'package:flutter_app_intents/src/models/intent_category.dart';
 import 'package:path/path.dart' as p;
 
-/// Extracts intent definitions from Dart code using AST analysis
+/// Extracts intent definitions from Dart code using AST analysis.
 ///
 /// Supports two patterns:
 /// 1. Method chaining: `AppIntentBuilder().identifier('x').build()`
 /// 2. Variable assignment:
-///     `final builder = AppIntentBuilder(); builder.identifier('x');`
+///    `final builder = AppIntentBuilder(); builder.identifier('x');`
 class IntentExtractor {
+  /// The number of files scanned during the last extraction.
   int filesScanned = 0;
+
+  /// A list of non-fatal warnings that occurred during extraction.
   final List<String> warnings = [];
 
-  /// Extract all intents from a directory
+  /// Scans all `.dart` files in a given [dirPath] and extracts all
+  /// `AppIntentBuilder` definitions.
   Future<List<ExtractedIntent>> extractFromDirectory(String dirPath) async {
     filesScanned = 0;
     warnings.clear();
@@ -70,7 +74,7 @@ class IntentExtractor {
         result.unit.visitChildren(visitor);
 
         intents.addAll(visitor.intents);
-      } catch (e) {
+      } on Object catch (e) {
         warnings.add('Failed to process file ${file.path}: $e');
       }
     }
@@ -100,7 +104,7 @@ class IntentExtractor {
           }
         }
       }
-    } catch (_) {
+    } on Object catch (_) {
       // Ignore errors (e.g., `which` not found) and try next method
     }
 
@@ -120,7 +124,7 @@ class IntentExtractor {
           }
         }
       }
-    } catch (_) {
+    } on Object catch (_) {
       // Ignore errors and fallback to analyzer auto-detection
     }
 
@@ -250,19 +254,18 @@ class _IntentVisitor extends RecursiveAstVisitor<void> {
 
     if (args.isEmpty) return;
 
+    // No default case is needed. We only care about the specific builder
+    // methods for extracting intent data. Other methods (like .build()) are
+    // intentionally ignored here.
     switch (method) {
       case 'identifier':
         data.identifier = _extractStringLiteral(args.first);
-        break;
       case 'title':
         data.title = _extractStringLiteral(args.first);
-        break;
       case 'description':
         data.description = _extractStringLiteral(args.first);
-        break;
       case 'category':
         data.category = _extractEnumValue(args.first);
-        break;
     }
   }
 
@@ -312,12 +315,15 @@ class _BuilderConfig extends _IntentDataContainer {
   }
 }
 
-/// Represents an intent extracted from Dart code
+/// Represents an intent definition extracted from the source code.
 class ExtractedIntent extends _IntentDataContainer {
+  /// Whether the extracted intent has the minimum required fields.
   bool get isValid =>
       identifier != null && title != null && description != null;
 
-  /// Get the IntentCategory enum value
+  /// Gets the [IntentCategory] enum value from the raw [category] string.
+  ///
+  /// Defaults to [IntentCategory.general] if the category is null or unknown.
   IntentCategory get categoryEnum {
     if (category == null) return IntentCategory.general;
 
@@ -329,7 +335,6 @@ class ExtractedIntent extends _IntentDataContainer {
   }
 
   @override
-  String toString() {
-    return 'ExtractedIntent(identifier: $identifier, title: $title, ' 'category: $category)';
-  }
+  String toString() => 'ExtractedIntent(identifier: $identifier, '
+      'title: $title, category: $category)';
 }

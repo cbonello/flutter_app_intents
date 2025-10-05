@@ -1,12 +1,15 @@
 import 'package:flutter_app_intents/src/generator/intent_extractor.dart';
 
-/// Validates intent definitions for platform-specific requirements
+/// Validates intent definitions for platform-specific requirements.
 class IntentValidator {
+  /// Creates a new validator for a specific [targetPlatform].
   IntentValidator({required this.targetPlatform});
 
+  /// The platform to validate against, e.g., 'android' or 'ios'.
   final String targetPlatform;
 
-  /// Validate all intents
+  /// Validates a list of intents, checking for both individual errors and
+  /// cross-intent issues like duplicate identifiers.
   List<ValidationError> validateAll(List<ExtractedIntent> intents) {
     final errors = <ValidationError>[];
 
@@ -42,7 +45,7 @@ class IntentValidator {
     return errors;
   }
 
-  /// Validate a single intent
+  /// Validates a single intent for required fields and platform-specific rules.
   List<ValidationError> validate(ExtractedIntent intent) {
     final errors = <ValidationError>[];
 
@@ -114,16 +117,22 @@ class IntentValidator {
   }
 }
 
-/// Represents a validation error
+/// Represents a single validation error found in an intent definition.
 class ValidationError {
+  /// Creates a new validation error.
   ValidationError({
     required this.intent,
     required this.message,
     this.hint,
   });
 
+  /// The identifier of the intent that has an error.
   final String intent;
+
+  /// A description of the validation error.
   final String message;
+
+  /// An optional hint on how to fix the error.
   final String? hint;
 
   @override

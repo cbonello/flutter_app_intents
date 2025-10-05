@@ -6,6 +6,7 @@ import 'package:flutter_app_intents/src/generator/intent_validator.dart';
 import 'package:flutter_app_intents/src/generator/shortcuts_xml_generator.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:path/path.dart' as p;
 
 class MockIntentExtractor extends Mock implements IntentExtractor {}
 
@@ -27,6 +28,9 @@ void main() {
       originalCurrent = Directory.current;
       Directory.current = tempDir;
 
+      // Create a dummy pubspec.yaml so that the project root can be found.
+      File(p.join(tempDir.path, 'pubspec.yaml')).createSync();
+
       mockIntentExtractor = MockIntentExtractor();
       mockShortcutsXmlGenerator = MockShortcutsXmlGenerator();
       mockIntentValidator = MockIntentValidator();
@@ -36,7 +40,8 @@ void main() {
           ExtractedIntent()
             ..identifier = 'testIntent'
             ..title = 'Test Intent'
-            ..description = 'A test intent',
+            ..description = 'A test intent'
+            ..category = 'general',
         ],
       );
       when(() => mockIntentExtractor.filesScanned).thenReturn(1);
@@ -60,7 +65,7 @@ void main() {
     });
 
     group('run()', () {
-      test('defaults to android when platform is null', () async {
+      test('auto-detects android platform when platform is null', () async {
         await Directory('android').create();
         await cliRunner.run();
         final file = File('android/app/src/main/res/xml/shortcuts.xml');
@@ -68,9 +73,30 @@ void main() {
         verify(() => mockShortcutsXmlGenerator.generate(any()));
       });
 
+      test('auto-detects all platforms when platform is null', () async {
+        await Directory('android').create();
+        await Directory('ios').create();
+        await cliRunner.run();
+
+        // Android file should be generated
+        final file = File('android/app/src/main/res/xml/shortcuts.xml');
+        expect(file.existsSync(), isTrue);
+        verify(() => mockShortcutsXmlGenerator.generate(any()));
+
+        // iOS generation is not implemented, so we just check it doesn't throw
+      });
+
+      test('throws when no platforms are specified or detected', () {
+        expect(
+          () => cliRunner.run(),
+          throwsA(isA<Exception>()),
+        );
+      });
+
       test('uses specified platform', () async {
         await Directory('ios').create();
         await cliRunner.run(platform: 'ios');
+        // iOS generation is not implemented, so generate shouldn't be called.
         verifyNever(() => mockShortcutsXmlGenerator.generate(any()));
       });
 
@@ -90,8 +116,27 @@ void main() {
         );
       });
 
+      test('changes to project root before running', () async {
+        await Directory('android').create();
+        final subdir = await Directory('subdir').create();
+        Directory.current = subdir;
+
+        await cliRunner.run();
+
+        // Check that the file was created relative to the project root,
+        // not the subdirectory.
+        final file = File(
+          p.join(tempDir.path, 'android/app/src/main/res/xml/shortcuts.xml'),
+        );
+        expect(file.existsSync(), isTrue);
+      });
+    });
+
+    group('watch mode', () {
       test('generates files in watch mode on initial run', () async {
         await Directory('android').create();
+        await Directory('lib').create(); // Required for watch mode
+
         // We don't await this because it runs forever.
         // We can't easily test the file watching part in a unit test.
         // ignore: unawaited_futures
@@ -101,6 +146,16 @@ void main() {
         final file = File('android/app/src/main/res/xml/shortcuts.xml');
         expect(file.existsSync(), isTrue);
         verify(() => mockShortcutsXmlGenerator.generate(any()));
+      });
+
+      test('returns early in watch mode if lib directory is missing', () async {
+        await Directory('android').create();
+
+        // Run in watch mode without a 'lib' directory
+        await cliRunner.run(watch: true);
+
+        // Should not attempt to generate files if lib is missing
+        verifyNever(() => mockIntentExtractor.extractFromDirectory(any()));
       });
     });
 

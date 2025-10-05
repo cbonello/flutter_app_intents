@@ -5,23 +5,34 @@ import 'package:flutter_app_intents/src/models/intent_category.dart';
 import 'package:path/path.dart' as path;
 import 'package:xml/xml.dart';
 
-/// Generates Android shortcuts.xml file for App Actions
+/// Generates the `shortcuts.xml` file required for Android App Actions.
 class ShortcutsXmlGenerator {
+  /// Creates a new instance of the shortcuts.xml generator.
+  ///
+  /// The [projectRoot] is used to find the `AndroidManifest.xml` for
+  /// auto-detecting the main activity.
   ShortcutsXmlGenerator({this.projectRoot});
 
-  /// Project root directory (for finding AndroidManifest.xml)
+  /// The absolute path to the project root directory.
   final String? projectRoot;
 
-  /// Override for main activity class name (set via CLI --main-activity)
+  /// An optional override for the main activity class name.
+  ///
+  /// If provided, this value will be used for the `android:targetClass`
+  /// attribute in the generated `shortcuts.xml`. This is typically set via the
+  /// `--main-activity` CLI flag.
   String? mainActivityOverride;
 
-  /// Cached main activity class name
+  /// Cached main activity class name to avoid repeated file lookups.
   String? _cachedMainActivity;
 
-  /// Warnings generated during XML generation
+  /// A list of non-fatal warnings generated during the XML generation process.
+  ///
+  /// This list is cleared at the beginning of each `generate` call.
   final List<String> warnings = [];
 
-  /// Generate shortcuts.xml content from extracted intents
+  /// Generates the XML content for `shortcuts.xml` based on a list of
+  /// [intents].
   String generate(List<ExtractedIntent> intents) {
     // Clear warnings from previous generation
     warnings.clear();
@@ -47,7 +58,7 @@ class ShortcutsXmlGenerator {
     return document.toXmlString(pretty: true, indent: '  ');
   }
 
-  /// Generate a `<capability>` element for an intent
+  /// Generate a `<capability>` element for an intent.
   void _generateCapability(XmlBuilder builder, ExtractedIntent intent) {
     final biiAction = intent.categoryEnum.androidBII;
     final identifier = intent.identifier!;
@@ -88,9 +99,13 @@ class ShortcutsXmlGenerator {
     );
   }
 
-  /// Get the main activity class name
+  /// Gets the main activity class name.
   ///
-  /// Auto-detects from AndroidManifest.xml or falls back to 'MainActivity'
+  /// The lookup order is:
+  /// 1. [mainActivityOverride] if it is not null.
+  /// 2. The cached value from a previous detection.
+  /// 3. Auto-detection from `AndroidManifest.xml`.
+  /// 4. Fallback to 'MainActivity' if detection fails.
   String _getMainActivityClass() {
     // Use override if provided (from CLI --main-activity)
     if (mainActivityOverride != null) {
@@ -123,9 +138,9 @@ class ShortcutsXmlGenerator {
     return _cachedMainActivity!;
   }
 
-  /// Detect the main activity class from AndroidManifest.xml
+  /// Detects the main activity class from `AndroidManifest.xml`.
   ///
-  /// Returns null if detection fails
+  /// Returns the activity name as a string, or `null` if detection fails.
   String? _detectMainActivityFromManifest(String projectRoot) {
     try {
       // Look for AndroidManifest.xml in common locations
@@ -201,6 +216,7 @@ class ShortcutsXmlGenerator {
                 // Extract just the class name from the fully qualified name
                 return activityName.split('.').last;
               }
+
               // Return as-is if it's just a simple name
               return activityName;
             }

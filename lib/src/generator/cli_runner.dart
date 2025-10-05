@@ -31,20 +31,37 @@ class CliRunner {
   final ShortcutsXmlGenerator _shortcutsXmlGenerator;
   final IntentValidator Function(String) _intentValidatorFactory;
 
-  /// Run the code generator
+  /// Runs the code generator.
+  ///
+  /// Scans the `lib/` directory for `AppIntentBuilder` definitions and
+  /// generates platform-specific integration files.
+  ///
+  /// The [platform] can be 'android', 'ios', or a comma-separated list of
+  /// both (e.g., 'android,ios'). If null, platforms will be auto-detected
+  /// based on the presence of `android/` and `ios/` directories.
+  ///
+  /// The [mainActivity] is an optional override for the main activity class
+  /// name in Android's `shortcuts.xml`. If not provided, it's auto-detected
+  /// from the `AndroidManifest.xml`.
+  ///
+  /// If [watch] is true, the generator will continue running and re-generate
+  /// code whenever a `.dart` file in the `lib/` directory changes.
   Future<void> run({
     String? platform,
     String? mainActivity,
     bool watch = false,
   }) async {
-    final currentDir = Directory.current;
+    // Set current directory to project root. This allows file operations to use
+    // relative paths from the root.
+    final projectRoot = _findProjectRoot();
+    Directory.current = projectRoot;
 
     // Determine target platforms
     final platforms = _determinePlatforms(platform);
 
     stdout
       ..writeln('🔍 flutter_app_intents code generator')
-      ..writeln('📂 Project: ${currentDir.path}')
+      ..writeln('📂 Project: ${Directory.current.path}')
       ..writeln('🎯 Platforms: ${platforms.join(", ")}')
       ..writeln();
 
@@ -149,6 +166,14 @@ class CliRunner {
   }) async {
     await _validatePlatforms(platforms);
 
+    if (!Directory('lib').existsSync()) {
+      stdout.writeln(
+        '❌ The "lib" directory was not found. Watch mode requires this '
+        'directory to exist.',
+      );
+      return;
+    }
+
     stdout
       ..writeln('👀 Watching lib/ for changes... (Press Ctrl+C to stop)')
       ..writeln();
@@ -156,7 +181,10 @@ class CliRunner {
     // Initial generation
     await _generateForPlatforms(platforms, mainActivity: mainActivity);
 
-    // Watch for changes
+    // Watch for changes.
+    // Note: This is not optimized to re-scan only the changed file. For
+    // simplicity and robustness, it re-scans the entire lib/ directory on any
+    // .dart file change.
     final watcher = DirectoryWatcher('lib');
 
     try {
