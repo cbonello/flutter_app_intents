@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_app_intents/src/models/app_intent.dart';
 import 'package:flutter_app_intents/src/models/app_intent_parameter.dart';
 import 'package:flutter_app_intents/src/models/app_intent_result.dart';
+import 'package:flutter_app_intents/src/models/intent_donation.dart';
 import 'package:flutter_app_intents/src/services/flutter_app_intents_service.dart';
 import 'package:flutter_test/flutter_test.dart';
 

@@ -11,9 +11,15 @@ environment:
   flutter: ">=3.8.1"
 
 dependencies:
+  analyzer: ^6.4.1
+  args: ^2.5.0
   equatable: ^2.0.0
   flutter:
     sdk: flutter
+  meta: ^1.15.0
+  path: ^1.9.0
+  watcher: ^1.1.0
+  xml: ^6.5.0
 
 dev_dependencies:
   flutter_test:
@@ -21,9 +27,15 @@ dev_dependencies:
   mocktail: ^1.0.0
   very_good_analysis: ^7.0.0
 
+executables:
+  generate:
+
 flutter:
   plugin:
     platforms:
+      android:
+        package: com.flutter_app_intents
+        pluginClass: FlutterAppIntentsPlugin
       ios:
         pluginClass: FlutterAppIntentsPlugin
         fileName: flutter_app_intents.swift

@@ -45,6 +45,8 @@ public class FlutterAppIntentsPlugin: NSObject, FlutterPlugin {
         }
         
         switch call.method {
+        case "getIOSVersion":
+            getIOSVersion(result: result)
         case "registerIntent":
             registerIntent(call: call, result: result)
         case "registerIntents":
@@ -65,7 +67,21 @@ public class FlutterAppIntentsPlugin: NSObject, FlutterPlugin {
             result(FlutterMethodNotImplemented)
         }
     }
-    
+
+    /// Get the iOS major version number
+    ///
+    /// Returns the iOS major version (e.g., 16, 17) for platform capability checking.
+    ///
+    /// - Parameter result: Callback returning the iOS major version number
+    private func getIOSVersion(result: @escaping FlutterResult) {
+        if #available(iOS 16.0, *) {
+            let version = ProcessInfo.processInfo.operatingSystemVersion
+            result(version.majorVersion)
+        } else {
+            result(15) // Pre-iOS 16
+        }
+    }
+
     /// Registers a single App Intent from Flutter
     ///
     /// Creates a dynamic AppIntent instance and stores it in a thread-safe manner.

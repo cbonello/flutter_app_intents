@@ -1,15 +1,20 @@
 import 'package:equatable/equatable.dart';
 
 import 'package:flutter_app_intents/src/models/app_intent_parameter.dart';
+import 'package:flutter_app_intents/src/models/intent_category.dart';
+import 'package:flutter_app_intents/src/models/platform_hints.dart';
 
-/// Represents an Apple App Intent that can be registered with Siri and
-/// Shortcuts
+/// Represents an App Intent that can be registered with voice assistants
+///
+/// Supports both iOS (Siri/App Intents) and Android (Google Assistant/App Actions).
 class AppIntent extends Equatable {
   const AppIntent({
     required this.identifier,
     required this.title,
     required this.description,
     this.parameters = const [],
+    this.category,
+    this.hints,
     this.isEligibleForSearch = true,
     this.isEligibleForPrediction = true,
     this.authenticationPolicy = AuthenticationPolicy.none,
@@ -30,13 +35,26 @@ class AppIntent extends Equatable {
               }
             }).toList() ??
             [],
+        category = map['category'] != null
+            ? IntentCategory.values.firstWhere(
+                (c) => c.name == map['category'],
+                orElse: () => IntentCategory.general,
+              )
+            : null,
+        hints = map['hints'] != null
+            ? PlatformHints.fromMap(
+                map['hints'] as Map<String, dynamic>,
+              )
+            : null,
         isEligibleForSearch = map['isEligibleForSearch'] as bool? ?? true,
         isEligibleForPrediction =
             map['isEligibleForPrediction'] as bool? ?? true,
-        authenticationPolicy = AuthenticationPolicy.values.firstWhere(
-          (policy) => policy.name == map['authenticationPolicy'],
-          orElse: () => AuthenticationPolicy.none,
-        );
+        authenticationPolicy = map['authenticationPolicy'] != null
+            ? AuthenticationPolicy.values.firstWhere(
+                (policy) => policy.name == map['authenticationPolicy'],
+                orElse: () => AuthenticationPolicy.none,
+              )
+            : AuthenticationPolicy.none;
 
   /// Unique identifier for the intent
   final String identifier;
@@ -49,6 +67,21 @@ class AppIntent extends Equatable {
 
   /// Parameters that can be passed to the intent
   final List<AppIntentParameter> parameters;
+
+  /// Category for intent classification and BII mapping
+  ///
+  /// Optional for iOS (custom intents don't need categories).
+  /// Required for Android when generating shortcuts.xml (validates at
+  /// build-time).
+  ///
+  /// Defaults to [IntentCategory.general] if not specified on Android.
+  final IntentCategory? category;
+
+  /// Platform-specific customization hints
+  ///
+  /// Allows advanced configuration for each platform while keeping
+  /// the core intent definition platform-agnostic.
+  final PlatformHints? hints;
 
   /// Whether the intent can appear in Spotlight search results
   final bool isEligibleForSearch;
@@ -65,6 +98,8 @@ class AppIntent extends Equatable {
         title,
         description,
         parameters,
+        category,
+        hints,
         isEligibleForSearch,
         isEligibleForPrediction,
         authenticationPolicy,
@@ -76,6 +111,8 @@ class AppIntent extends Equatable {
     String? title,
     String? description,
     List<AppIntentParameter>? parameters,
+    IntentCategory? category,
+    PlatformHints? hints,
     bool? isEligibleForSearch,
     bool? isEligibleForPrediction,
     AuthenticationPolicy? authenticationPolicy,
@@ -85,6 +122,8 @@ class AppIntent extends Equatable {
       title: title ?? this.title,
       description: description ?? this.description,
       parameters: parameters ?? this.parameters,
+      category: category ?? this.category,
+      hints: hints ?? this.hints,
       isEligibleForSearch: isEligibleForSearch ?? this.isEligibleForSearch,
       isEligibleForPrediction:
           isEligibleForPrediction ?? this.isEligibleForPrediction,
@@ -99,6 +138,8 @@ class AppIntent extends Equatable {
       'title': title,
       'description': description,
       'parameters': parameters.map((p) => p.toMap()).toList(),
+      if (category != null) 'category': category!.name,
+      if (hints != null) 'hints': hints!.toMap(),
       'isEligibleForSearch': isEligibleForSearch,
       'isEligibleForPrediction': isEligibleForPrediction,
       'authenticationPolicy': authenticationPolicy.name,

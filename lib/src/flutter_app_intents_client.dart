@@ -7,6 +7,8 @@ import 'dart:async';
 import 'package:flutter_app_intents/src/models/app_intent.dart';
 import 'package:flutter_app_intents/src/models/app_intent_parameter.dart';
 import 'package:flutter_app_intents/src/models/app_intent_result.dart';
+import 'package:flutter_app_intents/src/models/intent_category.dart';
+import 'package:flutter_app_intents/src/models/platform_hints.dart';
 import 'package:flutter_app_intents/src/services/flutter_app_intents_service.dart';
 
 /// Main client for managing App Intents in Flutter applications
@@ -291,6 +293,8 @@ class AppIntentBuilder {
   String? _title;
   String? _description;
   final List<AppIntentParameter> _parameters = [];
+  IntentCategory? _category;
+  PlatformHints? _hints;
   bool _isEligibleForSearch = true;
   bool _isEligibleForPrediction = true;
   AuthenticationPolicy _authenticationPolicy = AuthenticationPolicy.none;
@@ -408,6 +412,50 @@ class AppIntentBuilder {
     return this;
   }
 
+  /// Set the category for this intent
+  ///
+  /// The category helps classify the intent and determines which
+  /// platform-specific capabilities are used:
+  ///
+  /// - iOS: Provides semantic meaning for Siri integration (optional)
+  /// - Android: Maps to Google Built-in Intents (BII) - required for Android
+  ///
+  /// Example categories:
+  /// - IntentCategory.general: Default for custom actions
+  /// - IntentCategory.fitness: Exercise and workout related
+  /// - IntentCategory.messaging: Send messages, communicate
+  /// - IntentCategory.music: Media playback
+  ///
+  /// Optional for iOS-only apps. Required when generating Android shortcuts.xml
+  /// (validated at build-time by code generator).
+  ///
+  /// Default: null (uses IntentCategory.general on Android if not specified)
+  AppIntentBuilder category(IntentCategory category) {
+    _category = category;
+
+    return this;
+  }
+
+  /// Set platform-specific hints for advanced customization
+  ///
+  /// Allows you to provide platform-specific optimizations while keeping
+  /// the core intent definition platform-agnostic.
+  ///
+  /// Example:
+  /// ```dart
+  /// .hints(PlatformHints(
+  ///   iosSuggestedPhrase: 'Start my morning workout',
+  ///   androidBIIOverride: 'actions.intent.START_EXERCISE',
+  /// ))
+  /// ```
+  ///
+  /// Optional: Only needed for advanced platform-specific customization
+  AppIntentBuilder hints(PlatformHints hints) {
+    _hints = hints;
+
+    return this;
+  }
+
   /// Set the authentication requirements for this intent
   ///
   /// Controls what level of device security is required before the intent
@@ -442,6 +490,10 @@ class AppIntentBuilder {
   /// - title: User-facing display name
   /// - description: Explanation of what the intent does
   ///
+  /// Optional fields:
+  /// - category: Intent category (required for Android, optional for iOS)
+  /// - hints: Platform-specific customization
+  ///
   /// Throws ArgumentError if any required fields are missing.
   ///
   /// Returns: A configured AppIntent ready for registration
@@ -455,6 +507,8 @@ class AppIntentBuilder {
       title: _title!,
       description: _description!,
       parameters: _parameters,
+      category: _category,
+      hints: _hints,
       isEligibleForSearch: _isEligibleForSearch,
       isEligibleForPrediction: _isEligibleForPrediction,
       authenticationPolicy: _authenticationPolicy,
