@@ -5,7 +5,7 @@ import 'package:flutter_app_intents/src/models/intent_category.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  group('IntentExtractor', () {
+  group(IntentExtractor, () {
     late Directory tempDir;
     late IntentExtractor extractor;
 
@@ -20,7 +20,8 @@ void main() {
 
     group('Method chaining pattern', () {
       test('extracts intent from chained builder', () async {
-        File('${tempDir.path}/test_intent.dart').writeAsStringSync('''
+        File('${tempDir.path}/test_intent.dart').writeAsStringSync(
+          '''
 import 'package:flutter_app_intents/flutter_app_intents.dart';
 
 final myIntent = AppIntentBuilder()
@@ -29,7 +30,8 @@ final myIntent = AppIntentBuilder()
   .description('A test intent')
   .category(IntentCategory.general)
   .build();
-''');
+''',
+        );
 
         final intents = await extractor.extractFromDirectory(tempDir.path);
 
@@ -76,7 +78,8 @@ final intent2 = AppIntentBuilder()
       test(
         'extracts intent from variable-based builder',
         () async {
-          File('${tempDir.path}/test.dart').writeAsStringSync('''
+          File('${tempDir.path}/test.dart').writeAsStringSync(
+            '''
 import 'package:flutter_app_intents/flutter_app_intents.dart';
 
 void setupIntents() {
@@ -87,7 +90,8 @@ void setupIntents() {
   builder.category(IntentCategory.fitness);
   final intent = builder.build();
 }
-''');
+''',
+          );
 
           final intents = await extractor.extractFromDirectory(tempDir.path);
 
@@ -102,7 +106,8 @@ void setupIntents() {
       test(
         'tracks builder across method calls',
         () async {
-          File('${tempDir.path}/test.dart').writeAsStringSync('''
+          File('${tempDir.path}/test.dart').writeAsStringSync(
+            '''
 import 'package:flutter_app_intents/flutter_app_intents.dart';
 
 void createIntent() {
@@ -112,7 +117,8 @@ void createIntent() {
   builder.description('Description');
   builder.build();
 }
-''');
+''',
+          );
 
           final intents = await extractor.extractFromDirectory(tempDir.path);
 
@@ -125,7 +131,8 @@ void createIntent() {
 
     group('Category enum validation', () {
       test('extracts category with IntentCategory prefix', () async {
-        File('${tempDir.path}/test.dart').writeAsStringSync('''
+        File('${tempDir.path}/test.dart').writeAsStringSync(
+          '''
 import 'package:flutter_app_intents/flutter_app_intents.dart';
 
 final intent = AppIntentBuilder()
@@ -134,7 +141,8 @@ final intent = AppIntentBuilder()
   .description('Test')
   .category(IntentCategory.messaging)
   .build();
-''');
+''',
+        );
 
         final intents = await extractor.extractFromDirectory(tempDir.path);
 
@@ -142,7 +150,8 @@ final intent = AppIntentBuilder()
       });
 
       test('validates enum is from IntentCategory', () async {
-        File('${tempDir.path}/test.dart').writeAsStringSync('''
+        File('${tempDir.path}/test.dart').writeAsStringSync(
+          '''
 import 'package:flutter_app_intents/flutter_app_intents.dart';
 
 enum MyCategory { general }
@@ -153,7 +162,8 @@ final intent = AppIntentBuilder()
   .description('Test')
   .category(MyCategory.general)
   .build();
-''');
+''',
+        );
 
         final intents = await extractor.extractFromDirectory(tempDir.path);
 
@@ -162,7 +172,8 @@ final intent = AppIntentBuilder()
       });
 
       test('extracts all category types correctly', () async {
-        File('${tempDir.path}/test.dart').writeAsStringSync('''
+        File('${tempDir.path}/test.dart').writeAsStringSync(
+          '''
 import 'package:flutter_app_intents/flutter_app_intents.dart';
 
 final general = AppIntentBuilder()
@@ -185,7 +196,8 @@ final messaging = AppIntentBuilder()
   .description('Messaging')
   .category(IntentCategory.messaging)
   .build();
-''');
+''',
+        );
 
         final intents = await extractor.extractFromDirectory(tempDir.path);
 
@@ -198,7 +210,8 @@ final messaging = AppIntentBuilder()
 
     group('File scanning', () {
       test('scans multiple files', () async {
-        File('${tempDir.path}/file1.dart').writeAsStringSync('''
+        File('${tempDir.path}/file1.dart').writeAsStringSync(
+          '''
 import 'package:flutter_app_intents/flutter_app_intents.dart';
 
 final intent1 = AppIntentBuilder()
@@ -206,9 +219,11 @@ final intent1 = AppIntentBuilder()
   .title('Intent 1')
   .description('First')
   .build();
-''');
+''',
+        );
 
-        File('${tempDir.path}/file2.dart').writeAsStringSync('''
+        File('${tempDir.path}/file2.dart').writeAsStringSync(
+          '''
 import 'package:flutter_app_intents/flutter_app_intents.dart';
 
 final intent2 = AppIntentBuilder()
@@ -216,7 +231,8 @@ final intent2 = AppIntentBuilder()
   .title('Intent 2')
   .description('Second')
   .build();
-''');
+''',
+        );
 
         final intents = await extractor.extractFromDirectory(tempDir.path);
 
@@ -225,7 +241,8 @@ final intent2 = AppIntentBuilder()
       });
 
       test('skips non-dart files', () async {
-        File('${tempDir.path}/test.dart').writeAsStringSync('''
+        File('${tempDir.path}/test.dart').writeAsStringSync(
+          '''
 import 'package:flutter_app_intents/flutter_app_intents.dart';
 
 final intent = AppIntentBuilder()
@@ -233,7 +250,8 @@ final intent = AppIntentBuilder()
   .title('Test')
   .description('Test')
   .build();
-''');
+''',
+        );
 
         File('${tempDir.path}/readme.txt').writeAsStringSync('Not dart code');
 
@@ -246,7 +264,8 @@ final intent = AppIntentBuilder()
       test('scans nested directories', () async {
         final subDir = Directory('${tempDir.path}/subdir')..createSync();
 
-        File('${subDir.path}/nested_intent.dart').writeAsStringSync('''
+        File('${subDir.path}/nested_intent.dart').writeAsStringSync(
+          '''
 import 'package:flutter_app_intents/flutter_app_intents.dart';
 
 final nested = AppIntentBuilder()
@@ -254,7 +273,8 @@ final nested = AppIntentBuilder()
   .title('Nested')
   .description('In subdirectory')
   .build();
-''');
+''',
+        );
 
         final intents = await extractor.extractFromDirectory(tempDir.path);
 
@@ -265,7 +285,8 @@ final nested = AppIntentBuilder()
       test('tracks files scanned count correctly', () async {
         // Create 3 dart files
         for (var i = 0; i < 3; i++) {
-          File('${tempDir.path}/file$i.dart').writeAsStringSync('''
+          File('${tempDir.path}/file$i.dart').writeAsStringSync(
+            '''
 import 'package:flutter_app_intents/flutter_app_intents.dart';
 
 final intent$i = AppIntentBuilder()
@@ -273,7 +294,8 @@ final intent$i = AppIntentBuilder()
   .title('Intent $i')
   .description('Intent $i')
   .build();
-''');
+''',
+          );
         }
 
         await extractor.extractFromDirectory(tempDir.path);
@@ -284,11 +306,13 @@ final intent$i = AppIntentBuilder()
 
     group('Edge cases', () {
       test('handles file with no intents', () async {
-        File('${tempDir.path}/empty.dart').writeAsStringSync('''
+        File('${tempDir.path}/empty.dart').writeAsStringSync(
+          '''
 void main() {
   print('No intents here');
 }
-''');
+''',
+        );
 
         final intents = await extractor.extractFromDirectory(tempDir.path);
 
@@ -296,9 +320,11 @@ void main() {
       });
 
       test('handles file with syntax errors gracefully', () async {
-        File('${tempDir.path}/broken.dart').writeAsStringSync('''
+        File('${tempDir.path}/broken.dart').writeAsStringSync(
+          '''
 This is not valid Dart code {{{
-''');
+''',
+        );
 
         // Should not crash
         final intents = await extractor.extractFromDirectory(tempDir.path);
@@ -314,14 +340,16 @@ This is not valid Dart code {{{
       });
 
       test('handles incomplete builder (missing build)', () async {
-        File('${tempDir.path}/incomplete.dart').writeAsStringSync('''
+        File('${tempDir.path}/incomplete.dart').writeAsStringSync(
+          '''
 import 'package:flutter_app_intents/flutter_app_intents.dart';
 
 final incomplete = AppIntentBuilder()
   .identifier('incomplete')
   .title('Incomplete')
   .description('No build() call');
-''');
+''',
+        );
 
         final intents = await extractor.extractFromDirectory(tempDir.path);
 

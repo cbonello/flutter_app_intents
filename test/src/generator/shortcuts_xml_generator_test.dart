@@ -100,11 +100,12 @@ void main() {
 
       test('auto-detects MainActivity from AndroidManifest.xml', () {
         // Create a mock AndroidManifest.xml
-        final androidDir = Directory('${tempDir.path}/android/app/src/main');
-        androidDir.createSync(recursive: true);
+        final androidDir = Directory('${tempDir.path}/android/app/src/main')
+          ..createSync(recursive: true);
 
-        final manifestFile = File('${androidDir.path}/AndroidManifest.xml');
-        manifestFile.writeAsStringSync('''
+        final manifestFile = File('${androidDir.path}/AndroidManifest.xml')
+          ..writeAsStringSync(
+            '''
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <application>
@@ -116,7 +117,8 @@ void main() {
         </activity>
     </application>
 </manifest>
-''');
+''',
+          );
 
         final generator = ShortcutsXmlGenerator(projectRoot: tempDir.path);
         final intents = [
@@ -135,11 +137,12 @@ void main() {
 
       test('detects custom activity name from AndroidManifest.xml', () {
         // Create a mock AndroidManifest.xml with custom activity
-        final androidDir = Directory('${tempDir.path}/android/app/src/main');
-        androidDir.createSync(recursive: true);
+        final androidDir = Directory('${tempDir.path}/android/app/src/main')
+          ..createSync(recursive: true);
 
-        final manifestFile = File('${androidDir.path}/AndroidManifest.xml');
-        manifestFile.writeAsStringSync('''
+        final manifestFile = File('${androidDir.path}/AndroidManifest.xml')
+          ..writeAsStringSync(
+            '''
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <application>
@@ -151,7 +154,8 @@ void main() {
         </activity>
     </application>
 </manifest>
-''');
+''',
+          );
 
         final generator = ShortcutsXmlGenerator(projectRoot: tempDir.path);
         final intents = [
@@ -169,11 +173,12 @@ void main() {
       });
 
       test('handles fully qualified activity names', () {
-        final androidDir = Directory('${tempDir.path}/android/app/src/main');
-        androidDir.createSync(recursive: true);
+        final androidDir = Directory('${tempDir.path}/android/app/src/main')
+          ..createSync(recursive: true);
 
-        final manifestFile = File('${androidDir.path}/AndroidManifest.xml');
-        manifestFile.writeAsStringSync('''
+        final manifestFile = File('${androidDir.path}/AndroidManifest.xml')
+          ..writeAsStringSync(
+            '''
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <application>
@@ -185,7 +190,8 @@ void main() {
         </activity>
     </application>
 </manifest>
-''');
+''',
+          );
 
         final generator = ShortcutsXmlGenerator(projectRoot: tempDir.path);
         final intents = [
@@ -228,11 +234,12 @@ void main() {
 
       test('override takes precedence over auto-detection', () {
         // Create AndroidManifest with MainActivity
-        final androidDir = Directory('${tempDir.path}/android/app/src/main');
-        androidDir.createSync(recursive: true);
+        final androidDir = Directory('${tempDir.path}/android/app/src/main')
+          ..createSync(recursive: true);
 
-        final manifestFile = File('${androidDir.path}/AndroidManifest.xml');
-        manifestFile.writeAsStringSync('''
+        final manifestFile = File('${androidDir.path}/AndroidManifest.xml')
+          ..writeAsStringSync(
+            '''
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <application>
@@ -244,7 +251,8 @@ void main() {
         </activity>
     </application>
 </manifest>
-''');
+''',
+          );
 
         final generator = ShortcutsXmlGenerator(projectRoot: tempDir.path)
           ..mainActivityOverride = 'CustomActivity';
@@ -276,15 +284,17 @@ void main() {
         ];
 
         // First generation - should create warning
-        final generator1 = ShortcutsXmlGenerator(projectRoot: tempDir.path);
-        generator1.generate(intents);
+        final generator1 = ShortcutsXmlGenerator(projectRoot: tempDir.path)
+          ..generate(intents);
         expect(generator1.warnings, hasLength(1));
 
         // Second generation with new instance - warnings should be fresh
-        final generator2 = ShortcutsXmlGenerator(projectRoot: tempDir.path);
-        generator2.generate(intents);
-        expect(generator2.warnings,
-            hasLength(1)); // Only one warning, not accumulated
+        final generator2 = ShortcutsXmlGenerator(projectRoot: tempDir.path)
+          ..generate(intents);
+        expect(
+          generator2.warnings,
+          hasLength(1),
+        ); // Only one warning, not accumulated
       });
     });
 
