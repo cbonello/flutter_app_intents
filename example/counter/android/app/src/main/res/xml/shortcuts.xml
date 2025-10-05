@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+  <capability android:name="actions.intent.OPEN_APP_FEATURE">
+    <intent android:targetPackage="${applicationId}" android:targetClass="MainActivity" android:action="android.intent.action.VIEW" android:data="app://intent/increment_counter"/>
+  </capability>
+  <capability android:name="actions.intent.OPEN_APP_FEATURE">
+    <intent android:targetPackage="${applicationId}" android:targetClass="MainActivity" android:action="android.intent.action.VIEW" android:data="app://intent/reset_counter"/>
+  </capability>
+  <capability android:name="actions.intent.OPEN_APP_FEATURE">
+    <intent android:targetPackage="${applicationId}" android:targetClass="MainActivity" android:action="android.intent.action.VIEW" android:data="app://intent/get_counter"/>
+  </capability>
+</shortcuts>

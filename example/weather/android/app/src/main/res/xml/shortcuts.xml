@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+  <capability android:name="actions.intent.GET_WEATHER">
+    <intent android:targetPackage="${applicationId}" android:targetClass="MainActivity" android:action="android.intent.action.VIEW" android:data="app://intent/get_current_weather"/>
+  </capability>
+  <capability android:name="actions.intent.GET_WEATHER">
+    <intent android:targetPackage="${applicationId}" android:targetClass="MainActivity" android:action="android.intent.action.VIEW" android:data="app://intent/get_temperature"/>
+  </capability>
+  <capability android:name="actions.intent.GET_WEATHER">
+    <intent android:targetPackage="${applicationId}" android:targetClass="MainActivity" android:action="android.intent.action.VIEW" android:data="app://intent/get_weather_forecast"/>
+  </capability>
+  <capability android:name="actions.intent.GET_WEATHER">
+    <intent android:targetPackage="${applicationId}" android:targetClass="MainActivity" android:action="android.intent.action.VIEW" android:data="app://intent/check_rain"/>
+  </capability>
+</shortcuts>

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+  <capability android:name="actions.intent.GET_DIRECTIONS">
+    <intent android:targetPackage="${applicationId}" android:targetClass="MainActivity" android:action="android.intent.action.VIEW" android:data="app://intent/open_profile"/>
+  </capability>
+  <capability android:name="actions.intent.SEND_MESSAGE">
+    <intent android:targetPackage="${applicationId}" android:targetClass="MainActivity" android:action="android.intent.action.VIEW" android:data="app://intent/open_chat"/>
+  </capability>
+  <capability android:name="actions.intent.OPEN_APP_FEATURE">
+    <intent android:targetPackage="${applicationId}" android:targetClass="MainActivity" android:action="android.intent.action.VIEW" android:data="app://intent/search_content"/>
+  </capability>
+  <capability android:name="actions.intent.OPEN_APP_FEATURE">
+    <intent android:targetPackage="${applicationId}" android:targetClass="MainActivity" android:action="android.intent.action.VIEW" android:data="app://intent/open_settings"/>
+  </capability>
+</shortcuts>

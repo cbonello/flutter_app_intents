@@ -70,6 +70,7 @@ class _WeatherHomePageState extends State<WeatherHomePage> {
         .identifier('get_current_weather')
         .title('Get Current Weather')
         .description('Get current weather conditions for a location')
+        .category(IntentCategory.weather)
         .parameter(
           const AppIntentParameter(
             name: 'location',
@@ -90,6 +91,7 @@ class _WeatherHomePageState extends State<WeatherHomePage> {
         .identifier('get_temperature')
         .title('Get Temperature')
         .description('Get current temperature for a location')
+        .category(IntentCategory.weather)
         .parameter(
           const AppIntentParameter(
             name: 'location',
@@ -110,6 +112,7 @@ class _WeatherHomePageState extends State<WeatherHomePage> {
         .identifier('get_weather_forecast')
         .title('Get Weather Forecast')
         .description('Get weather forecast for upcoming days')
+        .category(IntentCategory.weather)
         .parameter(
           const AppIntentParameter(
             name: 'location',
@@ -139,6 +142,7 @@ class _WeatherHomePageState extends State<WeatherHomePage> {
         .identifier('check_rain')
         .title('Check Rain')
         .description('Check if it is currently raining at a location')
+        .category(IntentCategory.weather)
         .parameter(
           const AppIntentParameter(
             name: 'location',

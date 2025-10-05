@@ -137,6 +137,7 @@ class _MyHomePageState extends State<MyHomePage> {
           .identifier('increment_counter')
           .title('Increment Counter')
           .description('Increments the counter by one')
+          .category(IntentCategory.general)
           .parameter(
             const AppIntentParameter(
               name: 'amount',
@@ -155,6 +156,7 @@ class _MyHomePageState extends State<MyHomePage> {
           .identifier('reset_counter')
           .title('Reset Counter')
           .description('Resets the counter to zero')
+          .category(IntentCategory.general)
           .build();
 
       // Create query intent with search eligibility
@@ -163,6 +165,7 @@ class _MyHomePageState extends State<MyHomePage> {
           .identifier('get_counter')
           .title('Get Counter Value')
           .description('Returns the current counter value')
+          .category(IntentCategory.general)
           .eligibleForSearch(eligible: true)
           .build();
 
