@@ -1,6 +1,7 @@
 /// Flutter App Intents - Cross-platform voice intent integration
 ///
-/// Provides unified API for iOS (Siri/App Intents) and Android (Google Assistant/App Actions).
+/// Provides unified API for iOS (Siri/App Intents) and Android (Google
+/// Assistant/App Actions).
 library;
 
 export 'src/flutter_app_intents_client.dart';
