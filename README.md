@@ -32,7 +32,7 @@ Add this to your package's `pubspec.yaml` file:
 
 ```yaml
 dependencies:
-  flutter_app_intents: ^0.7.0
+  flutter_app_intents: ^0.8.0
 ```
 
 ### Swift Package Manager (Advanced)
@@ -42,7 +42,7 @@ For iOS developers who want to use the native Swift components directly, this pa
 ```swift
 // In Package.swift
 dependencies: [
-    .package(url: "https://github.com/cbonello/flutter_app_intents", from: "0.7.0")
+    .package(url: "https://github.com/cbonello/flutter_app_intents", from: "0.8.0")
 ]
 ```
 
@@ -63,11 +63,122 @@ iOS Shortcuts/Siri → Static Swift Intent → Flutter Plugin Bridge → Your Fl
 
 The static Swift intents act as a bridge, calling your Flutter handlers when executed.
 
+## Code Generation (Recommended)
+
+**NEW in v0.8.0**: Automatically generate platform-specific code from your Dart intent definitions!
+
+Instead of manually writing static intents, use our code generator to create them automatically:
+
+```bash
+# Generate platform code from your Dart intents
+dart run flutter_app_intents:app_intents_cli
+
+# Output:
+# 🔍 Scanning lib/ for intent definitions...
+# ✅ Found 3 intent(s) in 2 file(s)
+# 📱 Processing platform: android
+# 📝 Generated: android/app/src/main/res/xml/shortcuts.xml
+# 📱 Processing platform: ios
+# 📝 Generated: ios/Runner/AppShortcuts.swift
+# ✅ Code generation complete!
+```
+
+### What Gets Generated?
+
+**For Android:**
+- `android/app/src/main/res/xml/shortcuts.xml` - Google Assistant integration
+
+**For iOS:**
+- `ios/Runner/AppShortcuts.swift` - Siri shortcuts and App Intents
+
+### How It Works
+
+1. **Define intents in Dart** using `AppIntentBuilder()`
+2. **Run the generator** with `dart run flutter_app_intents:app_intents_cli`
+3. **Add generated files to your project** (iOS: add to Xcode)
+4. **Build and test** your app
+
+### Installation Options
+
+**Option 1: Run from your project (Recommended for most users)**
+```bash
+dart run flutter_app_intents:app_intents_cli
+```
+
+**Option 2: Install globally (Convenient for frequent use)**
+```bash
+# Install globally
+dart pub global activate flutter_app_intents
+
+# Then run from anywhere
+app_intents_cli
+```
+
+After global installation, you can use `app_intents_cli` as a command from any directory.
+
+### Generator Options
+
+```bash
+# Auto-detect platforms (default)
+dart run flutter_app_intents:app_intents_cli
+# or (if installed globally)
+app_intents_cli
+
+# Specify platform(s)
+app_intents_cli --platform=ios
+app_intents_cli --platform=android,ios
+
+# Watch mode (regenerate on file changes)
+app_intents_cli --watch
+
+# Custom main activity (Android)
+app_intents_cli --main-activity=SplashActivity
+```
+
+> **Note:** Replace `app_intents_cli` with `dart run flutter_app_intents:app_intents_cli` if not using global installation.
+
+### Benefits
+
+- ✅ **No manual Swift/XML coding** - Generate from Dart
+- ✅ **Type-safe** - Compile-time validation
+- ✅ **Consistent** - Single source of truth
+- ✅ **Fast iteration** - Watch mode for instant updates
+- ✅ **Error prevention** - Validates intent definitions
+
+> **Note:** You can still manually write static intents if you prefer. The generator is optional but strongly recommended for most use cases.
+
 ## Simple Example
 
-> **Note:** This example shows the core logic, but a complete implementation requires a corresponding static intent in your iOS app's `AppDelegate.swift`. See the [iOS Configuration](#ios-configuration) section for details.
-
 Create a voice-controlled counter app in just a few steps:
+
+### Using Code Generation (Recommended)
+
+```dart
+// 1. Define your intent in Dart
+final intent = AppIntentBuilder()
+    .identifier('increment_counter')
+    .title('Increment Counter')
+    .description('Increments the counter by one')
+    .category(IntentCategory.general)
+    .build();
+
+// 2. Register with a handler
+await client.registerIntent(intent, (parameters) async {
+  incrementCounter();
+  return AppIntentResult.successful(value: 'Counter incremented!');
+});
+```
+
+```bash
+# 3. Generate platform code
+dart run flutter_app_intents:app_intents_cli
+```
+
+✅ That's it! The generator creates the static Swift intents automatically.
+
+### Manual Setup (Alternative)
+
+> **Note:** This shows manual setup. Most developers should use the code generator above instead.
 
 ```dart
 // 1. Register your intent
@@ -471,11 +582,30 @@ if (result.isSuccess) {
 
 ## iOS Configuration
 
-### Required Setup: Static App Intents in Main App Target
+### Recommended: Use Code Generator
 
-**⚠️ Important**: iOS App Intents framework requires static intent declarations in your main app target, not just dynamic registration from the plugin. 
+**✨ NEW in v0.8.0**: The easiest way to set up iOS App Intents is using the code generator:
 
-Add this code to your iOS app's `AppDelegate.swift`:
+```bash
+# 1. Define intents in Dart with AppIntentBuilder
+# 2. Run the generator
+dart run flutter_app_intents:app_intents_cli --platform=ios
+
+# 3. Add the generated file to Xcode:
+#    - Open ios/Runner.xcworkspace in Xcode
+#    - Right-click on Runner folder → "Add Files to Runner"
+#    - Select ios/Runner/AppShortcuts.swift
+#    - Check "Copy items if needed" and "Runner" target
+#    - Click "Add"
+```
+
+The generator creates `ios/Runner/AppShortcuts.swift` with all the static intents automatically configured to call your Flutter handlers.
+
+### Manual Setup (Alternative)
+
+**⚠️ Note**: Manual setup is only needed if you're not using the code generator.
+
+iOS App Intents framework requires static intent declarations in your main app target. Add this code to your iOS app's `AppDelegate.swift`:
 
 ```swift
 import Flutter

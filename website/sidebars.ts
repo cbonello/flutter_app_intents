@@ -21,6 +21,7 @@ const sidebars: SidebarsConfig = {
     'intro',
     'getting-started',
     'swift-package-manager',
+    'migration-guide',
     'examples',
     'ios-configuration',
     'navigation',

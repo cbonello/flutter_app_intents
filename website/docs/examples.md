@@ -71,16 +71,99 @@ This section provides three complete example applications demonstrating differen
 
 All examples demonstrate the **hybrid approach** required for Flutter App Intents:
 
-1. **Static Swift App Intents** (`ios/Runner/AppDelegate.swift`) - Required for iOS discovery
+1. **Static Swift/XML App Intents** (generated or manual) - Required for platform discovery
 2. **Flutter handlers** (`lib/main.dart`) - Your app's business logic
 3. **Bridge communication** - Static intents call Flutter handlers via the plugin
+
+## Code Generation
+
+**✨ NEW in v0.8.0**: All examples now support automatic code generation!
+
+Instead of manually writing platform-specific code, the examples use the code generator:
+
+```bash
+# From any example directory
+cd example/counter  # or navigation, or weather
+
+# Generate platform code
+dart run flutter_app_intents:app_intents_cli
+```
+
+This automatically creates:
+- **iOS**: `ios/Runner/AppShortcuts.swift` with complete App Intents implementation
+- **Android**: `android/app/src/main/res/xml/shortcuts.xml` for Google Assistant
+
+### Using the Examples with Code Generation
+
+1. **Navigate to an example**:
+```bash
+cd example/counter
+```
+
+2. **Install dependencies**:
+```bash
+flutter pub get
+```
+
+3. **Generate platform code**:
+```bash
+dart run flutter_app_intents:app_intents_cli
+```
+
+4. **Add iOS file to Xcode** (iOS only):
+   - Open `ios/Runner.xcworkspace` in Xcode
+   - Right-click on Runner → "Add Files to Runner"
+   - Select `ios/Runner/AppShortcuts.swift`
+   - Check "Copy items if needed" and "Runner" target
+
+5. **Run the example**:
+```bash
+flutter run
+```
+
+### Regenerating After Changes
+
+If you modify intent definitions in any example's `lib/main.dart`, regenerate the platform code:
+
+```bash
+# Auto-regenerate (recommended for development)
+dart run flutter_app_intents:app_intents_cli --watch
+
+# Or manually
+dart run flutter_app_intents:app_intents_cli
+```
+
+**Then hot restart your app (press `R` in Flutter terminal).**
+
+> **⚠️ Why Hot Restart, Not Hot Reload?**
+>
+> - **Hot reload** (`r`) only updates Dart code changes - it's fast but limited to Flutter framework
+> - **Hot restart** (`R`) restarts the entire app including native platform code
+>
+> The generated files (`AppShortcuts.swift` for iOS, `shortcuts.xml` for Android) are **native platform resources**, not Dart code. They require a full app restart to be loaded by the operating system.
+>
+> **What happens if you only hot reload:**
+> - ❌ iOS: Siri won't see the updated intent definitions
+> - ❌ Android: Google Assistant won't recognize new shortcuts
+> - ❌ Your changes won't take effect until full restart
+>
+> **Remember:** Press `R` (capital R) after regenerating platform files!
 
 ## Quick Start
 
 ### Prerequisites
-- Flutter environment with iOS development setup
-- **iOS 16.0 or later** device or simulator
+
+**iOS:**
+- iOS 16.0 or later device or simulator
 - Xcode 14.0 or later
+
+**Android:**
+- Android API 23+ (Android 6.0 or later)
+- Android device or emulator with Google Assistant
+- Android Studio (recommended)
+
+**General:**
+- Flutter 3.8.1 or later
 
 ### Running the Examples
 
@@ -107,25 +190,58 @@ flutter run
 
 ### Testing App Intents
 
+**iOS (Siri):**
 1. **Shortcuts App**: Check for your app's shortcuts under "App Shortcuts"
 2. **Enable Siri**: ⚠️ **IMPORTANT** - In Shortcuts app, tap your app's shortcuts and toggle ON the Siri switch (it's OFF by default)
-3. **Siri Commands**: Use voice commands with your app name
-4. **Settings**: Go to Settings > Siri & Search > App Shortcuts
-5. **Manual Testing**: Use in-app buttons to test functionality
+3. **Test Voice Commands**:
+   - "Hey Siri, [action] with [Your App Name]"
+   - Example: "Hey Siri, increment counter with Counter Example"
+4. **Settings**: Go to Settings → Siri & Search → App Shortcuts
+
+**Android (Google Assistant):**
+1. **Voice Commands**: Say "Hey Google, [action] with [Your App Name]"
+   - Example: "Hey Google, increment counter with My App"
+2. **ADB Testing**: Use `adb shell am start` commands for testing without voice
+3. **Google Assistant Plugin**: Use Android Studio's App Actions Test Tool
+4. **Logcat**: Check logs with `adb logcat | grep flutter_app_intents`
+
+**Manual Testing (Both Platforms):**
+- Use in-app buttons to test functionality without voice commands
 
 ## Common Troubleshooting
 
+### iOS Issues
+
 **Shortcuts not appearing?**
 1. Ensure iOS 16.0+ device/simulator
-2. Wait for iOS to register static intents
-3. Check console logs for registration status
-4. Try restarting the Shortcuts app
+2. Verify `AppShortcuts.swift` was added to Xcode project
+3. Wait for iOS to register static intents (can take a minute)
+4. Check console logs for registration status
+5. Try restarting the Shortcuts app
 
 **Siri not recognizing commands?**
-1. **Enable Siri toggle first**: In Shortcuts app → [Your App] Shortcuts → Toggle ON the Siri switch
+1. **Enable Siri toggle first**: In Shortcuts app → [Your App] Shortcuts → Toggle ON the Siri switch (⚠️ **OFF by default**)
 2. Use exact app name in voice commands
 3. Try manual shortcuts first to help Siri learn
-4. Add custom phrases in Settings > Siri & Search
+4. Add custom phrases in Settings → Siri & Search
+
+### Android Issues
+
+**Google Assistant not recognizing commands?**
+1. Ensure `shortcuts.xml` was generated in `android/app/src/main/res/xml/`
+2. Check BII mapping matches your intent category
+3. Use correct phrasing for your BII type (see [Android Configuration](/flutter_app_intents/docs/android-configuration))
+4. Clear Google app data: Settings → Apps → Google → Storage → Clear Cache
+5. Rebuild your app: `flutter clean && flutter run`
+
+**Hot reload not updating shortcuts?**
+- Use **hot restart** (press `R` in terminal) after regenerating platform files
+- Android: XML resources require full restart
+- iOS: Swift files require full rebuild
+
+**Testing without devices?**
+- iOS: Use iOS Simulator (iOS 16.0+ required)
+- Android: Use emulator with Google Play Services installed
 
 For detailed troubleshooting, see the [Troubleshooting](/flutter_app_intents/docs/troubleshooting) section.
 

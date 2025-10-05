@@ -23,7 +23,7 @@ Add the following to your `Package.swift` file:
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/cbonello/flutter_app_intents", from: "0.7.0")
+    .package(url: "https://github.com/cbonello/flutter_app_intents", from: "0.8.0")
 ],
 targets: [
     .target(
@@ -99,7 +99,7 @@ For most Flutter developers, use the standard plugin installation:
 
 ```yaml
 dependencies:
-  flutter_app_intents: ^0.7.0
+  flutter_app_intents: ^0.8.0
 ```
 
 Then follow the setup instructions in the main [README](README.md).

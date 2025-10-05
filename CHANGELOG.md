@@ -5,6 +5,128 @@ All notable changes to the Flutter App Intents package will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.8.0] - 2025-10-05
+
+### Added
+- **iOS Code Generation**: Automatic Swift code generation from Dart intent definitions
+  - Generates `ios/Runner/AppShortcuts.swift` with complete App Intents implementation
+  - Creates AppIntent structs for each intent with proper Swift syntax
+  - Generates AppShortcutsProvider with Siri phrase integration
+  - Automatic SF Symbol mapping for all 20+ intent categories
+  - Enforces iOS 10-intent limit with helpful warnings
+  - Validates intent definitions at generation time
+- **Unified Code Generator**: Single CLI tool for both Android and iOS platforms
+  - `dart run flutter_app_intents:app_intents_cli` generates code for both platforms
+  - Auto-detects available platforms (checks for `android/` and `ios/` directories)
+  - Platform-specific generation with `--platform=ios` or `--platform=android`
+  - Multi-platform generation with `--platform=android,ios`
+  - Watch mode for automatic regeneration on file changes
+- **AppShortcutsProviderGenerator**: New iOS code generation engine
+  - Converts snake_case identifiers to PascalCase Swift struct names
+  - Generates short titles for UI display (max 2-3 words)
+  - Creates natural Siri phrases with `.applicationName` placeholders
+  - Maps IntentCategory enum to appropriate SF Symbols
+  - Generates complete Flutter plugin bridge integration
+  - Includes error handling with `IntentExecutionError`
+- **Enhanced CLI Features**:
+  - Improved validation error messages for both platforms
+  - Platform-specific warning system (iOS 10-intent limit, Android BII requirements)
+  - Better progress indicators and generation output
+  - Helpful next steps for Xcode integration
+  - Custom main activity support for Android with `--main-activity` flag
+  - Global installation support with `dart pub global activate flutter_app_intents`
+  - Renamed CLI executable to `app_intents_cli` for better discoverability
+  - Run with `dart run flutter_app_intents:app_intents_cli` or `app_intents_cli` (when installed globally)
+- **Comprehensive Test Coverage**: 221 total passing tests
+  - 14 new tests for iOS generator (`app_shortcuts_provider_generator_test.dart`)
+  - 6 new iOS integration tests in existing integration test suite
+  - Updated CLI runner tests to cover both Android and iOS generation
+  - Tests for SF Symbol mapping across all 20+ categories
+  - Tests for 10-intent limit enforcement
+  - Tests for struct name generation and phrase creation
+
+### Enhanced
+- **Documentation**: Comprehensive updates across all documentation
+  - New "Code Generation" section in main README with examples
+  - Updated iOS Configuration section to recommend generator over manual setup
+  - Updated all three example READMEs (counter, navigation, weather)
+  - Added iOS-specific generation instructions and Xcode integration steps
+  - Enhanced "Simple Example" section with generator workflow
+  - Clear benefits and use case guidance for code generation
+- **Developer Experience**: Streamlined iOS App Intents integration
+  - No more manual Swift coding for most use cases
+  - Single command generates all platform code from Dart
+  - Automatic validation prevents common errors
+  - Watch mode enables rapid iteration
+  - Generated code includes helpful comments and structure
+- **Intent Extractor**: Enhanced AST analysis
+  - Now extracts intent category for platform-specific features
+  - Better error reporting for malformed intent definitions
+  - Improved handling of nested Dart files
+- **CLI Runner**: Improved platform handling
+  - Reads app name from `pubspec.yaml` for iOS generation
+  - Creates output directories if they don't exist
+  - Better error messages for missing platform directories
+  - Clearer output formatting and progress indication
+
+### Technical Improvements
+- **Code Generation Architecture**: Clean separation of concerns
+  - Platform-specific generators (Android XML, iOS Swift)
+  - Shared intent extraction and validation
+  - Extensible design for future platform support
+- **SF Symbol Mapping**: Complete category coverage
+  - general → 'app.fill'
+  - fitness → 'figure.run'
+  - messaging → 'message.fill'
+  - calling → 'phone.fill'
+  - music → 'music.note'
+  - video → 'play.circle.fill'
+  - notes → 'note.text'
+  - tasks → 'checklist'
+  - calendar → 'calendar'
+  - navigation → 'map.fill'
+  - taxi → 'car.fill'
+  - ordering → 'fork.knife'
+  - cart → 'cart.fill'
+  - deviceControl → 'light.beacon.max.fill'
+  - nutrition → 'fork.knife'
+  - timer → 'timer'
+  - alarm → 'alarm.fill'
+  - reminder → 'bell.fill'
+  - weather → 'cloud.sun.fill'
+  - news → 'newspaper.fill'
+- **Generator Output Quality**: Professional Swift code generation
+  - Proper indentation and formatting
+  - iOS availability annotations (@available(iOS 16.0, *))
+  - Complete import statements
+  - Helpful generation comments with instructions
+  - Integration with existing FlutterAppIntentsPlugin.shared
+
+### Fixed
+- **Intent Category Extraction**: Fixed category field extraction in AST visitor
+  - Now properly extracts `IntentCategory` enum values
+  - Handles both `IntentCategory.fitness` and imported enum patterns
+  - Defaults to `IntentCategory.general` when not specified
+
+### Developer Workflow
+- **New recommended workflow**:
+  1. Define intents in Dart using `AppIntentBuilder()`
+  2. Run `dart run flutter_app_intents:app_intents_cli` (or `app_intents_cli` if installed globally)
+  3. Add generated `AppShortcuts.swift` to Xcode project (iOS only - Android `shortcuts.xml` is auto-included)
+  4. Build and test with `flutter run`
+- **Old manual workflow still supported** for advanced customization
+
+### Migration Guide
+Existing projects can migrate to code generation:
+1. Add `.category(IntentCategory.xxx)` to existing `AppIntentBuilder` calls
+2. Run `dart run flutter_app_intents:app_intents_cli --platform=ios`
+3. Replace manual Swift code in `AppDelegate.swift` with generated `AppShortcuts.swift`
+4. Add generated file to Xcode project
+5. Remove old manual AppIntent definitions
+
+### Breaking Changes
+None - Code generation is optional and existing manual workflows continue to work.
+
 ## [0.7.0] - 2025-10-02
 
 ### Fixed

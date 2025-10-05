@@ -71,11 +71,78 @@ flutter run
 
 5. **Settings**: Go to Settings > Siri & Search > App Shortcuts
 
+## Code Generation
+
+**✨ NEW**: This example uses the code generator to automatically create iOS static intents from Dart definitions.
+
+### How It Works
+
+1. **Dart Intent Definitions** (`lib/main.dart`):
+```dart
+final getCurrentWeatherIntent = AppIntentBuilder()
+    .identifier('get_current_weather')
+    .title('Get Current Weather')
+    .description('Get current weather conditions for a location')
+    .category(IntentCategory.weather)
+    .build();
+```
+
+2. **Generate Platform Code**:
+```bash
+dart run flutter_app_intents:app_intents_cli
+```
+
+3. **Generated Output** (`ios/Runner/AppShortcuts.swift`):
+- Swift AppIntent structs for each weather query
+- AppShortcutsProvider with weather-specific phrases
+- Automatic bridging to Flutter data handlers
+- Background operation support (no app opening required)
+
+### Query Intent Pattern
+
+Weather query intents automatically include:
+- `ReturnsValue<String>` for data responses
+- `ProvidesDialog` for Siri voice output
+- Parameter handling for locations and options
+- Background operation (no `OpensIntent`)
+
+### Regenerate After Changes
+
+If you modify the intent definitions in Dart, regenerate the platform code:
+
+```bash
+# Auto-detect platforms
+dart run flutter_app_intents:app_intents_cli
+
+# iOS only
+dart run flutter_app_intents:app_intents_cli --platform=ios
+
+# Watch mode (regenerate on file changes)
+dart run flutter_app_intents:app_intents_cli --watch
+```
+
+**Then hot restart your app (press `R` in Flutter terminal).**
+
+> **⚠️ Why Hot Restart, Not Hot Reload?**
+>
+> - **Hot reload** (`r`) only updates Dart code - it's fast but limited to Flutter framework
+> - **Hot restart** (`R`) restarts the entire app including native platform code
+>
+> `AppShortcuts.swift` is a **native iOS Swift file**, not Dart code. iOS loads these files when the app starts, so changes require a full app restart to be recognized by Siri.
+>
+> **What happens if you only hot reload:**
+> - ❌ Siri won't see the updated intent definitions
+> - ❌ Changes to phrases won't take effect
+> - ❌ New intents won't appear in Shortcuts app
+> - ✅ Only a hot restart will reload the native iOS code
+>
+> **Remember:** Press `R` (capital R) after regenerating!
+
 ## Implementation Details
 
-### Static Swift Intents
+### Generated Swift Intents
 
-The iOS side defines static query intents in `AppDelegate.swift`:
+The code generator creates static query intents in `ios/Runner/AppShortcuts.swift`:
 
 ```swift
 @available(iOS 16.0, *)

@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:flutter_app_intents/src/generator/app_shortcuts_provider_generator.dart';
 import 'package:flutter_app_intents/src/generator/intent_extractor.dart';
 import 'package:flutter_app_intents/src/generator/intent_validator.dart';
 import 'package:flutter_app_intents/src/generator/shortcuts_xml_generator.dart';
@@ -14,6 +15,7 @@ class CliRunner {
         _shortcutsXmlGenerator = ShortcutsXmlGenerator(
           projectRoot: _findProjectRoot(),
         ),
+        _appShortcutsProviderGenerator = AppShortcutsProviderGenerator(),
         _intentValidatorFactory =
             ((platform) => IntentValidator(targetPlatform: platform));
 
@@ -22,13 +24,16 @@ class CliRunner {
   CliRunner.test({
     required IntentExtractor intentExtractor,
     required ShortcutsXmlGenerator shortcutsXmlGenerator,
+    required AppShortcutsProviderGenerator appShortcutsProviderGenerator,
     required IntentValidator Function(String) intentValidatorFactory,
   })  : _intentExtractor = intentExtractor,
         _shortcutsXmlGenerator = shortcutsXmlGenerator,
+        _appShortcutsProviderGenerator = appShortcutsProviderGenerator,
         _intentValidatorFactory = intentValidatorFactory;
 
   final IntentExtractor _intentExtractor;
   final ShortcutsXmlGenerator _shortcutsXmlGenerator;
+  final AppShortcutsProviderGenerator _appShortcutsProviderGenerator;
   final IntentValidator Function(String) _intentValidatorFactory;
 
   /// Runs the code generator.
@@ -324,11 +329,7 @@ class CliRunner {
       if (platform == 'android') {
         await _generateAndroid(intents, mainActivity: mainActivity);
       } else if (platform == 'ios') {
-        stdout
-          ..writeln('⚠️  iOS code generation not yet implemented (v1.1.0+)')
-          ..writeln(
-            '   iOS uses dynamic App Intents - no code generation required.',
-          );
+        await _generateIOS(intents);
       }
 
       stdout.writeln();
@@ -366,6 +367,46 @@ class CliRunner {
     stdout.writeln('📝 Generated: $outputPath');
   }
 
+  /// Generate iOS AppShortcuts.swift
+  Future<void> _generateIOS(List<ExtractedIntent> intents) async {
+    // Get app name from pubspec if available
+    String? appName;
+    final pubspecFile = File('pubspec.yaml');
+    if (await pubspecFile.exists()) {
+      final pubspecContent = await pubspecFile.readAsString();
+      final nameMatch = RegExp(r'^name:\s*(.+)$', multiLine: true)
+          .firstMatch(pubspecContent);
+      if (nameMatch != null) {
+        appName = nameMatch.group(1)?.trim();
+      }
+    }
+
+    final swift = _appShortcutsProviderGenerator.generate(
+      intents,
+      appName: appName,
+    );
+
+    // Display any warnings from generation
+    if (_appShortcutsProviderGenerator.warnings.isNotEmpty) {
+      stdout.writeln('⚠️  Warnings:');
+      for (final warning in _appShortcutsProviderGenerator.warnings) {
+        stdout.writeln('   $warning');
+      }
+      stdout.writeln();
+    }
+
+    const outputPath = 'ios/Runner/AppShortcuts.swift';
+    final outputFile = File(outputPath);
+
+    // Create directory if it doesn't exist
+    await outputFile.parent.create(recursive: true);
+
+    // Write the file
+    await outputFile.writeAsString(swift);
+
+    stdout.writeln('📝 Generated: $outputPath');
+  }
+
   /// Print next steps for the user
   void _printNextSteps(List<String> platforms) {
     if (platforms.contains('android')) {
@@ -380,9 +421,10 @@ class CliRunner {
     if (platforms.contains('ios')) {
       stdout
         ..writeln('📌 Next steps for iOS:')
-        ..writeln('   1. Define AppShortcutsProvider in Swift')
+        ..writeln('   1. Add AppShortcuts.swift to your Xcode project')
         ..writeln('   2. Run: flutter build ios')
-        ..writeln('   3. Test with Siri')
+        ..writeln('   3. Test with Siri or Shortcuts app')
+        ..writeln('   4. Remember: Clean build required after Swift changes')
         ..writeln();
     }
   }

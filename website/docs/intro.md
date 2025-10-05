@@ -12,9 +12,11 @@ A Flutter plugin for integrating Apple App Intents with your iOS applications. T
 
 ## Features
 
+- **Code Generation**: Automatically generate iOS and Android platform code from Dart definitions (NEW in v0.8.0)
 - **Siri Integration**: Create custom voice commands for your app's actions.
 - **Shortcuts Support**: Allow users to create and manage shortcuts for your app's functionality.
-- **Modern iOS Support**: Built for iOS 16+ using the latest AppIntents framework.
+- **Google Assistant**: Android App Actions for voice commands and Google Assistant integration.
+- **Modern Platform Support**: Built for iOS 16+ (AppIntents) and Android API 23+ (App Actions).
 - **Type-Safe API**: A strongly-typed Dart API for defining intents and parameters.
 - **Intent Donation**: Proactively donate intents to the system for predictive suggestions.
 - **Error Handling**: Comprehensive exception management for robust integrations.
@@ -28,7 +30,7 @@ Add this to your package's `pubspec.yaml` file:
 
 ```yaml
 dependencies:
-  flutter_app_intents: ^0.7.0
+  flutter_app_intents: ^0.8.0
 ```
 
 ### Swift Package Manager (Advanced)
@@ -40,7 +42,7 @@ For iOS developers who want to use the native Swift components directly, this pa
 **Via Package.swift:**
 ```swift
 dependencies: [
-    .package(url: "https://github.com/cbonello/flutter_app_intents", from: "0.7.0")
+    .package(url: "https://github.com/cbonello/flutter_app_intents", from: "0.8.0")
 ]
 ```
 

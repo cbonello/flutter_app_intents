@@ -103,7 +103,7 @@ For most Flutter developers, use the standard plugin installation:
 
 ```yaml
 dependencies:
-  flutter_app_intents: ^0.7.0
+  flutter_app_intents: ^0.8.0
 ```
 
 Then follow the setup instructions in the [Getting Started](/flutter_app_intents/docs/getting-started) guide.

@@ -88,40 +88,35 @@ class IntentExtractor {
   String? _findDartSdkPath() {
     try {
       // Try to find Flutter's Dart SDK
-      final flutterResult = Process.runSync('which', ['flutter']);
-      if (flutterResult.exitCode == 0) {
-        final flutterPath = (flutterResult.stdout as String).trim();
-        if (flutterPath.isNotEmpty) {
-          // Resolve symlinks to get the real path
-          final realFlutterPath = File(flutterPath).resolveSymbolicLinksSync();
-          // Flutter path is usually: /path/to/flutter/bin/flutter
-          // Dart SDK is at: /path/to/flutter/bin/cache/dart-sdk
-          final flutterBinDir = p.dirname(realFlutterPath);
-          final flutterDir = p.dirname(flutterBinDir);
-          final dartSdkPath = p.join(flutterDir, 'bin', 'cache', 'dart-sdk');
-          if (Directory(dartSdkPath).existsSync()) {
-            return dartSdkPath;
-          }
+      final flutterPath = _findExecutable('flutter');
+      if (flutterPath != null && flutterPath.isNotEmpty) {
+        // Resolve symlinks to get the real path
+        final realFlutterPath = File(flutterPath).resolveSymbolicLinksSync();
+        // Flutter path is usually: /path/to/flutter/bin/flutter
+        // Dart SDK is at: /path/to/flutter/bin/cache/dart-sdk
+        final flutterBinDir = p.dirname(realFlutterPath);
+        final flutterDir = p.dirname(flutterBinDir);
+        final dartSdkPath = p.join(flutterDir, 'bin', 'cache', 'dart-sdk');
+        if (Directory(dartSdkPath).existsSync()) {
+          return dartSdkPath;
         }
       }
     } on Object catch (_) {
-      // Ignore errors (e.g., `which` not found) and try next method
+      // Ignore errors (e.g., if the executable is not found) and try next
+      // method
     }
 
     try {
       // Try to find standalone Dart SDK
-      final dartResult = Process.runSync('which', ['dart']);
-      if (dartResult.exitCode == 0) {
-        final dartPath = (dartResult.stdout as String).trim();
-        if (dartPath.isNotEmpty) {
-          // Resolve symlinks to get the real path
-          final realDartPath = File(dartPath).resolveSymbolicLinksSync();
-          // Dart path is usually: /path/to/dart-sdk/bin/dart
-          final dartBinDir = p.dirname(realDartPath);
-          final dartSdkPath = p.dirname(dartBinDir);
-          if (Directory(dartSdkPath).existsSync()) {
-            return dartSdkPath;
-          }
+      final dartPath = _findExecutable('dart');
+      if (dartPath != null && dartPath.isNotEmpty) {
+        // Resolve symlinks to get the real path
+        final realDartPath = File(dartPath).resolveSymbolicLinksSync();
+        // Dart path is usually: /path/to/dart-sdk/bin/dart
+        final dartBinDir = p.dirname(realDartPath);
+        final dartSdkPath = p.dirname(dartBinDir);
+        if (Directory(dartSdkPath).existsSync()) {
+          return dartSdkPath;
         }
       }
     } on Object catch (_) {
@@ -131,6 +126,23 @@ class IntentExtractor {
     // Return null to let analyzer auto-detect (fallback)
     return null;
   }
+}
+
+/// Finds the full path of an executable by searching the system's PATH.
+String? _findExecutable(String name) {
+  try {
+    final result = Platform.isWindows
+        ? Process.runSync('where', [name])
+        : Process.runSync('which', [name]);
+
+    if (result.exitCode == 0) {
+      // `where` on Windows can return multiple lines, take the first one.
+      return (result.stdout as String).split('\n').first.trim();
+    }
+  } on Object {
+    // Ignore exceptions, e.g., if `which` or `where` is not on PATH.
+  }
+  return null;
 }
 
 /// Common interface for classes that hold intent data.

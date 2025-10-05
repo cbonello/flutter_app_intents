@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:flutter_app_intents/src/generator/app_shortcuts_provider_generator.dart';
 import 'package:flutter_app_intents/src/generator/cli_runner.dart';
 import 'package:flutter_app_intents/src/generator/intent_extractor.dart';
 import 'package:flutter_app_intents/src/generator/intent_validator.dart';
@@ -14,6 +15,9 @@ class MockIntentValidator extends Mock implements IntentValidator {}
 
 class MockShortcutsXmlGenerator extends Mock implements ShortcutsXmlGenerator {}
 
+class MockAppShortcutsProviderGenerator extends Mock
+    implements AppShortcutsProviderGenerator {}
+
 void main() {
   group(CliRunner, () {
     late CliRunner cliRunner;
@@ -21,6 +25,7 @@ void main() {
     late Directory originalCurrent;
     late MockIntentExtractor mockIntentExtractor;
     late MockShortcutsXmlGenerator mockShortcutsXmlGenerator;
+    late MockAppShortcutsProviderGenerator mockAppShortcutsProviderGenerator;
     late MockIntentValidator mockIntentValidator;
 
     setUp(() {
@@ -33,6 +38,7 @@ void main() {
 
       mockIntentExtractor = MockIntentExtractor();
       mockShortcutsXmlGenerator = MockShortcutsXmlGenerator();
+      mockAppShortcutsProviderGenerator = MockAppShortcutsProviderGenerator();
       mockIntentValidator = MockIntentValidator();
 
       when(() => mockIntentExtractor.extractFromDirectory(any())).thenAnswer(
@@ -51,10 +57,15 @@ void main() {
         '<shortcuts/>',
       );
       when(() => mockShortcutsXmlGenerator.warnings).thenReturn([]);
+      when(() => mockAppShortcutsProviderGenerator.generate(any())).thenReturn(
+        'struct TestIntent: AppIntent {}',
+      );
+      when(() => mockAppShortcutsProviderGenerator.warnings).thenReturn([]);
 
       cliRunner = CliRunner.test(
         intentExtractor: mockIntentExtractor,
         shortcutsXmlGenerator: mockShortcutsXmlGenerator,
+        appShortcutsProviderGenerator: mockAppShortcutsProviderGenerator,
         intentValidatorFactory: (_) => mockIntentValidator,
       );
     });
@@ -79,11 +90,14 @@ void main() {
         await cliRunner.run();
 
         // Android file should be generated
-        final file = File('android/app/src/main/res/xml/shortcuts.xml');
-        expect(file.existsSync(), isTrue);
+        final androidFile = File('android/app/src/main/res/xml/shortcuts.xml');
+        expect(androidFile.existsSync(), isTrue);
         verify(() => mockShortcutsXmlGenerator.generate(any()));
 
-        // iOS generation is not implemented, so we just check it doesn't throw
+        // iOS file should be generated
+        final iosFile = File('ios/Runner/AppShortcuts.swift');
+        expect(iosFile.existsSync(), isTrue);
+        verify(() => mockAppShortcutsProviderGenerator.generate(any()));
       });
 
       test('throws when no platforms are specified or detected', () {
@@ -96,8 +110,13 @@ void main() {
       test('uses specified platform', () async {
         await Directory('ios').create();
         await cliRunner.run(platform: 'ios');
-        // iOS generation is not implemented, so generate shouldn't be called.
+
+        // iOS generation should be called, Android should not
+        verify(() => mockAppShortcutsProviderGenerator.generate(any()));
         verifyNever(() => mockShortcutsXmlGenerator.generate(any()));
+
+        final file = File('ios/Runner/AppShortcuts.swift');
+        expect(file.existsSync(), isTrue);
       });
 
       test('handles multiple platforms', () async {
@@ -219,9 +238,15 @@ void main() {
 
       test('passes mainActivity parameter to generator', () async {
         await Directory('android').create();
-        await cliRunner.run(platform: 'android', mainActivity: 'SplashActivity');
+        await cliRunner.run(
+          platform: 'android',
+          mainActivity: 'SplashActivity',
+        );
 
-        verify(() => mockShortcutsXmlGenerator.mainActivityOverride = 'SplashActivity');
+        verify(
+          () =>
+              mockShortcutsXmlGenerator.mainActivityOverride = 'SplashActivity',
+        );
         verify(() => mockShortcutsXmlGenerator.generate(any()));
       });
 
@@ -234,7 +259,8 @@ void main() {
         await Directory('android').create();
         await cliRunner.run(platform: 'android');
 
-        // Test passes if no exception is thrown - warnings should be displayed but not block generation
+        // Test passes if no exception is thrown - warnings should be displayed
+        // but not block generation
         final file = File('android/app/src/main/res/xml/shortcuts.xml');
         expect(file.existsSync(), isTrue);
       });
@@ -247,7 +273,8 @@ void main() {
         await Directory('android').create();
         await cliRunner.run(platform: 'android');
 
-        // Test passes if no exception is thrown - warnings should be displayed but not block generation
+        // Test passes if no exception is thrown - warnings should be displayed
+        // but not block generation
         final file = File('android/app/src/main/res/xml/shortcuts.xml');
         expect(file.existsSync(), isTrue);
       });

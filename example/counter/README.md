@@ -60,11 +60,69 @@ flutter run
 
 5. **Settings**: Go to Settings > Siri & Search > App Shortcuts
 
+## Code Generation
+
+**✨ NEW**: This example uses the code generator to automatically create iOS static intents from Dart definitions.
+
+### How It Works
+
+1. **Dart Intent Definitions** (`lib/main.dart`):
+```dart
+final incrementIntent = AppIntentBuilder()
+    .identifier('increment_counter')
+    .title('Increment Counter')
+    .description('Increments the counter by one')
+    .category(IntentCategory.general)
+    .build();
+```
+
+2. **Generate Platform Code**:
+```bash
+dart run flutter_app_intents:app_intents_cli
+```
+
+3. **Generated Output** (`ios/Runner/AppShortcuts.swift`):
+- Swift AppIntent structs for each intent
+- AppShortcutsProvider with Siri phrases
+- Automatic bridging to Flutter handlers
+
+### Regenerate After Changes
+
+If you modify the intent definitions in Dart, regenerate the Swift code:
+
+```bash
+# Auto-detect platforms
+dart run flutter_app_intents:app_intents_cli
+
+# iOS only
+dart run flutter_app_intents:app_intents_cli --platform=ios
+
+# Watch mode (regenerate on file changes)
+dart run flutter_app_intents:app_intents_cli --watch
+```
+
+**Then hot restart your app (press `R` in Flutter terminal).**
+
+> **⚠️ Why Hot Restart, Not Hot Reload?**
+>
+> - **Hot reload** (`r`) only updates Dart code - it's fast but limited to Flutter framework
+> - **Hot restart** (`R`) restarts the entire app including native platform code
+>
+> `AppShortcuts.swift` is a **native iOS Swift file**, not Dart code. iOS loads these files when the app starts, so changes require a full app restart to be recognized by Siri.
+>
+> **What happens if you only hot reload:**
+> - ❌ Siri won't see the updated intent definitions
+> - ❌ Changes to phrases won't take effect
+> - ❌ New intents won't appear in Shortcuts app
+> - ✅ Only a hot restart will reload the native iOS code
+>
+> **Remember:** Press `R` (capital R) after regenerating!
+
 ## Implementation Details
 
-### Static Swift Intents
+### Generated Swift Intents
 
-The iOS side defines static intents in `AppDelegate.swift`:
+The code generator creates static intents in `ios/Runner/AppShortcuts.swift`:
 
 ```swift
 struct CounterIntent: AppIntent {

@@ -4,11 +4,84 @@ sidebar_position: 3
 
 # iOS Configuration
 
-## Required Setup: Static App Intents in Main App Target
+## Recommended: Use Code Generator
 
-**⚠️ Important**: iOS App Intents framework requires static intent declarations in your main app target, not just dynamic registration from the plugin. 
+**✨ NEW in v0.8.0**: The easiest way to set up iOS App Intents is using the code generator:
 
-Add this code to your iOS app's `AppDelegate.swift`:
+```bash
+# 1. Define intents in Dart with AppIntentBuilder
+# 2. Run the generator
+dart run flutter_app_intents:app_intents_cli --platform=ios
+
+# 3. Add the generated file to Xcode:
+#    - Open ios/Runner.xcworkspace in Xcode
+#    - Right-click on Runner folder → "Add Files to Runner"
+#    - Select ios/Runner/AppShortcuts.swift
+#    - Check "Copy items if needed" and "Runner" target
+#    - Click "Add"
+```
+
+**Optional: Install globally**
+```bash
+dart pub global activate flutter_app_intents
+app_intents_cli --platform=ios
+```
+
+The generator creates `ios/Runner/AppShortcuts.swift` with all the static intents automatically configured to call your Flutter handlers.
+
+### What Gets Generated
+
+The code generator creates:
+- AppIntent structs for each intent
+- AppShortcutsProvider with Siri phrases
+- Automatic SF Symbol icons based on intent category
+- Complete integration with FlutterAppIntentsPlugin.shared
+- Error handling and result conversion
+
+### Example Generated Code
+
+```swift
+@available(iOS 16.0, *)
+struct IncrementCounterIntent: AppIntent {
+    static var title: LocalizedStringResource = "Increment Counter"
+    static var description: IntentDescription = IntentDescription("Increments the counter by one")
+
+    func perform() async throws -> some IntentResult {
+        let result = await FlutterAppIntentsPlugin.shared.handleIntentInvocation(
+            identifier: "increment_counter",
+            parameters: [:]
+        )
+
+        if let success = result["success"] as? Bool, success {
+            let value = result["value"] as? String ?? "Success"
+            return .result(value: value)
+        } else {
+            throw IntentExecutionError.executionFailed
+        }
+    }
+}
+
+@available(iOS 16.0, *)
+struct AppShortcutsProvider: AppShortcutsProvider {
+    static var appShortcuts: [AppShortcut] {
+        AppShortcut(
+            intent: IncrementCounterIntent(),
+            phrases: [
+                "Increment Counter",
+                "Increment Counter in \\(.applicationName)",
+            ],
+            shortTitle: "Increment Counter",
+            systemImageName: "app.fill"
+        )
+    }
+}
+```
+
+## Manual Setup (Alternative)
+
+**⚠️ Note**: Manual setup is only needed if you're not using the code generator.
+
+iOS App Intents framework requires static intent declarations in your main app target. Add this code to your iOS app's `AppDelegate.swift`:
 
 ```swift
 import Flutter
