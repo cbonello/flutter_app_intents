@@ -196,7 +196,7 @@ void main() {
         final map = intent.toMap();
 
         expect(map['category'], 'fitness');
-        expect(map['hints'], isA<Map>());
+        expect(map['hints'], isA<Map<String, dynamic>>());
         expect(map['hints']['iosSuggestedPhrase'], 'Go for a run');
       });
 
