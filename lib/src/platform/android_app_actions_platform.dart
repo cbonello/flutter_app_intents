@@ -78,13 +78,7 @@ class AndroidAppActionsPlatform extends AppIntentsPlatform {
     AppIntent intent,
     IntentHandler handler,
   ) async {
-    final supported = await _checkSupport();
-    if (!supported) {
-      final apiInfo = _apiLevel != null ? ' (API $_apiLevel)' : '';
-      throw UnsupportedError(
-        'Android App Actions require Android 7.1 (API 25) or higher$apiInfo',
-      );
-    }
+    await _ensureSupported();
 
     // Store the handler
     _handlers[intent.identifier] = handler;
@@ -120,13 +114,7 @@ class AndroidAppActionsPlatform extends AppIntentsPlatform {
     List<AppIntent> intents,
     Map<String, IntentHandler> handlers,
   ) async {
-    final supported = await _checkSupport();
-    if (!supported) {
-      final apiInfo = _apiLevel != null ? ' (API $_apiLevel)' : '';
-      throw UnsupportedError(
-        'Android App Actions require Android 7.1 (API 25) or higher$apiInfo',
-      );
-    }
+    await _ensureSupported();
 
     // Store all handlers
     _handlers.addAll(handlers);
@@ -157,13 +145,7 @@ class AndroidAppActionsPlatform extends AppIntentsPlatform {
 
   @override
   Future<bool> unregisterIntent(String identifier) async {
-    final supported = await _checkSupport();
-    if (!supported) {
-      final apiInfo = _apiLevel != null ? ' (API $_apiLevel)' : '';
-      throw UnsupportedError(
-        'Android App Actions require Android 7.1 (API 25) or higher$apiInfo',
-      );
-    }
+    await _ensureSupported();
 
     _handlers.remove(identifier);
 
@@ -184,13 +166,7 @@ class AndroidAppActionsPlatform extends AppIntentsPlatform {
 
   @override
   Future<List<AppIntent>> getRegisteredIntents() async {
-    final supported = await _checkSupport();
-    if (!supported) {
-      final apiInfo = _apiLevel != null ? ' (API $_apiLevel)' : '';
-      throw UnsupportedError(
-        'Android App Actions require Android 7.1 (API 25) or higher$apiInfo',
-      );
-    }
+    await _ensureSupported();
 
     try {
       final result = await _channel.invokeListMethod<Map<dynamic, dynamic>>(
@@ -212,13 +188,7 @@ class AndroidAppActionsPlatform extends AppIntentsPlatform {
 
   @override
   Future<bool> updateShortcuts() async {
-    final supported = await _checkSupport();
-    if (!supported) {
-      final apiInfo = _apiLevel != null ? ' (API $_apiLevel)' : '';
-      throw UnsupportedError(
-        'Android App Actions require Android 7.1 (API 25) or higher$apiInfo',
-      );
-    }
+    await _ensureSupported();
 
     try {
       final result = await _channel.invokeMethod<bool>('updateShortcuts');
@@ -237,13 +207,7 @@ class AndroidAppActionsPlatform extends AppIntentsPlatform {
     Map<String, dynamic> parameters, {
     double relevanceScore = 1.0,
   }) async {
-    final supported = await _checkSupport();
-    if (!supported) {
-      final apiInfo = _apiLevel != null ? ' (API $_apiLevel)' : '';
-      throw UnsupportedError(
-        'Android App Actions require Android 7.1 (API 25) or higher$apiInfo',
-      );
-    }
+    await _ensureSupported();
 
     try {
       final result = await _channel.invokeMethod<bool>(
@@ -268,13 +232,7 @@ class AndroidAppActionsPlatform extends AppIntentsPlatform {
   Future<bool> donateIntentBatch(
     List<IntentDonation> donations,
   ) async {
-    final supported = await _checkSupport();
-    if (!supported) {
-      final apiInfo = _apiLevel != null ? ' (API $_apiLevel)' : '';
-      throw UnsupportedError(
-        'Android App Actions require Android 7.1 (API 25) or higher$apiInfo',
-      );
-    }
+    await _ensureSupported();
 
     try {
       final donationMaps = donations
@@ -299,6 +257,18 @@ class AndroidAppActionsPlatform extends AppIntentsPlatform {
       throw FlutterAppIntentsException(
         e.message ?? 'Failed to donate intent batch',
         e.code,
+      );
+    }
+  }
+
+  /// Ensures that the platform is supported before proceeding.
+  /// Throws [UnsupportedError] if not supported.
+  Future<void> _ensureSupported() async {
+    final supported = await _checkSupport();
+    if (!supported) {
+      final apiInfo = _apiLevel != null ? ' (API $_apiLevel)' : '';
+      throw UnsupportedError(
+        'Android App Actions require Android 7.1 (API 25) or higher$apiInfo',
       );
     }
   }

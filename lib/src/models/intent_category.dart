@@ -2,8 +2,6 @@
 ///
 /// On Android, these map to Google Built-in Intents (BII).
 /// On iOS, these provide semantic meaning for Siri integration.
-///
-/// See PRD Appendix A for complete Android BII mapping.
 enum IntentCategory {
   /// General app feature (default fallback)
   general('actions.intent.OPEN_APP_FEATURE', 'General'),
@@ -103,8 +101,14 @@ enum IntentCategory {
   /// Examples: "Read the news", "Get sports updates"
   news('actions.intent.GET_NEWS_ARTICLE', 'News');
 
+  /// Creates a new intent category.
   const IntentCategory(this.androidBII, this.displayName);
 
+  /// The corresponding Android Built-in Intent (BII) action name.
+  /// This is used to generate the `shortcuts.xml` file for Android App Actions.
   final String androidBII;
+
+  /// A user-friendly name for the category.
+  /// This can be used in developer tools or UI.
   final String displayName;
 }

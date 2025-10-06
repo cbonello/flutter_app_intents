@@ -4,7 +4,14 @@ import 'package:flutter_app_intents/src/generator/intent_extractor.dart';
 import 'package:flutter_app_intents/src/generator/shortcuts_xml_generator.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+/// This file contains unit tests for the [ShortcutsXmlGenerator] class.
+///
+/// These tests cover various aspects of `shortcuts.xml` generation, including
+/// handling single and multiple intents, correct Built-in Intent (BII) mapping,
+/// main activity detection logic, and the overall structure of the generated
+/// XML.
 void main() {
+  /// A group of tests for the [ShortcutsXmlGenerator].
   group('ShortcutsXmlGenerator', () {
     late Directory tempDir;
 
@@ -16,6 +23,9 @@ void main() {
       tempDir.deleteSync(recursive: true);
     });
 
+    /// Tests that the generator produces a valid XML structure for a single
+    /// intent,
+    /// including the correct capability and deep link.
     test('generates valid shortcuts.xml for single intent', () {
       final generator = ShortcutsXmlGenerator();
       final intents = [
@@ -35,6 +45,8 @@ void main() {
       expect(xml, contains('app://intent/test_intent'));
     });
 
+    /// Tests that the generator can handle a list of multiple intents and
+    /// includes all of them in the final XML output.
     test('generates shortcuts.xml for multiple intents', () {
       final generator = ShortcutsXmlGenerator();
       final intents = [
@@ -58,6 +70,8 @@ void main() {
       expect(xml, contains('actions.intent.START_EXERCISE'));
     });
 
+    /// Verifies that the generator maps the [IntentCategory] to the correct
+    /// Android Built-in Intent (BII) action name in the capability tag.
     test('uses correct BII for each category', () {
       final generator = ShortcutsXmlGenerator();
       final intents = [
@@ -79,7 +93,11 @@ void main() {
       expect(xml, contains('actions.intent.SEND_MESSAGE'));
     });
 
+    /// Tests the logic for determining the main activity class name, which is a
+    /// critical part of the `<intent>` tag generation.
     group('MainActivity detection', () {
+      /// Ensures that if a `mainActivityOverride` is provided, it is used as
+      /// the `android:targetClass`, bypassing auto-detection.
       test('uses override when mainActivityOverride is set', () {
         final generator = ShortcutsXmlGenerator()
           ..mainActivityOverride = 'SplashActivity';
@@ -98,6 +116,8 @@ void main() {
         expect(generator.warnings, isEmpty);
       });
 
+      /// Tests the primary auto-detection path where the generator finds the
+      /// main activity from a standard `AndroidManifest.xml` file.
       test('auto-detects MainActivity from AndroidManifest.xml', () {
         // Create a mock AndroidManifest.xml
         final androidDir = Directory('${tempDir.path}/android/app/src/main')
@@ -135,6 +155,8 @@ void main() {
         expect(generator.warnings, isEmpty);
       });
 
+      /// Verifies that the generator can detect a custom-named main activity
+      /// (e.g., `.SplashActivity`) from the manifest.
       test('detects custom activity name from AndroidManifest.xml', () {
         // Create a mock AndroidManifest.xml with custom activity
         final androidDir = Directory('${tempDir.path}/android/app/src/main')
@@ -172,6 +194,8 @@ void main() {
         expect(generator.warnings, isEmpty);
       });
 
+      /// Checks if the generator correctly extracts the class name from a
+      /// fully qualified activity name in the manifest.
       test('handles fully qualified activity names', () {
         final androidDir = Directory('${tempDir.path}/android/app/src/main')
           ..createSync(recursive: true);
@@ -208,6 +232,8 @@ void main() {
         expect(generator.warnings, isEmpty);
       });
 
+      /// Tests the fallback mechanism: if no manifest is found, the generator
+      /// should default to 'MainActivity' and produce a warning.
       test('falls back to MainActivity with warning when detection fails', () {
         final generator = ShortcutsXmlGenerator(projectRoot: tempDir.path);
         final intents = [
@@ -232,6 +258,8 @@ void main() {
         );
       });
 
+      /// Confirms that the `mainActivityOverride` has the highest precedence,
+      /// even when a valid `AndroidManifest.xml` is present.
       test('override takes precedence over auto-detection', () {
         // Create AndroidManifest with MainActivity
         final androidDir = Directory('${tempDir.path}/android/app/src/main')
@@ -273,7 +301,11 @@ void main() {
       });
     });
 
+    /// Tests the behavior of the warning collection system in the generator.
     group('Warning system', () {
+      /// Ensures that the `warnings` list is cleared before each new
+      /// generation, preventing warnings from accumulating across multiple
+      /// calls.
       test('clears warnings on each generation', () {
         final intents = [
           ExtractedIntent()
@@ -298,7 +330,11 @@ void main() {
       });
     });
 
+    /// Contains tests that validate the general structure and correctness of
+    /// the generated XML output.
     group('XML structure', () {
+      /// Checks for fundamental XML correctness, like the XML declaration, root
+      /// element, and namespace.
       test('generates properly formatted XML', () {
         final generator = ShortcutsXmlGenerator();
         final intents = [
@@ -317,6 +353,8 @@ void main() {
         expect(xml, contains('</shortcuts>'));
       });
 
+      /// Verifies that the generated `<intent>` tag includes all mandatory
+      /// attributes for App Actions to work correctly.
       test('includes all required intent attributes', () {
         final generator = ShortcutsXmlGenerator();
         final intents = [

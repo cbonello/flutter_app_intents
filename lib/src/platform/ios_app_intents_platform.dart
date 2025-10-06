@@ -74,13 +74,7 @@ class IOSAppIntentsPlatform extends AppIntentsPlatform {
     AppIntent intent,
     IntentHandler handler,
   ) async {
-    final supported = await _checkSupport();
-    if (!supported) {
-      final versionInfo = _iosVersion != null ? ' (iOS $_iosVersion)' : '';
-      throw UnsupportedError(
-        'iOS App Intents require iOS 16 or higher$versionInfo',
-      );
-    }
+    await _ensureSupported();
 
     // Store the handler
     _handlers[intent.identifier] = handler;
@@ -104,13 +98,7 @@ class IOSAppIntentsPlatform extends AppIntentsPlatform {
     List<AppIntent> intents,
     Map<String, IntentHandler> handlers,
   ) async {
-    final supported = await _checkSupport();
-    if (!supported) {
-      final versionInfo = _iosVersion != null ? ' (iOS $_iosVersion)' : '';
-      throw UnsupportedError(
-        'iOS App Intents require iOS 16 or higher$versionInfo',
-      );
-    }
+    await _ensureSupported();
 
     // Store all handlers
     _handlers.addAll(handlers);
@@ -131,13 +119,7 @@ class IOSAppIntentsPlatform extends AppIntentsPlatform {
 
   @override
   Future<bool> unregisterIntent(String identifier) async {
-    final supported = await _checkSupport();
-    if (!supported) {
-      final versionInfo = _iosVersion != null ? ' (iOS $_iosVersion)' : '';
-      throw UnsupportedError(
-        'iOS App Intents require iOS 16 or higher$versionInfo',
-      );
-    }
+    await _ensureSupported();
 
     _handlers.remove(identifier);
 
@@ -152,13 +134,7 @@ class IOSAppIntentsPlatform extends AppIntentsPlatform {
 
   @override
   Future<List<AppIntent>> getRegisteredIntents() async {
-    final supported = await _checkSupport();
-    if (!supported) {
-      final versionInfo = _iosVersion != null ? ' (iOS $_iosVersion)' : '';
-      throw UnsupportedError(
-        'iOS App Intents require iOS 16 or higher$versionInfo',
-      );
-    }
+    await _ensureSupported();
 
     try {
       return await service.FlutterAppIntentsService.getRegisteredIntents();
@@ -169,13 +145,7 @@ class IOSAppIntentsPlatform extends AppIntentsPlatform {
 
   @override
   Future<bool> updateShortcuts() async {
-    final supported = await _checkSupport();
-    if (!supported) {
-      final versionInfo = _iosVersion != null ? ' (iOS $_iosVersion)' : '';
-      throw UnsupportedError(
-        'iOS App Intents require iOS 16 or higher$versionInfo',
-      );
-    }
+    await _ensureSupported();
 
     try {
       return await service.FlutterAppIntentsService.updateShortcuts();
@@ -190,13 +160,7 @@ class IOSAppIntentsPlatform extends AppIntentsPlatform {
     Map<String, dynamic> parameters, {
     double relevanceScore = 1.0,
   }) async {
-    final supported = await _checkSupport();
-    if (!supported) {
-      final versionInfo = _iosVersion != null ? ' (iOS $_iosVersion)' : '';
-      throw UnsupportedError(
-        'iOS App Intents require iOS 16 or higher$versionInfo',
-      );
-    }
+    await _ensureSupported();
 
     try {
       return await service.FlutterAppIntentsService.donateIntentWithMetadata(
@@ -213,13 +177,7 @@ class IOSAppIntentsPlatform extends AppIntentsPlatform {
   Future<bool> donateIntentBatch(
     List<IntentDonation> donations,
   ) async {
-    final supported = await _checkSupport();
-    if (!supported) {
-      final versionInfo = _iosVersion != null ? ' (iOS $_iosVersion)' : '';
-      throw UnsupportedError(
-        'iOS App Intents require iOS 16 or higher$versionInfo',
-      );
-    }
+    await _ensureSupported();
 
     try {
       // Both platform and service now use the same IntentDonation model
@@ -228,6 +186,18 @@ class IOSAppIntentsPlatform extends AppIntentsPlatform {
       );
     } on service.FlutterAppIntentsException catch (e) {
       throw FlutterAppIntentsException(e.message, e.code);
+    }
+  }
+
+  /// Ensures that the platform is supported before proceeding.
+  /// Throws [UnsupportedError] if not supported.
+  Future<void> _ensureSupported() async {
+    final supported = await _checkSupport();
+    if (!supported) {
+      final versionInfo = _iosVersion != null ? ' (iOS $_iosVersion)' : '';
+      throw UnsupportedError(
+        'iOS App Intents require iOS 16 or higher$versionInfo',
+      );
     }
   }
 

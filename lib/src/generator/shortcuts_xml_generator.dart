@@ -124,6 +124,7 @@ class ShortcutsXmlGenerator {
       final detected = _detectMainActivityFromManifest(projectRoot!);
       if (detected != null) {
         _cachedMainActivity = detected;
+
         return detected;
       }
     }
@@ -136,6 +137,7 @@ class ShortcutsXmlGenerator {
       'If your app uses a different activity name, use: '
       'dart run flutter_app_intents:generate --main-activity=YourActivity',
     );
+
     return _cachedMainActivity!;
   }
 
@@ -207,19 +209,15 @@ class ShortcutsXmlGenerator {
           if (hasMainAction && hasLauncherCategory) {
             final activityName = activity.getAttribute('android:name');
             if (activityName != null) {
-              // Handle relative class names (starting with .)
               if (activityName.startsWith('.')) {
-                // Extract just the class name without the leading dot
                 return activityName.substring(1);
               }
-              // Handle fully qualified names
-              else if (activityName.contains('.')) {
-                // Extract just the class name from the fully qualified name
-                return activityName.split('.').last;
-              }
 
-              // Return as-is if it's just a simple name
-              return activityName;
+              // For fully qualified or simple names, return the part after
+              // the last dot, or the whole string if no dot is present.
+              final parts = activityName.split('.');
+
+              return parts.last;
             }
           }
         }
