@@ -1,6 +1,6 @@
 # Counter App Intents Example
 
-This example demonstrates **action-based App Intents** using a simple counter application. It shows how to execute specific app functions through Siri voice commands and iOS shortcuts.
+This example demonstrates **action-based App Intents** using a simple counter application. It shows how to execute specific app functions through Siri voice commands (iOS) and Google Assistant (Android).
 
 ## Features Demonstrated
 
@@ -39,19 +39,31 @@ This example uses the **hybrid approach** with:
 ## Quick Start
 
 ### Prerequisites
+
+**iOS:**
 - iOS 16.0+ device or simulator
 - Flutter 3.8.1+
 - Xcode 14.0+
+
+**Android:**
+- Android 7.1+ (API 25+) device or emulator
+- Flutter 3.8.1+
+- Android Studio or VS Code
 
 ### Run the Example
 
 ```bash
 cd counter
 flutter pub get
+
+# For iOS
 flutter run
+
+# For Android
+flutter run -d <android-device-id>
 ```
 
-### Test the App Intents
+### Test on iOS
 
 1. **Manual Testing**: Use the floating action button to increment the counter
 
@@ -66,9 +78,166 @@ flutter run
 
 5. **Settings**: Go to Settings > Siri & Search > App Shortcuts
 
+### Test on Android
+
+#### Prerequisites for Android Testing
+- Android device or emulator running Android 7.1+ (API 25+)
+- Google app installed and updated
+- Google Assistant enabled
+
+#### Build for Android
+
+```bash
+# Debug build
+flutter build apk --debug
+
+# Release build (for testing with Google Assistant)
+flutter build apk --release
+
+# Install on device
+flutter install
+```
+
+#### Testing App Actions
+
+**Method 1: Using Google Assistant Test Tool**
+
+1. **Install the App**:
+   ```bash
+   flutter install
+   ```
+
+2. **Open Google Assistant Test Tool**:
+   ```bash
+   adb shell am start -a android.intent.action.VIEW -d "https://assistant.google.com/services/a/uid/000000000000000000000"
+   ```
+
+3. **Test Commands**:
+   - "Increment counter with Counter Example"
+   - "Reset counter with Counter Example"
+   - "Get counter from Counter Example"
+
+**Method 2: Using ADB to Trigger Intents**
+
+```bash
+# Test increment counter
+adb shell am start -a android.intent.action.VIEW -d "app://intent/increment_counter"
+
+# Test reset counter
+adb shell am start -a android.intent.action.VIEW -d "app://intent/reset_counter"
+
+# Test get counter value
+adb shell am start -a android.intent.action.VIEW -d "app://intent/get_counter"
+```
+
+**⚠️ Platform Difference: Query Intents**
+
+The "Get Counter" intent (`get_counter`) demonstrates a platform difference:
+
+- **iOS**: Shows result in a Siri dialog (e.g., "Current counter value is 5")
+- **Android**: Opens the app silently, but doesn't display the result
+
+**Why?** Android App Actions don't support inline result display yet. The intent handler runs successfully and returns the counter value, but Android just opens/focuses the app instead of showing a dialog. Widget-based result display is planned for a future release.
+
+To verify `get_counter` works on Android, check the logs:
+```bash
+adb logcat | grep "Counter"
+# Should show: [Counter] _handleGetCounterIntent called, counter value: X
+```
+
+**Method 3: Using Google Assistant (Requires Release Build)**
+
+1. Build and install release APK:
+   ```bash
+   flutter build apk --release
+   flutter install
+   ```
+
+2. Enable Google Assistant:
+   - Long-press the home button or say "Hey Google"
+
+3. Say commands like:
+   - "Increment counter with Counter Example"
+   - "Get my counter from Counter Example"
+
+#### Verify Generated Android Files
+
+After running the code generator, check these files were created:
+
+```bash
+# Shortcuts XML (defines App Actions)
+android/app/src/main/res/xml/shortcuts.xml
+
+# Widget files (for intents with presentsResult=true)
+android/app/src/main/res/layout/widget_*.xml
+android/app/src/main/res/xml/*_widget_info.xml
+android/app/src/main/res/values/strings.xml  # Widget string resources
+```
+
+#### Android-Specific Requirements
+
+1. **Minimum SDK**: The example requires API 25+ (Android 7.1+)
+   - Set in `android/app/build.gradle.kts`: `minSdk = 25`
+
+2. **String Resources**: For widget support, `strings.xml` is **auto-generated** by the code generator:
+   - Located at: `android/app/src/main/res/values/strings.xml`
+   - Contains widget descriptions and loading messages
+   - You can customize these strings after generation for localization
+   - Re-running the generator will update widget strings while preserving your custom app strings
+
+3. **Deep Link Configuration**: Already configured in `AndroidManifest.xml`:
+   ```xml
+   <intent-filter>
+       <action android:name="android.intent.action.VIEW"/>
+       <category android:name="android.intent.category.DEFAULT"/>
+       <category android:name="android.intent.category.BROWSABLE"/>
+       <data android:scheme="app" android:host="intent"/>
+   </intent-filter>
+   ```
+
+#### Troubleshooting Android
+
+**Issue**: "Namespace not specified" error
+
+**Solution**: The plugin's `android/build.gradle` has been updated with:
+```gradle
+android {
+    namespace 'com.flutter_app_intents'
+    // ...
+}
+```
+
+**Issue**: "minSdkVersion cannot be smaller than version 25"
+
+**Solution**: Update `android/app/build.gradle.kts`:
+```kotlin
+defaultConfig {
+    minSdk = 25  // Required for App Actions
+    // ...
+}
+```
+
+**Issue**: App Actions not appearing in Google Assistant
+
+**Solution**:
+1. Ensure you're using a **release build** (`flutter build apk --release`)
+2. Install the APK: `flutter install`
+3. Clear Google app cache: Settings > Apps > Google > Storage > Clear Cache
+4. Wait a few minutes for Google to index the app
+
+**Issue**: String resource not found
+
+**Solution**: Run the code generator to create `strings.xml`:
+```bash
+dart run flutter_app_intents:app_intents_cli --platform=android
+```
+The generator will automatically create widget string resources for intents with `presentsResult: true`
+
 ## Code Generation
 
-**✨ NEW**: This example uses the code generator to automatically create iOS static intents from Dart definitions.
+**✨ NEW**: This example uses the code generator to automatically create platform-specific code from Dart definitions:
+- **iOS**: Swift AppIntent structs and AppShortcutsProvider
+- **Android**: shortcuts.xml and widget layouts (experimental)
 
 ### How It Works
 
@@ -94,58 +263,79 @@ final getCounterIntent = AppIntentBuilder()
 
 2. **Generate Platform Code**:
 ```bash
+# Auto-detect and generate for all available platforms
 dart run flutter_app_intents:app_intents_cli
+
+# Or specify platform explicitly
+dart run flutter_app_intents:app_intents_cli --platform=ios
+dart run flutter_app_intents:app_intents_cli --platform=android
 ```
 
-3. **Generated Output** (`ios/Runner/AppShortcuts.swift`):
+3. **Generated Output**:
+
+**iOS** (`ios/Runner/AppShortcuts.swift`):
 - Swift AppIntent structs for each intent
 - AppShortcutsProvider with Siri phrases
 - Automatic bridging to Flutter handlers
 
-4. **Add to Xcode** (one-time step):
+**Android**:
+- `shortcuts.xml`: Built-in Intent (BII) capability definitions
+- `strings.xml`: Widget string resources (auto-generated for intents with `presentsResult=true`)
+- Widget layouts and info files (experimental)
+
+4. **Platform-Specific Setup**:
+
+**iOS (one-time step)**:
    - Open `ios/Runner.xcworkspace` in Xcode
    - Right-click "Runner" folder → "Add Files to Runner..."
    - Select `ios/Runner/AppShortcuts.swift`
    - Check "Copy items if needed" and "Runner" target
    - Click "Add"
 
-**Note**: This is only needed once. Regenerating the file later will update it automatically.
+**Android**: No additional setup needed - generated XML files are automatically included in the build.
+
+**Note**: iOS setup is only needed once. Regenerating files later will update them automatically.
 
 ### Regenerate After Changes
 
-If you modify the intent definitions in Dart, regenerate the Swift code:
+If you modify the intent definitions in Dart, regenerate the platform code:
 
 ```bash
-# Auto-detect platforms
+# Auto-detect and generate for all platforms
 dart run flutter_app_intents:app_intents_cli
 
-# iOS only
+# Generate for specific platform
 dart run flutter_app_intents:app_intents_cli --platform=ios
+dart run flutter_app_intents:app_intents_cli --platform=android
 
 # Watch mode (regenerate on file changes)
 dart run flutter_app_intents:app_intents_cli --watch
 ```
 
-**Then hot restart your app (press `R` in Flutter terminal).**
+**Then restart your app:**
+- **iOS**: Hot restart (press `R` in Flutter terminal)
+- **Android**: Hot restart (press `R` in Flutter terminal) or reinstall
 
 > **⚠️ Why Hot Restart, Not Hot Reload?**
 >
 > - **Hot reload** (`r`) only updates Dart code - it's fast but limited to Flutter framework
 > - **Hot restart** (`R`) restarts the entire app including native platform code
 >
-> `AppShortcuts.swift` is a **native iOS Swift file**, not Dart code. iOS loads these files when the app starts, so changes require a full app restart to be recognized by Siri.
+> Generated files are **native platform code** (Swift for iOS, XML for Android), not Dart. The platform loads these files when the app starts, so changes require a full app restart.
 >
 > **What happens if you only hot reload:**
-> - ❌ Siri won't see the updated intent definitions
-> - ❌ Changes to phrases won't take effect
-> - ❌ New intents won't appear in Shortcuts app
-> - ✅ Only a hot restart will reload the native iOS code
+> - ❌ **iOS**: Siri won't see updated intents, phrases won't update
+> - ❌ **Android**: Google Assistant won't recognize new App Actions
+> - ❌ New intents won't appear in Shortcuts/Assistant
+> - ✅ Only a hot restart will reload the native platform code
 >
 > **Remember:** Press `R` (capital R) after regenerating!
 
 ## Implementation Details
 
-### Generated Swift Intents
+### Platform-Specific Generated Code
+
+#### iOS: Swift AppIntents
 
 The code generator creates static intents in `ios/Runner/AppShortcuts.swift`:
 
@@ -192,7 +382,7 @@ Future<AppIntentResult> _handleIncrementIntent(Map<String, dynamic> parameters) 
 }
 ```
 
-### App Shortcuts Provider
+#### iOS: App Shortcuts Provider
 
 The static shortcuts are declared with an `AppShortcutsProvider`:
 
@@ -214,16 +404,53 @@ struct CounterAppShortcuts: AppShortcutsProvider {
 }
 ```
 
+#### Android: Shortcuts XML
+
+The code generator creates App Actions in `android/app/src/main/res/xml/shortcuts.xml`:
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+  <!-- Increment Counter Action -->
+  <capability android:name="actions.intent.INCREMENT">
+    <intent
+      android:targetPackage="com.example.counter_example"
+      android:targetClass="MainActivity"
+      android:action="android.intent.action.VIEW"
+      android:data="app://intent/increment_counter">
+      <!-- Parameters defined here -->
+    </intent>
+  </capability>
+
+  <!-- Get Counter Query -->
+  <capability android:name="actions.intent.GET_THING">
+    <intent
+      android:targetPackage="com.example.counter_example"
+      android:targetClass="MainActivity"
+      android:action="android.intent.action.VIEW"
+      android:data="app://intent/get_counter">
+    </intent>
+  </capability>
+</shortcuts>
+```
+
+**Key components:**
+- **`<capability>`**: Maps intents to Google Assistant Built-in Intents (BII)
+- **`android:data`**: Deep link URI format (`app://intent/<identifier>`)
+- **`<parameter>`**: Defines intent parameters with types and requirements
+- **BII categories**: Automatically selected based on `IntentCategory` in Dart
+
 ## What You'll Learn
 
-- ✅ How to create action-based App Intents
-- ✅ Parameter handling and type safety  
-- ✅ Static intent declarations for iOS discovery
-- ✅ AppShortcutsProvider for Siri phrase registration
-- ✅ Flutter-iOS bridge communication
-- ✅ Intent donation for Siri learning
-- ✅ Error handling between iOS and Flutter
-- ✅ Testing with Siri and Shortcuts app
+- ✅ How to create cross-platform App Intents
+- ✅ Parameter handling and type safety
+- ✅ **iOS**: Static intent declarations and AppShortcutsProvider
+- ✅ **Android**: shortcuts.xml and Built-in Intents (BII)
+- ✅ Platform-specific code generation from Dart
+- ✅ Flutter-native bridge communication (both platforms)
+- ✅ Intent donation for Siri/Assistant learning
+- ✅ Error handling between platforms and Flutter
+- ✅ Testing with Siri (iOS) and Google Assistant (Android)
 
 ## Next Steps
 

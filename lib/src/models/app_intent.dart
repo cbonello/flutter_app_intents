@@ -3,6 +3,7 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter_app_intents/src/models/app_intent_parameter.dart';
 import 'package:flutter_app_intents/src/models/intent_category.dart';
 import 'package:flutter_app_intents/src/models/platform_hints.dart';
+import 'package:flutter_app_intents/src/models/result_layout.dart';
 
 /// Represents an App Intent that can be registered with voice assistants
 ///
@@ -19,6 +20,7 @@ class AppIntent extends Equatable {
     this.isEligibleForPrediction = true,
     this.authenticationPolicy = AuthenticationPolicy.none,
     this.presentsResult = false,
+    this.resultLayout,
   });
 
   /// Creates AppIntent from a map representation
@@ -56,7 +58,8 @@ class AppIntent extends Equatable {
                 orElse: () => AuthenticationPolicy.none,
               )
             : AuthenticationPolicy.none,
-        presentsResult = map['presentsResult'] as bool? ?? false;
+        presentsResult = map['presentsResult'] as bool? ?? false,
+        resultLayout = null;
 
   /// Unique identifier for the intent
   final String identifier;
@@ -111,6 +114,22 @@ class AppIntent extends Equatable {
   /// - Query intents show a dialog with the result value
   final bool presentsResult;
 
+  /// Layout for displaying the intent result
+  ///
+  /// **Platform Support:**
+  /// - ✅ **iOS**: Supports text-only results via IntentDialog
+  /// - ✅ **Android**: Generates app widget using RemoteViews
+  ///
+  /// If not specified, simple text results are returned from the intent handler.
+  /// When specified, defines how the result should be displayed:
+  /// - [ResultLayout.text]: Simple text display
+  /// - [ResultLayout.card]: Card with title, description, and optional image
+  /// - [ResultLayout.list]: List of items with titles and optional subtitles
+  ///
+  /// For Android, this generates an AppWidgetProvider and layout XML files.
+  /// For iOS, this configures the IntentDialog presentation.
+  final ResultLayout? resultLayout;
+
   @override
   List<Object?> get props => [
         identifier,
@@ -123,6 +142,7 @@ class AppIntent extends Equatable {
         isEligibleForPrediction,
         authenticationPolicy,
         presentsResult,
+        resultLayout,
       ];
 
   /// Creates a copy of this AppIntent with the given fields replaced
@@ -137,6 +157,7 @@ class AppIntent extends Equatable {
     bool? isEligibleForPrediction,
     AuthenticationPolicy? authenticationPolicy,
     bool? presentsResult,
+    ResultLayout? resultLayout,
   }) {
     return AppIntent(
       identifier: identifier ?? this.identifier,
@@ -150,6 +171,7 @@ class AppIntent extends Equatable {
           isEligibleForPrediction ?? this.isEligibleForPrediction,
       authenticationPolicy: authenticationPolicy ?? this.authenticationPolicy,
       presentsResult: presentsResult ?? this.presentsResult,
+      resultLayout: resultLayout ?? this.resultLayout,
     );
   }
 

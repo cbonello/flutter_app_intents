@@ -180,6 +180,7 @@ void main() {
             'isEligibleForSearch': false,
             'isEligibleForPrediction': true,
             'authenticationPolicy': 'requiresAuthentication',
+            'presentsResult': false,
           }),
         );
       });

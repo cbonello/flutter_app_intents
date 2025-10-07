@@ -1,0 +1,2 @@
+<?xml version="1.0" encoding="utf-8"?>
+<appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android" android:initialLayout="@layout/widget_check_rain" android:minWidth="180dp" android:minHeight="40dp" android:updatePeriodMillis="0" android:description="@string/widget_check_rain_description" android:widgetCategory="home_screen" android:resizeMode="horizontal|vertical"/>

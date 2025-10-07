@@ -9,6 +9,7 @@ import 'package:flutter_app_intents/src/models/app_intent_parameter.dart';
 import 'package:flutter_app_intents/src/models/app_intent_result.dart';
 import 'package:flutter_app_intents/src/models/intent_category.dart';
 import 'package:flutter_app_intents/src/models/platform_hints.dart';
+import 'package:flutter_app_intents/src/models/result_layout.dart';
 import 'package:flutter_app_intents/src/services/flutter_app_intents_service.dart';
 
 /// Main client for managing App Intents in Flutter applications
@@ -299,6 +300,7 @@ class AppIntentBuilder {
   bool _isEligibleForPrediction = true;
   AuthenticationPolicy _authenticationPolicy = AuthenticationPolicy.none;
   bool _presentsResult = false;
+  ResultLayout? _resultLayout;
 
   /// Set the unique identifier for this intent
   ///
@@ -515,6 +517,52 @@ class AppIntentBuilder {
     return this;
   }
 
+  /// Set the layout for displaying the intent result
+  ///
+  /// **Platform Support:**
+  /// - ✅ **iOS**: Configures IntentDialog presentation
+  /// - ✅ **Android**: Generates app widget using RemoteViews
+  ///
+  /// Defines how the result should be displayed when the intent is executed.
+  /// This works in conjunction with `presentsResult(true)` to show rich
+  /// results:
+  ///
+  /// - **Simple text**: Use `ResultLayout.text(value: 'resultKey')` for plain
+  ///   text results
+  /// - **Card layout**: Use `ResultLayout.card()` for title + description +
+  ///   optional image
+  /// - **List layout**: Use `ResultLayout.list()` for multiple items with
+  ///   titles and subtitles
+  ///
+  /// For Android, this generates an AppWidgetProvider and layout XML files
+  /// that display the result in a widget after intent execution.
+  /// For iOS, this configures the IntentDialog presentation format.
+  ///
+  /// Example:
+  /// ```dart
+  /// AppIntentBuilder()
+  ///   .identifier('get_weather')
+  ///   .title('Get Weather')
+  ///   .presentsResult(true)
+  ///   .resultLayout(
+  ///     ResultLayout.card(
+  ///       title: 'temperature',
+  ///       description: 'conditions',
+  ///       image: 'weatherIcon',
+  ///     ),
+  ///   )
+  ///   .build()
+  /// ```
+  ///
+  /// **Note:** The keys specified in the layout (e.g., 'temperature',
+  /// 'conditions') must match the keys in the Map returned by your intent
+  /// handler in `AppIntentResult.successful(value: {...})`.
+  AppIntentBuilder resultLayout(ResultLayout layout) {
+    _resultLayout = layout;
+
+    return this;
+  }
+
   /// Build the final AppIntent from the configured properties
   ///
   /// Creates an immutable AppIntent instance with all the properties
@@ -548,6 +596,7 @@ class AppIntentBuilder {
       isEligibleForPrediction: _isEligibleForPrediction,
       authenticationPolicy: _authenticationPolicy,
       presentsResult: _presentsResult,
+      resultLayout: _resultLayout,
     );
   }
 }

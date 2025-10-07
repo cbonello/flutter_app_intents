@@ -11,4 +11,5 @@ export 'src/models/app_intent_result.dart';
 export 'src/models/intent_category.dart';
 export 'src/models/intent_donation.dart';
 export 'src/models/platform_hints.dart';
+export 'src/models/result_layout.dart';
 export 'src/services/flutter_app_intents_service.dart';

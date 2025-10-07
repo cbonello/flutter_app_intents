@@ -1,5 +1,9 @@
 import 'dart:io';
 
+import 'package:flutter_app_intents/src/generator/android_strings_generator.dart';
+import 'package:flutter_app_intents/src/generator/android_widget_info_generator.dart';
+import 'package:flutter_app_intents/src/generator/android_widget_layout_generator.dart';
+import 'package:flutter_app_intents/src/generator/android_widget_provider_generator.dart';
 import 'package:flutter_app_intents/src/generator/app_shortcuts_provider_generator.dart';
 import 'package:flutter_app_intents/src/generator/intent_extractor.dart';
 import 'package:flutter_app_intents/src/generator/intent_validator.dart';
@@ -16,6 +20,10 @@ class CliRunner {
           projectRoot: _findProjectRoot(),
         ),
         _appShortcutsProviderGenerator = AppShortcutsProviderGenerator(),
+        _widgetLayoutGenerator = AndroidWidgetLayoutGenerator(),
+        _widgetProviderGenerator = AndroidWidgetProviderGenerator(),
+        _widgetInfoGenerator = AndroidWidgetInfoGenerator(),
+        _stringsGenerator = AndroidStringsGenerator(),
         _intentValidatorFactory =
             ((platform) => IntentValidator(targetPlatform: platform));
 
@@ -25,15 +33,27 @@ class CliRunner {
     required IntentExtractor intentExtractor,
     required ShortcutsXmlGenerator shortcutsXmlGenerator,
     required AppShortcutsProviderGenerator appShortcutsProviderGenerator,
+    required AndroidWidgetLayoutGenerator widgetLayoutGenerator,
+    required AndroidWidgetProviderGenerator widgetProviderGenerator,
+    required AndroidWidgetInfoGenerator widgetInfoGenerator,
+    required AndroidStringsGenerator stringsGenerator,
     required IntentValidator Function(String) intentValidatorFactory,
   })  : _intentExtractor = intentExtractor,
         _shortcutsXmlGenerator = shortcutsXmlGenerator,
         _appShortcutsProviderGenerator = appShortcutsProviderGenerator,
+        _widgetLayoutGenerator = widgetLayoutGenerator,
+        _widgetProviderGenerator = widgetProviderGenerator,
+        _widgetInfoGenerator = widgetInfoGenerator,
+        _stringsGenerator = stringsGenerator,
         _intentValidatorFactory = intentValidatorFactory;
 
   final IntentExtractor _intentExtractor;
   final ShortcutsXmlGenerator _shortcutsXmlGenerator;
   final AppShortcutsProviderGenerator _appShortcutsProviderGenerator;
+  final AndroidWidgetLayoutGenerator _widgetLayoutGenerator;
+  final AndroidWidgetProviderGenerator _widgetProviderGenerator;
+  final AndroidWidgetInfoGenerator _widgetInfoGenerator;
+  final AndroidStringsGenerator _stringsGenerator;
   final IntentValidator Function(String) _intentValidatorFactory;
 
   /// Runs the code generator.
@@ -371,6 +391,111 @@ class CliRunner {
     await outputFile.writeAsString(xml);
 
     stdout.writeln('📝 Generated: $outputPath');
+
+    // Generate widget files for intents with presentsResult=true
+    await _generateAndroidWidgets(intents);
+  }
+
+  /// Generate Android widget files for intents that present results
+  Future<void> _generateAndroidWidgets(List<ExtractedIntent> intents) async {
+    // Filter intents that present results
+    final widgetIntents = intents.where((i) => i.presentsResult == true).toList();
+
+    if (widgetIntents.isEmpty) {
+      return; // No widgets to generate
+    }
+
+    stdout.writeln();
+    stdout.writeln('📱 Generating widgets for result presentation...');
+
+    // Get package name from AndroidManifest.xml
+    final packageName = await _getAndroidPackageName() ?? 'com.example.app';
+
+    for (final intent in widgetIntents) {
+      // Generate widget layout XML
+      final layout = _widgetLayoutGenerator.generateLayout(intent);
+      if (layout != null) {
+        final layoutFileName = _widgetLayoutGenerator.getLayoutFileName(intent);
+        final layoutPath = 'android/app/src/main/res/layout/$layoutFileName';
+        final layoutFile = File(layoutPath);
+        await layoutFile.parent.create(recursive: true);
+        await layoutFile.writeAsString(layout);
+        stdout.writeln('   📝 Generated widget layout: $layoutPath');
+      }
+
+      // Generate widget info XML
+      final widgetInfo = _widgetInfoGenerator.generateWidgetInfo(intent);
+      if (widgetInfo != null) {
+        final infoFileName = _widgetInfoGenerator.getWidgetInfoFileName(intent);
+        final infoPath = 'android/app/src/main/res/xml/$infoFileName';
+        final infoFile = File(infoPath);
+        await infoFile.parent.create(recursive: true);
+        await infoFile.writeAsString(widgetInfo);
+        stdout.writeln('   📝 Generated widget info: $infoPath');
+      }
+
+      // Generate widget provider Kotlin class
+      final provider = _widgetProviderGenerator.generateProvider(
+        intent,
+        packageName: packageName,
+      );
+      if (provider != null) {
+        final providerFileName = _widgetProviderGenerator.getProviderFileName(intent);
+        // Use package path for Kotlin file
+        final packagePath = packageName.replaceAll('.', '/');
+        final providerPath = 'android/app/src/main/kotlin/$packagePath/$providerFileName';
+        final providerFile = File(providerPath);
+        await providerFile.parent.create(recursive: true);
+        await providerFile.writeAsString(provider);
+        stdout.writeln('   📝 Generated widget provider: $providerPath');
+      }
+    }
+
+    // Generate string resources for widgets
+    final strings = _stringsGenerator.generateStrings(intents);
+    if (strings != null) {
+      final stringsPath = _stringsGenerator.getStringsFilePath();
+      final stringsFile = File(stringsPath);
+
+      // Check if strings.xml already exists
+      if (stringsFile.existsSync()) {
+        // Merge with existing content
+        final existingContent = await stringsFile.readAsString();
+        final mergedContent = _stringsGenerator.mergeWithExisting(
+          existingContent,
+          strings,
+        );
+        await stringsFile.writeAsString(mergedContent);
+        stdout.writeln('   📝 Updated string resources: $stringsPath');
+      } else {
+        // Create new strings.xml
+        await stringsFile.parent.create(recursive: true);
+        await stringsFile.writeAsString(strings);
+        stdout.writeln('   📝 Generated string resources: $stringsPath');
+      }
+    }
+
+    stdout
+      ..writeln()
+      ..writeln('⚠️  Widget generation is experimental in v0.8.0')
+      ..writeln('   You will need to:')
+      ..writeln('   1. Register widget providers in AndroidManifest.xml')
+      ..writeln('   2. Implement result passing from Flutter to widgets')
+      ..writeln('   See documentation for complete setup instructions.');
+  }
+
+  /// Extract Android package name from AndroidManifest.xml
+  Future<String?> _getAndroidPackageName() async {
+    final manifestFile = File('android/app/src/main/AndroidManifest.xml');
+    if (!await manifestFile.exists()) {
+      return null;
+    }
+
+    final manifestContent = await manifestFile.readAsString();
+    final packageMatch = RegExp(r'package="([^"]+)"')
+        .firstMatch(manifestContent);
+
+    return packageMatch?.group(1);
   }
 
   /// Generate iOS AppShortcuts.swift

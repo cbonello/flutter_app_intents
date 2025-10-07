@@ -118,14 +118,13 @@ void main() {
 
       /// Tests the primary auto-detection path where the generator finds the
       /// main activity from a standard `AndroidManifest.xml` file.
-      test('auto-detects MainActivity from AndroidManifest.xml', () {
+      test('auto-detects MainActivity from AndroidManifest.xml', () async {
         // Create a mock AndroidManifest.xml
-        final androidDir = Directory('${tempDir.path}/android/app/src/main')
-          ..createSync(recursive: true);
+        final androidDir = Directory('${tempDir.path}/android/app/src/main');
+        await androidDir.create(recursive: true);
 
-        final manifestFile = File('${androidDir.path}/AndroidManifest.xml')
-          ..writeAsStringSync(
-            '''
+        await File('${androidDir.path}/AndroidManifest.xml').writeAsString(
+          '''
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <application>
@@ -138,7 +137,7 @@ void main() {
     </application>
 </manifest>
 ''',
-          );
+        );
 
         final generator = ShortcutsXmlGenerator(projectRoot: tempDir.path);
         final intents = [
@@ -157,14 +156,13 @@ void main() {
 
       /// Verifies that the generator can detect a custom-named main activity
       /// (e.g., `.SplashActivity`) from the manifest.
-      test('detects custom activity name from AndroidManifest.xml', () {
+      test('detects custom activity name from AndroidManifest.xml', () async {
         // Create a mock AndroidManifest.xml with custom activity
-        final androidDir = Directory('${tempDir.path}/android/app/src/main')
-          ..createSync(recursive: true);
+        final androidDir = Directory('${tempDir.path}/android/app/src/main');
+        await androidDir.create(recursive: true);
 
-        final manifestFile = File('${androidDir.path}/AndroidManifest.xml')
-          ..writeAsStringSync(
-            '''
+        await File('${androidDir.path}/AndroidManifest.xml').writeAsString(
+          '''
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <application>
@@ -177,7 +175,7 @@ void main() {
     </application>
 </manifest>
 ''',
-          );
+        );
 
         final generator = ShortcutsXmlGenerator(projectRoot: tempDir.path);
         final intents = [
@@ -196,13 +194,12 @@ void main() {
 
       /// Checks if the generator correctly extracts the class name from a
       /// fully qualified activity name in the manifest.
-      test('handles fully qualified activity names', () {
-        final androidDir = Directory('${tempDir.path}/android/app/src/main')
-          ..createSync(recursive: true);
+      test('handles fully qualified activity names', () async {
+        final androidDir = Directory('${tempDir.path}/android/app/src/main');
+        await androidDir.create(recursive: true);
 
-        final manifestFile = File('${androidDir.path}/AndroidManifest.xml')
-          ..writeAsStringSync(
-            '''
+        await File('${androidDir.path}/AndroidManifest.xml').writeAsString(
+          '''
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <application>
@@ -215,7 +212,7 @@ void main() {
     </application>
 </manifest>
 ''',
-          );
+        );
 
         final generator = ShortcutsXmlGenerator(projectRoot: tempDir.path);
         final intents = [
@@ -260,14 +257,13 @@ void main() {
 
       /// Confirms that the `mainActivityOverride` has the highest precedence,
       /// even when a valid `AndroidManifest.xml` is present.
-      test('override takes precedence over auto-detection', () {
+      test('override takes precedence over auto-detection', () async {
         // Create AndroidManifest with MainActivity
-        final androidDir = Directory('${tempDir.path}/android/app/src/main')
-          ..createSync(recursive: true);
+        final androidDir = Directory('${tempDir.path}/android/app/src/main');
+        await androidDir.create(recursive: true);
 
-        final manifestFile = File('${androidDir.path}/AndroidManifest.xml')
-          ..writeAsStringSync(
-            '''
+        await File('${androidDir.path}/AndroidManifest.xml').writeAsString(
+          '''
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <application>
@@ -280,7 +276,7 @@ void main() {
     </application>
 </manifest>
 ''',
-          );
+        );
 
         final generator = ShortcutsXmlGenerator(projectRoot: tempDir.path)
           ..mainActivityOverride = 'CustomActivity';

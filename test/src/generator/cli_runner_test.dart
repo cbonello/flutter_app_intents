@@ -1,5 +1,9 @@
 import 'dart:io';
 
+import 'package:flutter_app_intents/src/generator/android_strings_generator.dart';
+import 'package:flutter_app_intents/src/generator/android_widget_info_generator.dart';
+import 'package:flutter_app_intents/src/generator/android_widget_layout_generator.dart';
+import 'package:flutter_app_intents/src/generator/android_widget_provider_generator.dart';
 import 'package:flutter_app_intents/src/generator/app_shortcuts_provider_generator.dart';
 import 'package:flutter_app_intents/src/generator/cli_runner.dart';
 import 'package:flutter_app_intents/src/generator/intent_extractor.dart';
@@ -18,6 +22,18 @@ class MockShortcutsXmlGenerator extends Mock implements ShortcutsXmlGenerator {}
 class MockAppShortcutsProviderGenerator extends Mock
     implements AppShortcutsProviderGenerator {}
 
+class MockAndroidWidgetLayoutGenerator extends Mock
+    implements AndroidWidgetLayoutGenerator {}
+
+class MockAndroidWidgetProviderGenerator extends Mock
+    implements AndroidWidgetProviderGenerator {}
+
+class MockAndroidWidgetInfoGenerator extends Mock
+    implements AndroidWidgetInfoGenerator {}
+
+class MockAndroidStringsGenerator extends Mock
+    implements AndroidStringsGenerator {}
+
 void main() {
   group(CliRunner, () {
     late CliRunner cliRunner;
@@ -26,6 +42,10 @@ void main() {
     late MockIntentExtractor mockIntentExtractor;
     late MockShortcutsXmlGenerator mockShortcutsXmlGenerator;
     late MockAppShortcutsProviderGenerator mockAppShortcutsProviderGenerator;
+    late MockAndroidWidgetLayoutGenerator mockWidgetLayoutGenerator;
+    late MockAndroidWidgetProviderGenerator mockWidgetProviderGenerator;
+    late MockAndroidWidgetInfoGenerator mockWidgetInfoGenerator;
+    late MockAndroidStringsGenerator mockStringsGenerator;
     late MockIntentValidator mockIntentValidator;
 
     setUp(() {
@@ -39,6 +59,10 @@ void main() {
       mockIntentExtractor = MockIntentExtractor();
       mockShortcutsXmlGenerator = MockShortcutsXmlGenerator();
       mockAppShortcutsProviderGenerator = MockAppShortcutsProviderGenerator();
+      mockWidgetLayoutGenerator = MockAndroidWidgetLayoutGenerator();
+      mockWidgetProviderGenerator = MockAndroidWidgetProviderGenerator();
+      mockWidgetInfoGenerator = MockAndroidWidgetInfoGenerator();
+      mockStringsGenerator = MockAndroidStringsGenerator();
       mockIntentValidator = MockIntentValidator();
 
       when(() => mockIntentExtractor.extractFromDirectory(any())).thenAnswer(
@@ -66,6 +90,10 @@ void main() {
         intentExtractor: mockIntentExtractor,
         shortcutsXmlGenerator: mockShortcutsXmlGenerator,
         appShortcutsProviderGenerator: mockAppShortcutsProviderGenerator,
+        widgetLayoutGenerator: mockWidgetLayoutGenerator,
+        widgetProviderGenerator: mockWidgetProviderGenerator,
+        widgetInfoGenerator: mockWidgetInfoGenerator,
+        stringsGenerator: mockStringsGenerator,
         intentValidatorFactory: (_) => mockIntentValidator,
       );
     });
