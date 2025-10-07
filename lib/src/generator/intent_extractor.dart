@@ -4,7 +4,6 @@ import 'package:analyzer/dart/analysis/analysis_context_collection.dart';
 import 'package:analyzer/dart/analysis/results.dart';
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/ast/visitor.dart';
-import 'package:analyzer/dart/element/element.dart';
 import 'package:flutter_app_intents/src/models/intent_category.dart';
 import 'package:path/path.dart' as p;
 
@@ -151,6 +150,8 @@ abstract class _IntentDataContainer {
   String? title;
   String? description;
   String? category;
+  bool? presentsResult;
+  List<ExtractedParameter> parameters = [];
 }
 
 /// AST visitor that finds intent definitions
@@ -277,7 +278,14 @@ class _IntentVisitor extends RecursiveAstVisitor<void> {
       case 'description':
         data.description = _extractStringLiteral(args.first);
       case 'category':
-        data.category = _extractEnumValue(args.first);
+        data.category = _extractEnumValue(args.first, expectedPrefix: 'IntentCategory');
+      case 'presentsResult':
+        data.presentsResult = _extractBooleanLiteral(args.first);
+      case 'parameter':
+        final param = _extractParameter(args.first);
+        if (param != null) {
+          data.parameters.add(param);
+        }
     }
   }
 
@@ -288,28 +296,78 @@ class _IntentVisitor extends RecursiveAstVisitor<void> {
     return null;
   }
 
-  String? _extractEnumValue(Expression expr) {
-    // Handle: IntentCategory.fitness (PrefixedIdentifier)
+  String? _extractEnumValue(Expression expr, {String? expectedPrefix}) {
+    // Handle: IntentCategory.fitness or AppIntentParameterType.string
     if (expr is PrefixedIdentifier) {
-      // Verify the prefix is IntentCategory
       final prefix = expr.prefix.name;
-      if (prefix == 'IntentCategory') {
-        return expr.identifier.name;
+
+      // If expectedPrefix is provided, validate it matches
+      if (expectedPrefix != null && prefix != expectedPrefix) {
+        return null;
       }
+
+      // Return the identifier part (e.g., 'fitness' from
+      // 'IntentCategory.fitness' or 'string' from
+      // 'AppIntentParameterType.string')
+      return expr.identifier.name;
     }
 
     // Handle: imported enum constant (SimpleIdentifier)
     if (expr is SimpleIdentifier) {
-      // Check if this identifier actually refers to an IntentCategory enum
-      final element = expr.staticElement;
-      if (element is PropertyAccessorElement) {
-        final enclosingElement = element.enclosingElement;
-        if (enclosingElement.name == 'IntentCategory') {
-          return expr.name;
+      // Return the identifier name directly
+      return expr.name;
+    }
+
+    return null;
+  }
+
+  bool? _extractBooleanLiteral(Expression expr) {
+    if (expr is BooleanLiteral) {
+      return expr.value;
+    }
+    return null;
+  }
+
+  /// Extracts parameter information from AppIntentParameter constructor
+  ExtractedParameter? _extractParameter(Expression expr) {
+    // Handle: const AppIntentParameter(name: 'x', title: 'X', ...)
+    if (expr is! InstanceCreationExpression) return null;
+
+    final typeName = expr.constructorName.type.toString();
+    if (!typeName.contains('AppIntentParameter')) return null;
+
+    final param = ExtractedParameter();
+
+    // Extract named arguments
+    for (final arg in expr.argumentList.arguments) {
+      if (arg is NamedExpression) {
+        final name = arg.name.label.name;
+        final value = arg.expression;
+
+        switch (name) {
+          case 'name':
+            param.name = _extractStringLiteral(value);
+          case 'title':
+            param.title = _extractStringLiteral(value);
+          case 'type':
+            param.type = _extractEnumValue(value);
+          case 'isOptional':
+            param.isOptional = _extractBooleanLiteral(value) ?? false;
+          case 'defaultValue':
+            param.defaultValue = _extractDefaultValue(value);
         }
       }
     }
 
+    return param.isValid ? param : null;
+  }
+
+  /// Extracts default value from various expression types
+  dynamic _extractDefaultValue(Expression expr) {
+    if (expr is StringLiteral) return expr.stringValue;
+    if (expr is IntegerLiteral) return expr.value;
+    if (expr is DoubleLiteral) return expr.value;
+    if (expr is BooleanLiteral) return expr.value;
     return null;
   }
 }
@@ -321,7 +379,9 @@ class _BuilderConfig extends _IntentDataContainer {
       ..identifier = identifier
       ..title = title
       ..description = description
-      ..category = category;
+      ..category = category
+      ..presentsResult = presentsResult
+      ..parameters = parameters;
 
     return intent.isValid ? intent : null;
   }
@@ -348,5 +408,21 @@ class ExtractedIntent extends _IntentDataContainer {
 
   @override
   String toString() => 'ExtractedIntent(identifier: $identifier, '
-      'title: $title, category: $category)';
+      'title: $title, category: $category, parameters: ${parameters.length})';
+}
+
+/// Represents a parameter extracted from AppIntentParameter
+class ExtractedParameter {
+  String? name;
+  String? title;
+  String? type;
+  bool isOptional = false;
+  dynamic defaultValue;
+
+  /// Whether the extracted parameter has the minimum required fields
+  bool get isValid => name != null && title != null && type != null;
+
+  @override
+  String toString() => 'ExtractedParameter(name: $name, type: $type, '
+      'isOptional: $isOptional)';
 }

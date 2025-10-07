@@ -383,7 +383,7 @@ final messageIntent = AppIntentBuilder()
         // Check AppShortcutsProvider
         expect(
           swiftContent,
-          contains('struct AppShortcutsProvider: AppShortcutsProvider {'),
+          contains('struct AppShortcuts: AppShortcutsProvider {'),
         );
         expect(
           swiftContent,

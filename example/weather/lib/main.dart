@@ -82,6 +82,7 @@ class _WeatherHomePageState extends State<WeatherHomePage> {
         )
         .eligibleForSearch(eligible: true)
         .eligibleForPrediction(eligible: true)
+        .presentsResult(true)
         .build();
 
     await _client.registerIntent(currentWeatherIntent, _handleCurrentWeather);
@@ -103,6 +104,7 @@ class _WeatherHomePageState extends State<WeatherHomePage> {
         )
         .eligibleForSearch(eligible: true)
         .eligibleForPrediction(eligible: true)
+        .presentsResult(true)
         .build();
 
     await _client.registerIntent(temperatureIntent, _handleTemperature);
@@ -133,6 +135,7 @@ class _WeatherHomePageState extends State<WeatherHomePage> {
         )
         .eligibleForSearch(eligible: true)
         .eligibleForPrediction(eligible: true)
+        .presentsResult(true)
         .build();
 
     await _client.registerIntent(forecastIntent, _handleForecast);
@@ -154,6 +157,7 @@ class _WeatherHomePageState extends State<WeatherHomePage> {
         )
         .eligibleForSearch(eligible: true)
         .eligibleForPrediction(eligible: true)
+        .presentsResult(true)
         .build();
 
     await _client.registerIntent(rainCheckIntent, _handleRainCheck);
@@ -389,11 +393,12 @@ class _WeatherHomePageState extends State<WeatherHomePage> {
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: const Text('Weather App Intents Example'),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
             // App Intents Status
             Card(
               child: Padding(
@@ -496,7 +501,8 @@ class _WeatherHomePageState extends State<WeatherHomePage> {
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
-            Expanded(
+            SizedBox(
+              height: 120,
               child: Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
@@ -558,6 +564,7 @@ class _WeatherHomePageState extends State<WeatherHomePage> {
               ),
             ),
           ],
+          ),
         ),
       ),
     );

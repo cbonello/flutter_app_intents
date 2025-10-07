@@ -167,6 +167,7 @@ class _MyHomePageState extends State<MyHomePage> {
           .description('Returns the current counter value')
           .category(IntentCategory.general)
           .eligibleForSearch(eligible: true)
+          .presentsResult(true) // Query intent - show result in dialog
           .build();
 
       // Register all intents with their corresponding handlers
@@ -212,8 +213,12 @@ class _MyHomePageState extends State<MyHomePage> {
     // Extract parameter with type safety and default value
     final amount = parameters['amount'] as int? ?? 1;
 
-    // Update app state to reflect the change
-    setState(() => _counter += amount);
+    // Update app state to reflect the change (only if widget is still mounted)
+    if (mounted) {
+      setState(() => _counter += amount);
+    } else {
+      _counter += amount;
+    }
 
     // Donate this intent execution to help Siri learn user patterns
     await _client.donateIntent('increment_counter', parameters);
@@ -221,7 +226,6 @@ class _MyHomePageState extends State<MyHomePage> {
     // Return successful result with informative message
     return AppIntentResult.successful(
       value: 'Counter incremented by $amount. New value: $_counter',
-      needsToContinueInApp: true,
     );
   }
 
@@ -238,8 +242,12 @@ class _MyHomePageState extends State<MyHomePage> {
   Future<AppIntentResult> _handleResetIntent(
     Map<String, dynamic> parameters,
   ) async {
-    // Reset counter to initial value
-    setState(() => _counter = 0);
+    // Reset counter to initial value (only if widget is still mounted)
+    if (mounted) {
+      setState(() => _counter = 0);
+    } else {
+      _counter = 0;
+    }
 
     // Donate for Siri learning
     await _client.donateIntent('reset_counter', parameters);
@@ -247,7 +255,6 @@ class _MyHomePageState extends State<MyHomePage> {
     // Return success confirmation
     return AppIntentResult.successful(
       value: 'Counter reset to 0',
-      needsToContinueInApp: true,
     );
   }
 

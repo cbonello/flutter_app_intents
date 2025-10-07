@@ -305,6 +305,12 @@ class CliRunner {
       '${_intentExtractor.filesScanned} file(s)',
     );
 
+    // Get app name from pubspec for display
+    final appName = await _getAppName();
+
+    // Display intents and their phrases
+    _displayIntents(intents, appName: appName);
+
     // Generate for each platform
     for (final platform in platforms) {
       stdout.writeln('📱 Processing platform: $platform');
@@ -370,16 +376,7 @@ class CliRunner {
   /// Generate iOS AppShortcuts.swift
   Future<void> _generateIOS(List<ExtractedIntent> intents) async {
     // Get app name from pubspec if available
-    String? appName;
-    final pubspecFile = File('pubspec.yaml');
-    if (await pubspecFile.exists()) {
-      final pubspecContent = await pubspecFile.readAsString();
-      final nameMatch = RegExp(r'^name:\s*(.+)$', multiLine: true)
-          .firstMatch(pubspecContent);
-      if (nameMatch != null) {
-        appName = nameMatch.group(1)?.trim();
-      }
-    }
+    final appName = await _getAppName();
 
     final swift = _appShortcutsProviderGenerator.generate(
       intents,
@@ -427,5 +424,57 @@ class CliRunner {
         ..writeln('   4. Remember: Clean build required after Swift changes')
         ..writeln();
     }
+  }
+
+  /// Display the extracted intents with their phrases
+  void _displayIntents(List<ExtractedIntent> intents, {String? appName}) {
+    stdout
+      ..writeln()
+      ..writeln('📋 App Intents:')
+      ..writeln();
+
+    for (final intent in intents) {
+      // Display intent title
+      stdout.writeln('   ${intent.title} (${intent.identifier})');
+
+      // Get category display name
+      final category = intent.categoryEnum;
+      stdout.writeln('   └─ Category: ${category.displayName}');
+
+      // Generate and display phrases
+      final phrases = _generatePhrasesForDisplay(
+        intent.title!,
+        appName: appName,
+      );
+      stdout.writeln('   └─ Voice commands:');
+      for (final phrase in phrases) {
+        stdout.writeln('      • "$phrase"');
+      }
+
+      stdout.writeln();
+    }
+  }
+
+  /// Generate display phrases (mimics the generator logic)
+  List<String> _generatePhrasesForDisplay(String title, {String? appName}) {
+    final displayName = appName ?? 'Your App Name';
+    return [
+      '$title with $displayName',
+      '$title in $displayName',
+    ];
+  }
+
+  /// Extract app name from pubspec.yaml
+  Future<String?> _getAppName() async {
+    final pubspecFile = File('pubspec.yaml');
+    if (!await pubspecFile.exists()) {
+      return null;
+    }
+
+    final pubspecContent = await pubspecFile.readAsString();
+    final nameMatch = RegExp(r'^name:\s*(.+)$', multiLine: true)
+        .firstMatch(pubspecContent);
+
+    return nameMatch?.group(1)?.trim();
   }
 }

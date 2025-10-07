@@ -4,10 +4,16 @@ This example demonstrates **action-based App Intents** using a simple counter ap
 
 ## Features Demonstrated
 
-### Action Intents
+### Intent Types
+
+This example demonstrates both **action** and **query** intents:
+
+**Action Intents** (silent - just open the app):
 - **Increment Counter**: Add to the counter value (with optional amount parameter)
 - **Reset Counter**: Set counter back to zero
-- **Get Counter**: Query current counter value
+
+**Query Intents** (show result in dialog):
+- **Get Counter**: Query current counter value and display it
 
 ### Key Concepts
 - Parameter handling with type safety
@@ -68,11 +74,21 @@ flutter run
 
 1. **Dart Intent Definitions** (`lib/main.dart`):
 ```dart
+// Action intent - opens app silently
 final incrementIntent = AppIntentBuilder()
     .identifier('increment_counter')
     .title('Increment Counter')
     .description('Increments the counter by one')
     .category(IntentCategory.general)
+    .build();  // presentsResult defaults to false
+
+// Query intent - shows result in dialog
+final getCounterIntent = AppIntentBuilder()
+    .identifier('get_counter')
+    .title('Get Counter Value')
+    .description('Returns the current counter value')
+    .category(IntentCategory.general)
+    .presentsResult(true)  // ← Shows result to user
     .build();
 ```
 
@@ -85,6 +101,15 @@ dart run flutter_app_intents:app_intents_cli
 - Swift AppIntent structs for each intent
 - AppShortcutsProvider with Siri phrases
 - Automatic bridging to Flutter handlers
+
+4. **Add to Xcode** (one-time step):
+   - Open `ios/Runner.xcworkspace` in Xcode
+   - Right-click "Runner" folder → "Add Files to Runner..."
+   - Select `ios/Runner/AppShortcuts.swift`
+   - Check "Copy items if needed" and "Runner" target
+   - Click "Add"
+
+**Note**: This is only needed once. Regenerating the file later will update it automatically.
 
 ### Regenerate After Changes
 

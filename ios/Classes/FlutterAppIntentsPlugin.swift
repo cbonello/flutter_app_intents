@@ -470,10 +470,12 @@ public class FlutterAppIntentsPlugin: NSObject, FlutterPlugin {
     ///
     /// - Note: Thread-safe - Reads intent count from intentQueue
     private func updateAppShortcuts() async {
-        // App shortcuts are automatically managed by iOS when AppShortcutsProvider.appShortcuts changes
-        // The system will refresh shortcuts when it detects changes to the provider
+        // Static App Shortcuts are automatically discovered by iOS 16+ when the app
+        // defines an AppShortcutsProvider. No explicit update call is needed.
+        // The shortcuts will appear in the Shortcuts app after the app is installed
+        // and launched for the first time.
         let count = intentQueue.sync { activeIntents.count }
-        print("App shortcuts updated with \(count) intents")
+        print("📱 App has \(count) registered intents - shortcuts auto-discovered by iOS")
     }
 
     /// Returns list of currently active intent identifiers
@@ -710,28 +712,54 @@ public class FlutterAppIntentsPlugin: NSObject, FlutterPlugin {
     /// - Returns: A dictionary containing success status and result value from Flutter
     public func handleIntentInvocation(identifier: String, parameters: [String: Any]) async -> [String: Any] {
         print("🚀 iOS calling Flutter intent: \(identifier) with parameters: \(parameters)")
-        
+
         let arguments: [String: Any] = [
             "identifier": identifier,
             "parameters": parameters
         ]
-        
+
         // Create a continuation to wait for Flutter response
         return await withCheckedContinuation { continuation in
-            // Ensure we're on the main thread for Flutter platform channel calls
-            DispatchQueue.main.async {
-                self.channel?.invokeMethod("handleIntent", arguments: arguments) { result in
+            let invokeMethodCall = {
+                guard let channel = self.channel else {
+                    print("❌ Flutter channel not initialized")
+                    let errorResult: [String: Any] = [
+                        "success": false,
+                        "error": "Flutter channel not initialized"
+                    ]
+                    continuation.resume(returning: errorResult)
+                    return
+                }
+
+                channel.invokeMethod("handleIntent", arguments: arguments) { result in
                     print("📱 Flutter response for \(identifier): \(String(describing: result))")
-                    
+
                     if let resultDict = result as? [String: Any] {
                         continuation.resume(returning: resultDict)
+                    } else if let error = result as? FlutterError {
+                        print("❌ Flutter error: \(error.message ?? "unknown")")
+                        let errorResult: [String: Any] = [
+                            "success": false,
+                            "error": error.message ?? "Flutter error"
+                        ]
+                        continuation.resume(returning: errorResult)
                     } else {
+                        print("❌ Unexpected result type: \(String(describing: result))")
                         let errorResult: [String: Any] = [
                             "success": false,
                             "error": "Failed to execute intent on Flutter side"
                         ]
                         continuation.resume(returning: errorResult)
                     }
+                }
+            }
+
+            // Call method channel on main thread
+            if Thread.isMainThread {
+                invokeMethodCall()
+            } else {
+                DispatchQueue.main.async {
+                    invokeMethodCall()
                 }
             }
         }

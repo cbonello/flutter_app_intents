@@ -5,9 +5,15 @@ All notable changes to the Flutter App Intents package will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.8.0] - 2025-10-05
+## [0.8.0] - Unreleased
 
 ### Added
+- **`presentsResult` property for iOS intents**: Control how iOS displays intent results (iOS only)
+  - `AppIntentBuilder().presentsResult(true)` for query intents that show results in dialogs
+  - `AppIntentBuilder().presentsResult(false)` (default) for action intents that open the app silently
+  - Enables better UX by distinguishing between actions (increment, send, create) and queries (get, check, fetch)
+  - Automatically generates appropriate Swift return types (`some IntentResult` vs `some IntentResult & ProvidesDialog`)
+  - **Note**: Android inline fulfillment requires widgets, which is planned for a future release
 - **iOS Code Generation**: Automatic Swift code generation from Dart intent definitions
   - Generates `ios/Runner/AppShortcuts.swift` with complete App Intents implementation
   - Creates AppIntent structs for each intent with proper Swift syntax
@@ -108,6 +114,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Handles both `IntentCategory.fitness` and imported enum patterns
   - Defaults to `IntentCategory.general` when not specified
 
+### Changed
+- **iOS intent result behavior**: Improved UX for iOS App Shortcuts
+  - **Action intents** (default, `presentsResult: false`): Now open the app silently without showing a dialog
+  - **Query intents** (`presentsResult: true`): Show the result value in a dialog before opening the app
+  - Use `.presentsResult(true)` for intents that return information to display (get, check, fetch operations)
+  - Use `.presentsResult(false)` or omit for action intents (increment, send, create operations)
+  - This replaces the previous `needsToContinueInApp` flag approach
+
 ### Developer Workflow
 - **New recommended workflow**:
   1. Define intents in Dart using `AppIntentBuilder()`
@@ -117,6 +131,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Old manual workflow still supported** for advanced customization
 
 ### Migration Guide
+
+#### Using presentsResult for iOS Intents
+
+If you have query intents (that return information to the user), update them to use `.presentsResult(true)`:
+
+```dart
+// Before: Intent showed behavior controlled by needsToContinueInApp in result
+final intent = AppIntentBuilder()
+    .identifier('get_status')
+    .title('Get Status')
+    .build();
+
+// After: Intent presentation controlled at definition time
+final intent = AppIntentBuilder()
+    .identifier('get_status')
+    .title('Get Status')
+    .presentsResult(true)  // ← Shows result in dialog
+    .build();
+```
+
+**Quick Rule**: Add `.presentsResult(true)` to GET/CHECK/FETCH operations. Leave default for DO/SEND/CREATE operations.
+
+#### Code Generation Migration
 Existing projects can migrate to code generation:
 1. Add `.category(IntentCategory.xxx)` to existing `AppIntentBuilder` calls
 2. Run `dart run flutter_app_intents:app_intents_cli --platform=ios`

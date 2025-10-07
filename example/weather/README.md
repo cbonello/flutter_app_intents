@@ -98,6 +98,15 @@ dart run flutter_app_intents:app_intents_cli
 - Automatic bridging to Flutter data handlers
 - Background operation support (no app opening required)
 
+4. **Add to Xcode** (one-time step):
+   - Open `ios/Runner.xcworkspace` in Xcode
+   - Right-click "Runner" folder → "Add Files to Runner..."
+   - Select `ios/Runner/AppShortcuts.swift`
+   - Check "Copy items if needed" and "Runner" target
+   - Click "Add"
+
+**Note**: This is only needed once. Regenerating the file later will update it automatically.
+
 ### Query Intent Pattern
 
 Weather query intents automatically include:

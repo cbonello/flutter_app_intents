@@ -211,6 +211,55 @@ struct IncrementCounterIntent: AppIntent {
 
 **Result:** Say *"Hey Siri, increment counter"* and your Flutter function runs! 🎉
 
+## Migration Guide
+
+### New in v0.8.0: Action vs Query Intents
+
+**✨ New Feature:** Use `.presentsResult()` to control how iOS displays intent results.
+
+#### Intent Types
+
+v0.8.0 introduces a clear distinction between two types of intents:
+
+- **Action intents** (default): Open the app silently - no dialog
+- **Query intents** (`.presentsResult(true)`): Show result in a dialog
+
+#### Usage Guide
+
+**For Action Intents** (do something):
+```dart
+// Increment, Send, Create, Delete, Update operations
+final actionIntent = AppIntentBuilder()
+    .identifier('send_message')
+    .title('Send Message')
+    .build();  // presentsResult defaults to false
+
+// Opens app immediately, no dialog ✨
+```
+
+**For Query Intents** (get information):
+```dart
+// Get, Check, Fetch, Retrieve operations
+final queryIntent = AppIntentBuilder()
+    .identifier('get_status')
+    .title('Get Status')
+    .presentsResult(true)  // ← Shows result in dialog
+    .build();
+
+// Shows result value, then opens app 📱
+```
+
+**Quick Rule of Thumb:**
+- **GET/CHECK/FETCH operations** → Add `.presentsResult(true)`
+- **DO/SEND/CREATE operations** → Leave as default (omit)
+
+#### Why This Matters
+
+The `.presentsResult()` property provides better UX by:
+- Eliminating annoying dialogs for action intents
+- Showing helpful information for query intents
+- Making intent behavior explicit in your code
+
 ## Quick Start
 
 > 📖 **New to App Intents?** Check out our [Step-by-Step Tutorial](documentation/TUTORIAL.md) for a complete walkthrough from `flutter create` to working Siri integration!
@@ -535,9 +584,46 @@ final intent = AppIntentBuilder()
     .description('Does something useful')
     .parameter(myParameter)
     .eligibleForSearch(true)
+    .presentsResult(false)  // Action intent - opens app silently
     .authenticationPolicy(AuthenticationPolicy.requiresAuthentication)
     .build();
 ```
+
+#### Action vs Query Intents
+
+Use `.presentsResult()` to control how intents display results:
+
+> **Platform Support:**
+> ✅ **iOS**: Fully supported
+> ❌ **Android**: Not yet supported - all intents open the app (widget-based fulfillment planned)
+
+**Action Intents** (default behavior):
+```dart
+// Actions like "Increment Counter", "Send Message", "Create Note"
+final actionIntent = AppIntentBuilder()
+    .identifier('increment_counter')
+    .title('Increment Counter')
+    .description('Increments the counter by one')
+    .presentsResult(false)  // or omit - false is default
+    .build();
+
+// Opens app immediately without showing a dialog ✨
+```
+
+**Query Intents** (show results):
+```dart
+// Queries like "Get Counter", "Check Weather", "Get Balance"
+final queryIntent = AppIntentBuilder()
+    .identifier('get_counter')
+    .title('Get Counter Value')
+    .description('Returns the current counter value')
+    .presentsResult(true)  // ← Shows result in dialog
+    .build();
+
+// Shows result value in a dialog before opening app 📱
+```
+
+> **💡 UX Tip**: Use action intents (default) for operations that modify state, and query intents for operations that return information to the user.
 
 ## Enhanced Intent Donation
 

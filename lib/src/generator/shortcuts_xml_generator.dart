@@ -85,19 +85,60 @@ class ShortcutsXmlGenerator {
                 // (standard Android approach)
                 ..attribute('android:data', 'app://intent/$identifier');
 
-              // TODO(user): Add support for intent parameters.
-              // This requires extracting parameter info in IntentExtractor and
-              // generating <parameter> elements here. For example:
-              //
-              // builder.element('parameter', nest: () {
-              //   builder.attribute('android:name', 'note.title');
-              //   builder.attribute('android:key', 'title');
-              //   builder.attribute('android:mimeType', 'text/*');
-              // });
+              // Generate parameter elements
+              for (final param in intent.parameters) {
+                _generateParameter(builder, param, biiAction);
+              }
             },
           );
       },
     );
+  }
+
+  /// Generate a `<parameter>` element for an intent parameter.
+  void _generateParameter(
+    XmlBuilder builder,
+    ExtractedParameter param,
+    String biiAction,
+  ) {
+    // Map parameter name to BII parameter name
+    // For example: 'location' -> 'location' (most BIIs use simple names)
+    final biiParamName = param.name!;
+    final mimeType = _getMimeTypeForParameter(param.type!);
+
+    builder.element(
+      'parameter',
+      nest: () {
+        builder
+          ..attribute('android:name', biiParamName)
+          ..attribute('android:key', param.name)
+          ..attribute('android:mimeType', mimeType);
+
+        // Add required attribute if parameter is not optional
+        if (!param.isOptional) {
+          builder.attribute('android:required', 'true');
+        }
+      },
+    );
+  }
+
+  /// Maps Dart parameter types to Android MIME types.
+  String _getMimeTypeForParameter(String dartType) {
+    switch (dartType) {
+      case 'string':
+        return 'text/*';
+      case 'integer':
+      case 'double':
+        return 'text/*'; // Numbers passed as text in BII
+      case 'boolean':
+        return 'text/*';
+      case 'date':
+        return 'text/*';
+      case 'url':
+        return 'text/uri-list';
+      default:
+        return 'text/*';
+    }
   }
 
   /// Gets the main activity class name.

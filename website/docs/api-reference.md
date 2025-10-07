@@ -27,8 +27,10 @@ const AppIntent({
   required String title,          // Display name
   required String description,    // What it does
   List&lt;AppIntentParameter&gt; parameters = const [],
+  IntentCategory? category,       // Optional category
   bool isEligibleForSearch = true,
   bool isEligibleForPrediction = true,
+  bool presentsResult = false,    // iOS: Show result in dialog
   AuthenticationPolicy authenticationPolicy = AuthenticationPolicy.none,
 });
 ```
@@ -39,8 +41,10 @@ const AppIntent({
 - `title` (String): Human-readable title shown in Siri/Shortcuts
 - `description` (String): Description of what the intent does
 - `parameters` (List&lt;AppIntentParameter&gt;): List of parameters this intent accepts
+- `category` (IntentCategory?): Optional category for platform-specific features
 - `isEligibleForSearch` (bool): Whether intent appears in Spotlight search
 - `isEligibleForPrediction` (bool): Whether Siri can suggest this intent
+- `presentsResult` (bool): Whether to show result in dialog (iOS only, default: false)
 - `authenticationPolicy` (AuthenticationPolicy): Authentication requirements
 
 ## AppIntentParameter
@@ -127,10 +131,37 @@ final intent = AppIntentBuilder()
 - `title(String title)` - Set the display title
 - `description(String desc)` - Set the description
 - `parameter(AppIntentParameter param)` - Add a parameter
+- `category(IntentCategory category)` - Set intent category for platform-specific features
 - `eligibleForSearch(bool eligible)` - Set search eligibility
 - `eligibleForPrediction(bool eligible)` - Set prediction eligibility
+- `presentsResult(bool presents)` - Show result in dialog (iOS only, default: false)
 - `authenticationPolicy(AuthenticationPolicy policy)` - Set auth requirements
 - `build()` - Build the final AppIntent object
+
+### Intent Result Presentation (iOS only)
+
+The `presentsResult()` method controls whether iOS shows the result in a dialog or just opens the app:
+
+**Action Intents** (default - opens app silently):
+```dart
+final actionIntent = AppIntentBuilder()
+    .identifier('send_message')
+    .title('Send Message')
+    .build();  // presentsResult defaults to false
+```
+
+**Query Intents** (shows result in dialog):
+```dart
+final queryIntent = AppIntentBuilder()
+    .identifier('get_status')
+    .title('Get Status')
+    .presentsResult(true)  // Shows result value
+    .build();
+```
+
+**Platform Support:**
+- ✅ iOS: Fully supported
+- ❌ Android: Not yet supported (always opens app)
 
 ## Authentication Policies
 
@@ -192,11 +223,12 @@ class MyAppIntents {
   static Future<void> setupIntents() async {
     final client = FlutterAppIntentsClient.instance;
     
-    // Create intent with builder
+    // Create action intent with builder
     final incrementIntent = AppIntentBuilder()
         .identifier('increment_counter')
         .title('Increment Counter')
         .description('Increments the counter by one')
+        .category(IntentCategory.general)
         .parameter(const AppIntentParameter(
           name: 'amount',
           title: 'Amount',
@@ -206,7 +238,7 @@ class MyAppIntents {
         ))
         .eligibleForSearch(true)
         .eligibleForPrediction(true)
-        .build();
+        .build();  // presentsResult defaults to false (action intent)
     
     // Register with handler
     await client.registerIntent(incrementIntent, _handleIncrement);

@@ -18,6 +18,7 @@ class AppIntent extends Equatable {
     this.isEligibleForSearch = true,
     this.isEligibleForPrediction = true,
     this.authenticationPolicy = AuthenticationPolicy.none,
+    this.presentsResult = false,
   });
 
   /// Creates AppIntent from a map representation
@@ -54,7 +55,8 @@ class AppIntent extends Equatable {
                 (policy) => policy.name == map['authenticationPolicy'],
                 orElse: () => AuthenticationPolicy.none,
               )
-            : AuthenticationPolicy.none;
+            : AuthenticationPolicy.none,
+        presentsResult = map['presentsResult'] as bool? ?? false;
 
   /// Unique identifier for the intent
   final String identifier;
@@ -92,6 +94,22 @@ class AppIntent extends Equatable {
   /// Authentication policy for the intent
   final AuthenticationPolicy authenticationPolicy;
 
+  /// Whether the intent should present its result in a dialog (iOS only)
+  ///
+  /// **Platform Support:**
+  /// - ✅ **iOS**: Supported - shows result in dialog or opens app silently
+  /// - ❌ **Android**: Not supported - always opens app (widgets planned for future)
+  ///
+  /// - `false` (default): Action intents that just open the app silently
+  ///   (e.g., "Increment Counter", "Send Message")
+  /// - `true`: Query intents that display a result to the user
+  ///   (e.g., "Get Counter Value", "Check Weather")
+  ///
+  /// This controls the iOS App Intent behavior:
+  /// - Action intents return immediately and open the app
+  /// - Query intents show a dialog with the result value
+  final bool presentsResult;
+
   @override
   List<Object?> get props => [
         identifier,
@@ -103,6 +121,7 @@ class AppIntent extends Equatable {
         isEligibleForSearch,
         isEligibleForPrediction,
         authenticationPolicy,
+        presentsResult,
       ];
 
   /// Creates a copy of this AppIntent with the given fields replaced
@@ -116,6 +135,7 @@ class AppIntent extends Equatable {
     bool? isEligibleForSearch,
     bool? isEligibleForPrediction,
     AuthenticationPolicy? authenticationPolicy,
+    bool? presentsResult,
   }) {
     return AppIntent(
       identifier: identifier ?? this.identifier,
@@ -128,6 +148,7 @@ class AppIntent extends Equatable {
       isEligibleForPrediction:
           isEligibleForPrediction ?? this.isEligibleForPrediction,
       authenticationPolicy: authenticationPolicy ?? this.authenticationPolicy,
+      presentsResult: presentsResult ?? this.presentsResult,
     );
   }
 
@@ -143,6 +164,7 @@ class AppIntent extends Equatable {
       'isEligibleForSearch': isEligibleForSearch,
       'isEligibleForPrediction': isEligibleForPrediction,
       'authenticationPolicy': authenticationPolicy.name,
+      'presentsResult': presentsResult,
     };
   }
 }

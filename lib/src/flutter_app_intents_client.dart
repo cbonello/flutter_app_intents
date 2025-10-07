@@ -298,6 +298,7 @@ class AppIntentBuilder {
   bool _isEligibleForSearch = true;
   bool _isEligibleForPrediction = true;
   AuthenticationPolicy _authenticationPolicy = AuthenticationPolicy.none;
+  bool _presentsResult = false;
 
   /// Set the unique identifier for this intent
   ///
@@ -480,6 +481,39 @@ class AppIntentBuilder {
     return this;
   }
 
+  /// Set whether this intent presents its result in a dialog (iOS only)
+  ///
+  /// **Platform Support:**
+  /// - ✅ **iOS**: Shows result in a dialog
+  /// - ❌ **Android**: Not yet supported (always opens app)
+  ///
+  /// Controls the UX when the intent is executed from Shortcuts or Siri:
+  /// - `false` (default): Action intents that open the app silently
+  ///   (e.g., "Increment Counter", "Start Timer", "Send Message")
+  /// - `true`: Query intents that display a result to the user
+  ///   (e.g., "Get Counter Value", "Check Weather", "Get Balance")
+  ///
+  /// Action intents provide better UX by opening the app immediately without
+  /// showing a dialog. Query intents show the result value in a dialog before
+  /// optionally opening the app.
+  ///
+  /// **Note:** Android inline fulfillment requires Android Widgets, which is
+  /// planned for a future release. For now, all Android App Actions open the app.
+  ///
+  /// Example:
+  /// ```dart
+  /// AppIntentBuilder()
+  ///   .identifier('get_status')
+  ///   .title('Get Status')
+  ///   .presentsResult(true)  // iOS: Shows result in dialog
+  ///   .build()
+  /// ```
+  AppIntentBuilder presentsResult(bool presents) {
+    _presentsResult = presents;
+
+    return this;
+  }
+
   /// Build the final AppIntent from the configured properties
   ///
   /// Creates an immutable AppIntent instance with all the properties
@@ -512,6 +546,7 @@ class AppIntentBuilder {
       isEligibleForSearch: _isEligibleForSearch,
       isEligibleForPrediction: _isEligibleForPrediction,
       authenticationPolicy: _authenticationPolicy,
+      presentsResult: _presentsResult,
     );
   }
 }
