@@ -498,7 +498,8 @@ class AppIntentBuilder {
   /// optionally opening the app.
   ///
   /// **Note:** Android inline fulfillment requires Android Widgets, which is
-  /// planned for a future release. For now, all Android App Actions open the app.
+  /// planned for a future release. For now, all Android App Actions open the
+  /// app.
   ///
   /// Example:
   /// ```dart

@@ -98,7 +98,8 @@ class AppIntent extends Equatable {
   ///
   /// **Platform Support:**
   /// - ✅ **iOS**: Supported - shows result in dialog or opens app silently
-  /// - ❌ **Android**: Not supported - always opens app (widgets planned for future)
+  /// - ❌ **Android**: Not supported - always opens app (widgets planned for
+  ///   future)
   ///
   /// - `false` (default): Action intents that just open the app silently
   ///   (e.g., "Increment Counter", "Send Message")

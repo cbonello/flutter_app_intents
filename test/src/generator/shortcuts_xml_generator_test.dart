@@ -417,7 +417,7 @@ void main() {
         expect(xml, contains('android:name="message"'));
         expect(xml, contains('android:key="message"'));
         final messageParamMatch = RegExp(
-          r'<parameter[^>]*android:name="message"[^>]*>',
+          '<parameter[^>]*android:name="message"[^>]*>',
         ).firstMatch(xml);
         expect(messageParamMatch, isNotNull);
         expect(messageParamMatch![0], isNot(contains('android:required')));

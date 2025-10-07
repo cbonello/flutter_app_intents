@@ -278,7 +278,10 @@ class _IntentVisitor extends RecursiveAstVisitor<void> {
       case 'description':
         data.description = _extractStringLiteral(args.first);
       case 'category':
-        data.category = _extractEnumValue(args.first, expectedPrefix: 'IntentCategory');
+        data.category = _extractEnumValue(
+          args.first,
+          expectedPrefix: 'IntentCategory',
+        );
       case 'presentsResult':
         data.presentsResult = _extractBooleanLiteral(args.first);
       case 'parameter':
