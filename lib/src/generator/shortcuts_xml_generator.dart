@@ -64,6 +64,7 @@ class ShortcutsXmlGenerator {
     final biiAction = intent.categoryEnum.androidBII;
     final identifier = intent.identifier!;
     final mainActivity = _getMainActivityClass();
+    final featureName = intent.title!;
 
     builder.element(
       'capability',
@@ -85,10 +86,43 @@ class ShortcutsXmlGenerator {
                 // (standard Android approach)
                 ..attribute('android:data', 'app://intent/$identifier');
 
+              // Add feature parameter for OPEN_APP_FEATURE BII
+              // This enables Google Assistant voice commands
+              if (biiAction == 'actions.intent.OPEN_APP_FEATURE') {
+                _generateFeatureParameter(builder, featureName);
+              }
+
               // Generate parameter elements
               for (final param in intent.parameters) {
                 _generateParameter(builder, param, biiAction);
               }
+            },
+          );
+      },
+    );
+  }
+
+  /// Generate the feature parameter for OPEN_APP_FEATURE BII.
+  ///
+  /// This parameter tells Google Assistant which feature name to recognize
+  /// in voice commands like "Hey Google, open feature in app".
+  ///
+  /// The [featureName] is used as the pattern that Google Assistant will match
+  /// against when users speak voice commands.
+  void _generateFeatureParameter(XmlBuilder builder, String featureName) {
+    builder.element(
+      'parameter',
+      nest: () {
+        builder
+          ..attribute('android:name', 'feature')
+          ..attribute('android:key', 'feature')
+          ..attribute('android:mimeType', 'text/*')
+          ..element(
+            'data',
+            nest: () {
+              builder
+                ..attribute('android:pathPattern', featureName)
+                ..attribute('android:mimeType', 'text/*');
             },
           );
       },

@@ -1083,6 +1083,75 @@ Check out the [example apps](example/) for complete implementations showing diff
 - Siri integration testing
 - Navigation with Flutter Router and GoRouter
 
+## Testing
+
+### iOS Testing
+
+**Siri Voice Commands:**
+```
+"Hey Siri, increment counter with MyApp"
+"Hey Siri, get counter value using MyApp"
+```
+
+**iOS Shortcuts App:**
+1. Open Shortcuts app
+2. Find your app's shortcuts
+3. Tap to test
+
+**Spotlight Search:**
+- Type your intent names in Spotlight
+- Shortcuts appear in search results
+
+### Android Testing
+
+**⭐ ADB Testing (Recommended for Development):**
+
+ADB is the **standard way** to test Android App Actions during local development:
+
+```bash
+# Find adb location (usually in Android SDK platform-tools)
+# macOS: ~/Library/Android/sdk/platform-tools/adb
+# Linux: ~/Android/Sdk/platform-tools/adb
+# Windows: %LOCALAPPDATA%\Android\Sdk\platform-tools\adb.exe
+
+# Test an intent
+adb shell am start -a android.intent.action.VIEW -d "app://intent/increment_counter"
+
+# If app is running, you'll see a "Warning" message - this is NORMAL!
+# The warning means the intent was successfully delivered to your running app.
+
+# To test from a fresh start:
+adb shell am force-stop com.example.your_app
+adb shell am start -a android.intent.action.VIEW -d "app://intent/increment_counter"
+```
+
+**Why ADB for Android?**
+- ✅ **Works immediately** - No publishing or special setup required
+- ✅ **Fast iteration** - Test changes instantly during development
+- ✅ **Same code paths** - Tests the exact same code as voice commands
+- ✅ **Reliable** - No dependency on Google services
+
+**Google Assistant Voice Commands (Production Only):**
+
+⚠️ **Important:** Google Assistant voice commands **do NOT work for unpublished apps**.
+
+Voice commands require:
+- App published on Google Play (even internal testing track), OR
+- Google Assistant Plugin for Android Studio
+
+After publishing:
+```
+"Hey Google, open increment counter in MyApp"
+"Hey Google, open reset counter in MyApp"
+```
+
+**App Launcher Shortcuts:**
+- Long-press app icon in launcher
+- Shortcuts appear in menu immediately
+- No publishing required
+
+📖 **[Complete Android Testing Guide](https://cbonello.github.io/flutter_app_intents/docs/android-configuration#testing-app-actions)** - Detailed testing instructions, Google Assistant Plugin setup, and troubleshooting.
+
 ## Internationalization
 
 The package supports internationalization (i18n) with different levels of support for each platform:

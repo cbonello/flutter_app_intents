@@ -2,13 +2,24 @@
 <shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
   <capability android:name="actions.intent.OPEN_APP_FEATURE">
     <intent android:targetPackage="${applicationId}" android:targetClass="MainActivity" android:action="android.intent.action.VIEW" android:data="app://intent/increment_counter">
+      <parameter android:name="feature" android:key="feature" android:mimeType="text/*">
+        <data android:pathPattern="Increment Counter" android:mimeType="text/*"/>
+      </parameter>
       <parameter android:name="amount" android:key="amount" android:mimeType="text/*"/>
     </intent>
   </capability>
   <capability android:name="actions.intent.OPEN_APP_FEATURE">
-    <intent android:targetPackage="${applicationId}" android:targetClass="MainActivity" android:action="android.intent.action.VIEW" android:data="app://intent/reset_counter"/>
+    <intent android:targetPackage="${applicationId}" android:targetClass="MainActivity" android:action="android.intent.action.VIEW" android:data="app://intent/reset_counter">
+      <parameter android:name="feature" android:key="feature" android:mimeType="text/*">
+        <data android:pathPattern="Reset Counter" android:mimeType="text/*"/>
+      </parameter>
+    </intent>
   </capability>
   <capability android:name="actions.intent.OPEN_APP_FEATURE">
-    <intent android:targetPackage="${applicationId}" android:targetClass="MainActivity" android:action="android.intent.action.VIEW" android:data="app://intent/get_counter"/>
+    <intent android:targetPackage="${applicationId}" android:targetClass="MainActivity" android:action="android.intent.action.VIEW" android:data="app://intent/get_counter">
+      <parameter android:name="feature" android:key="feature" android:mimeType="text/*">
+        <data android:pathPattern="Get Counter Value" android:mimeType="text/*"/>
+      </parameter>
+    </intent>
   </capability>
 </shortcuts>

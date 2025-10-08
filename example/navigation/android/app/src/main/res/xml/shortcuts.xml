@@ -12,10 +12,17 @@
   </capability>
   <capability android:name="actions.intent.OPEN_APP_FEATURE">
     <intent android:targetPackage="${applicationId}" android:targetClass="MainActivity" android:action="android.intent.action.VIEW" android:data="app://intent/search_content">
+      <parameter android:name="feature" android:key="feature" android:mimeType="text/*">
+        <data android:pathPattern="Search Content" android:mimeType="text/*"/>
+      </parameter>
       <parameter android:name="query" android:key="query" android:mimeType="text/*" android:required="true"/>
     </intent>
   </capability>
   <capability android:name="actions.intent.OPEN_APP_FEATURE">
-    <intent android:targetPackage="${applicationId}" android:targetClass="MainActivity" android:action="android.intent.action.VIEW" android:data="app://intent/open_settings"/>
+    <intent android:targetPackage="${applicationId}" android:targetClass="MainActivity" android:action="android.intent.action.VIEW" android:data="app://intent/open_settings">
+      <parameter android:name="feature" android:key="feature" android:mimeType="text/*">
+        <data android:pathPattern="Open Settings" android:mimeType="text/*"/>
+      </parameter>
+    </intent>
   </capability>
 </shortcuts>

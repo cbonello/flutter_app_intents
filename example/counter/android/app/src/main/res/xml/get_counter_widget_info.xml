@@ -1,0 +1,2 @@
+<?xml version="1.0" encoding="utf-8"?>
+<appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android" android:initialLayout="@layout/widget_get_counter" android:minWidth="180dp" android:minHeight="40dp" android:updatePeriodMillis="0" android:description="@string/widget_get_counter_description" android:widgetCategory="home_screen" android:resizeMode="horizontal|vertical"/>

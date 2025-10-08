@@ -100,24 +100,9 @@ flutter install
 
 #### Testing App Actions
 
-**Method 1: Using Google Assistant Test Tool**
+**⭐ Recommended: Using ADB (Local Development)**
 
-1. **Install the App**:
-   ```bash
-   flutter install
-   ```
-
-2. **Open Google Assistant Test Tool**:
-   ```bash
-   adb shell am start -a android.intent.action.VIEW -d "https://assistant.google.com/services/a/uid/000000000000000000000"
-   ```
-
-3. **Test Commands**:
-   - "Increment counter with Counter Example"
-   - "Reset counter with Counter Example"
-   - "Get counter from Counter Example"
-
-**Method 2: Using ADB to Trigger Intents**
+ADB is the **standard way** to test Android App Actions during local development. It works immediately without publishing or special setup:
 
 ```bash
 # Test increment counter
@@ -129,6 +114,27 @@ adb shell am start -a android.intent.action.VIEW -d "app://intent/reset_counter"
 # Test get counter value
 adb shell am start -a android.intent.action.VIEW -d "app://intent/get_counter"
 ```
+
+**Understanding the "Warning" Message:**
+
+If your app is already running, you'll see:
+```
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+```
+
+This is **NORMAL and means it worked!** The intent was successfully delivered to your running app.
+
+To test from a fresh start:
+```bash
+adb shell am force-stop com.example.counter_example
+adb shell am start -a android.intent.action.VIEW -d "app://intent/increment_counter"
+```
+
+**Why use ADB?**
+- ✅ Works immediately - no publishing required
+- ✅ Fast iteration - test changes instantly
+- ✅ Same code paths - tests exact same code as voice commands
+- ✅ Reliable - no dependency on Google services
 
 **⚠️ Platform Difference: Query Intents**
 
@@ -145,7 +151,15 @@ adb logcat | grep "Counter"
 # Should show: [Counter] _handleGetCounterIntent called, counter value: X
 ```
 
-**Method 3: Using Google Assistant (Requires Release Build)**
+**Alternative: Using Google Assistant Plugin (Optional)**
+
+For testing voice commands during development:
+
+1. Install Google Assistant Plugin in Android Studio
+2. Tools → App Actions Test Tool
+3. Test voice commands without publishing
+
+**Production: Using Google Assistant (Requires Publishing)**
 
 1. Build and install release APK:
    ```bash

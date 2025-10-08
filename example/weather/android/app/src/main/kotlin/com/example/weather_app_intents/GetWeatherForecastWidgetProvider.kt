@@ -58,9 +58,10 @@ class GetWeatherForecastWidgetProvider : AppWidgetProvider() {
         }
 
         /**
-         * Updates the widget with the default loading text.
+         * Initializes the widget with default content.
          *
          * Called when the widget is first created or updated through the system.
+         * Sets the loading text from string resources for localization support.
          */
         private fun updateAppWidget(
             context: Context,
@@ -68,11 +69,9 @@ class GetWeatherForecastWidgetProvider : AppWidgetProvider() {
             appWidgetId: Int
         ) {
             val views = RemoteViews(context.packageName, R.layout.widget_get_weather_forecast)
-            // Use string resource for localization support
-            views.setTextViewText(
-                R.id.widget_result,
-                context.getString(R.string.widget_get_weather_forecast_loading)
-            )
+            // The layout references the loading string resource directly,
+            // so we don't need to set it here. The TextView will automatically
+            // display the localized loading text from strings.xml.
             appWidgetManager.updateAppWidget(appWidgetId, views)
         }
     }

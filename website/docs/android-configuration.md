@@ -114,18 +114,43 @@ The generator creates the file, but you should verify your `AndroidManifest.xml`
 </application>
 ```
 
-## Testing with Google Assistant
+## Testing App Actions
 
-### 1. Enable Developer Mode
+### Local Development Testing (ADB)
 
-On your Android device:
-1. Open Google Assistant
-2. Say "Hey Google, talk to \<your app name\>"
-3. If prompted, enable developer mode for testing
+**⭐ Recommended for local development:** ADB is the standard way to test Android App Actions during development.
 
-### 2. Test Voice Commands
+```bash
+# Test your intents using deep links
+adb shell am start -a android.intent.action.VIEW -d "app://intent/<your_intent_identifier>"
 
-Try voice commands based on your intent categories:
+# Example: Test increment_counter intent
+adb shell am start -a android.intent.action.VIEW -d "app://intent/increment_counter"
+
+# If the app is already running, you'll see:
+# "Warning: Activity not started, intent has been delivered to currently running top-most instance."
+# This is NORMAL and means the intent was successfully delivered!
+
+# To test from a fresh start:
+adb shell am force-stop com.example.your_app
+adb shell am start -a android.intent.action.VIEW -d "app://intent/increment_counter"
+```
+
+**Why use ADB for testing?**
+- ✅ Works immediately without additional setup
+- ✅ Tests the same code paths as voice commands
+- ✅ No need to publish the app
+- ✅ Fast iteration during development
+
+### Testing with Google Assistant (Production)
+
+**Important:** Google Assistant voice commands **do NOT work for unpublished apps** during local development. Voice commands require one of:
+
+1. **App published on Google Play** (including internal testing track)
+2. **Google Assistant Plugin** for Android Studio (see below)
+3. **App Actions Console** registration
+
+**Voice commands will work after publishing:**
 
 **Fitness Intent:**
 ```
@@ -145,25 +170,81 @@ Try voice commands based on your intent categories:
 "Hey Google, navigate to home with MyApp"
 ```
 
-### 3. Using ADB for Testing
+### Google Assistant Plugin for Android Studio
 
-Test without voice commands using ADB:
+To test voice commands during development, use the Google Assistant Plugin:
 
-```bash
-# Test a specific capability
-adb shell am start -a android.intent.action.VIEW \
-  -d "myapp://start_workout?exercise_type=running"
+1. **Install the plugin:**
+   - File → Settings → Plugins → Search "Google Assistant"
+   - Install and restart Android Studio
 
-# Trigger via Google Assistant Test Tool
-adb shell am start -a com.google.android.voiceinteraction.testapp.START_TEST
-```
+2. **Open App Actions Test Tool:**
+   - Tools → App Actions Test Tool
+   - Or View → Tool Windows → App Actions Test Tool
 
-### 4. Google Assistant Plugin
+3. **Configure your app:**
+   - Select your app from the dropdown
+   - The tool will read your `shortcuts.xml` automatically
 
-Install the Google Assistant Plugin for Android Studio:
-1. File → Settings → Plugins → "Google Assistant"
-2. Tools → App Actions Test Tool
-3. Test your shortcuts directly from Android Studio
+4. **Test intents:**
+   - Type voice commands in the test interface
+   - Preview what Google Assistant would return
+   - Test different parameters and variations
+
+**Benefits:**
+- Test voice commands without publishing
+- Preview Google Assistant responses
+- Debug parameter passing
+- Validate BII mappings
+
+### Static Shortcuts (App Launcher)
+
+Your shortcuts will also appear when users **long-press your app icon** in the launcher menu. This works immediately without any additional setup.
+
+### Publishing for Production Voice Commands
+
+To enable real Google Assistant voice commands:
+
+1. **Build release APK:**
+   ```bash
+   flutter build apk --release
+   ```
+
+2. **Upload to Google Play Console:**
+   - Create an app in Google Play Console
+   - Upload to Internal Testing track (or higher)
+
+3. **Register in Actions Console** (optional but recommended):
+   - Visit [Google Actions Console](https://console.actions.google.com/)
+   - Create a new project
+   - Link to your Google Play app
+   - Upload your `shortcuts.xml`
+
+4. **Wait for indexing:**
+   - Google takes ~10-60 minutes to index your app
+   - Install from Play Store on your test device
+   - Voice commands will now work!
+
+### Testing Checklist
+
+**Local Development:**
+- ✅ Test with ADB commands
+- ✅ Verify intents are delivered (`onNewIntent` called)
+- ✅ Check Flutter handlers execute correctly
+- ✅ Test with app running and app closed
+- ✅ Verify parameters are passed correctly
+
+**Before Publishing:**
+- ✅ Test with Google Assistant Plugin
+- ✅ Verify voice command phrasing is natural
+- ✅ Check all BII parameters map correctly
+- ✅ Test edge cases (missing parameters, etc.)
+
+**After Publishing:**
+- ✅ Install from Play Store
+- ✅ Test real voice commands with Google Assistant
+- ✅ Verify shortcuts appear in launcher long-press menu
+- ✅ Check Google Assistant search results
 
 ## Built-in Intent (BII) Mappings
 
