@@ -80,17 +80,17 @@ class AppShortcutsProviderGenerator {
       ..writeln('    static var appShortcuts: [AppShortcut] {')
       ..writeln('        return [');
 
-    for (var i = 0; i < limitedIntents.length; i++) {
-      final isLast = i == limitedIntents.length - 1;
-      _generateAppShortcut(
-        buffer,
-        limitedIntents[i],
-        appName: appName,
-        isLast: isLast,
-      );
+    // Generate shortcuts and collect them as strings
+    final shortcuts = <String>[];
+    for (final intent in limitedIntents) {
+      shortcuts.add(_generateAppShortcutString(intent, appName: appName));
     }
 
+    // Join shortcuts with commas for clean formatting
+    buffer.write(shortcuts.join(',\n'));
+
     buffer
+      ..writeln()
       ..writeln('        ];')
       ..writeln('    }')
       ..writeln('}');
@@ -210,12 +210,10 @@ class AppShortcutsProviderGenerator {
       ..writeln('}');
   }
 
-  /// Generates an AppShortcut entry within the provider
-  void _generateAppShortcut(
-    StringBuffer buffer,
+  /// Generates an AppShortcut entry as a string
+  String _generateAppShortcutString(
     ExtractedIntent intent, {
     String? appName,
-    bool isLast = false,
   }) {
     final structName = _intentStructName(intent.identifier!);
     final title = intent.title!;
@@ -223,25 +221,19 @@ class AppShortcutsProviderGenerator {
     final systemImage = _systemImageForCategory(intent.categoryEnum);
     final phrases = _generatePhrases(title, appName: appName);
 
-    buffer
-      ..writeln('            AppShortcut(')
-      ..writeln('                intent: $structName(),')
-      ..writeln('                phrases: [');
-    for (final phrase in phrases) {
-      buffer.writeln('                    "$phrase",');
-    }
-    buffer
-      ..writeln('                ],')
-      ..writeln('                shortTitle: "$shortTitle",')
-      ..writeln('                systemImageName: "$systemImage"')
-      ..write('            )');
+    final phrasesStr = phrases.map((p) => '                    "$p"').join(
+          ',\n',
+        );
 
-    // Add comma if not the last item
-    if (!isLast) {
-      buffer.writeln(',');
-    } else {
-      buffer.writeln();
-    }
+    return '''
+            AppShortcut(
+                intent: $structName(),
+                phrases: [
+$phrasesStr
+                ],
+                shortTitle: "$shortTitle",
+                systemImageName: "$systemImage"
+            )''';
   }
 
   /// Generates a Swift property declaration for an intent parameter
@@ -290,29 +282,73 @@ class AppShortcutsProviderGenerator {
 
   /// Generates a short title from the full title
   ///
-  /// Tries to keep it concise for UI display. Max 2-3 words.
+  /// Tries to keep it concise for UI display by intelligently selecting
+  /// the most meaningful words. Skips common articles and prepositions.
   String _generateShortTitle(String fullTitle) {
     final words = fullTitle.split(' ');
     if (words.length <= 2) {
       return fullTitle;
     }
 
-    // Take first 2 words for short title
+    // Common filler words to skip (articles, prepositions, etc.)
+    const fillerWords = {
+      'a',
+      'an',
+      'the',
+      'to',
+      'of',
+      'in',
+      'on',
+      'at',
+      'for',
+      'with',
+    };
+
+    // Filter out filler words (but keep at least the first word)
+    final meaningfulWords = <String>[];
+    for (var i = 0; i < words.length; i++) {
+      final word = words[i];
+      final isFirstWord = i == 0;
+      final isFiller = fillerWords.contains(word.toLowerCase());
+
+      // Keep first word always, or non-filler words
+      if (isFirstWord || !isFiller) {
+        meaningfulWords.add(word);
+      }
+
+      // Stop after 2 meaningful words
+      if (meaningfulWords.length >= 2) {
+        break;
+      }
+    }
+
+    // If we got at least one meaningful word, use them
+    if (meaningfulWords.isNotEmpty) {
+      return meaningfulWords.join(' ');
+    }
+
+    // Fallback: use first 2 words
     return words.take(2).join(' ');
   }
 
   /// Generates Siri invocation phrases for an intent
   ///
   /// Creates 2-3 natural phrases users can say to invoke the intent.
-  /// Each phrase MUST include \(.applicationName) per iOS requirements.
+  /// Uses the provided appName for more specific phrases, or falls back
+  /// to the generic \(.applicationName) placeholder.
   List<String> _generatePhrases(String title, {String? appName}) {
     final phrases = <String>[];
 
-    // Primary phrase with app name (required by iOS)
-    phrases.add('$title with \\(.applicationName)');
-
-    // Alternative phrase using "in"
-    phrases.add('$title in \\(.applicationName)');
+    if (appName != null && appName.isNotEmpty) {
+      // Use specific app name for more natural phrases
+      phrases.add('$title with $appName');
+      phrases.add('$title in $appName');
+      phrases.add('$title using $appName');
+    } else {
+      // Fallback to generic placeholder (required by iOS)
+      phrases.add('$title with \\(.applicationName)');
+      phrases.add('$title in \\(.applicationName)');
+    }
 
     return phrases;
   }

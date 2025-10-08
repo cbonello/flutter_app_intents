@@ -31,17 +31,11 @@ class AndroidWidgetLayoutGenerator {
   /// Default result text color (gray for secondary content)
   static const String _defaultResultColor = '#666666';
 
-  /// Default background color (white for light theme compatibility)
-  static const String _defaultBackgroundColor = '#FFFFFF';
+  /// Default background color (transparent for theme compatibility)
+  static const String _defaultBackgroundColor = '#00000000';
 
   /// Default margin between title and result (Material Design spacing: 8dp)
   static const String _defaultMarginBetween = '8dp';
-
-  /// Default placeholder text shown before result is loaded
-  static const String _defaultLoadingText = 'Loading...';
-
-  /// Default fallback title when intent.title is null
-  static const String _defaultFallbackTitle = 'Result';
 
   /// Generates a simple widget layout XML for the given intent.
   ///
@@ -76,9 +70,10 @@ class AndroidWidgetLayoutGenerator {
   /// - Result TextView: Displays the result value (regular, smaller text)
   ///
   /// The layout uses Material Design guidelines for spacing and typography.
+  /// The result TextView references a string resource for proper localization.
   void _generateSimpleTextLayout(XmlBuilder builder, ExtractedIntent intent) {
-    // Use intent title or fallback to default
-    final displayTitle = intent.title ?? _defaultFallbackTitle;
+    final intentId = intent.identifier!;
+    final displayTitle = intent.title ?? 'Result';
 
     builder.element(
       'LinearLayout',
@@ -95,7 +90,7 @@ class AndroidWidgetLayoutGenerator {
           ..attribute('android:gravity', 'center')
           ..attribute('android:background', _defaultBackgroundColor)
 
-          // Title TextView: Shows the intent name
+          // Title TextView: Shows the intent name (static)
           ..element(
             'TextView',
             nest: () {
@@ -111,12 +106,12 @@ class AndroidWidgetLayoutGenerator {
                   'android:layout_marginBottom',
                   _defaultMarginBetween,
                 )
-                ..text(displayTitle);
+                ..attribute('android:text', displayTitle);
             },
           )
 
-          // Result TextView: Shows the intent result
-          // (updated by AppWidgetProvider)
+          // Result TextView: Shows the intent result (dynamic)
+          // Initial text loaded from string resource, then updated by provider
           ..element(
             'TextView',
             nest: () {
@@ -127,7 +122,10 @@ class AndroidWidgetLayoutGenerator {
                 ..attribute('android:textSize', _defaultResultSize)
                 ..attribute('android:textColor', _defaultResultColor)
                 ..attribute('android:gravity', 'center')
-                ..text(_defaultLoadingText);
+                ..attribute(
+                  'android:text',
+                  '@string/widget_${intentId}_loading',
+                );
             },
           );
       },

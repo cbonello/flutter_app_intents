@@ -211,7 +211,7 @@ void main() {
         expect(code, contains('return'));
       });
 
-      test('uses string resource for loading text', () {
+      test('uses string resource for loading text via layout XML', () {
         final intent = ExtractedIntent()
           ..identifier = 'get_weather'
           ..presentsResult = true;
@@ -221,9 +221,13 @@ void main() {
           packageName: testPackageName,
         );
 
-        // Should use string resource, not hardcoded text
-        expect(code, contains('R.string.widget_get_weather_loading'));
-        expect(code, contains('context.getString'));
+        // Loading text is handled by the layout XML, not the provider code
+        // The layout references @string/widget_get_weather_loading directly
+        expect(code, contains('R.layout.widget_get_weather'));
+        expect(code, contains('RemoteViews(context.packageName'));
+
+        // Should NOT redundantly set loading text (layout XML handles it)
+        expect(code, isNot(contains('context.getString')));
         expect(code, isNot(contains('"Waiting for result..."')));
       });
 
@@ -440,9 +444,15 @@ void main() {
         expect(codes[0], contains('R.layout.widget_get_weather'));
         expect(codes[1], contains('R.layout.widget_check_balance'));
 
-        // Should reference different string resources
-        expect(codes[0], contains('R.string.widget_get_weather_loading'));
-        expect(codes[1], contains('R.string.widget_check_balance_loading'));
+        // String resources are referenced by layout XML, not provider code
+        expect(
+          codes[0],
+          isNot(contains('R.string.widget_get_weather_loading')),
+        );
+        expect(
+          codes[1],
+          isNot(contains('R.string.widget_check_balance_loading')),
+        );
       });
     });
 

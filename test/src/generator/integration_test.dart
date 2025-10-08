@@ -392,17 +392,13 @@ final messageIntent = AppIntentBuilder()
         expect(swiftContent, contains('intent: StartWorkoutIntent(),'));
         expect(swiftContent, contains('intent: SendMessageIntent(),'));
 
-        // Check Siri phrases
-        expect(swiftContent, contains('"Start Workout",'));
-        expect(
-          swiftContent,
-          contains(r'"Start Workout in \(.applicationName)",'),
-        );
-        expect(swiftContent, contains('"Send Message",'));
-        expect(
-          swiftContent,
-          contains(r'"Send Message in \(.applicationName)",'),
-        );
+        // Check Siri phrases (uses app name from pubspec.yaml)
+        expect(swiftContent, contains('"Start Workout with test_app"'));
+        expect(swiftContent, contains('"Start Workout in test_app"'));
+        expect(swiftContent, contains('"Start Workout using test_app"'));
+        expect(swiftContent, contains('"Send Message with test_app"'));
+        expect(swiftContent, contains('"Send Message in test_app"'));
+        expect(swiftContent, contains('"Send Message using test_app"'));
 
         // Check Flutter plugin integration
         expect(

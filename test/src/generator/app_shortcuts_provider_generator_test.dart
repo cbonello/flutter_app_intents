@@ -74,9 +74,9 @@ void main() {
       expect(swift, contains('AppShortcut('));
       expect(swift, contains('intent: TestActionIntent(),'));
       expect(swift, contains('phrases: ['));
-      expect(swift, contains('"Test Action",'));
-      expect(swift, contains(r'"Test Action in \(.applicationName)",'));
-      expect(swift, contains('shortTitle: "Test Action",'));
+      expect(swift, contains(r'"Test Action with \(.applicationName)"'));
+      expect(swift, contains(r'"Test Action in \(.applicationName)"'));
+      expect(swift, contains('shortTitle: "Test Action"'));
       expect(swift, contains('systemImageName: "app.fill"'));
     });
 
@@ -199,8 +199,8 @@ void main() {
 
       final swift = generator.generate(intents);
 
-      expect(swift, contains('"Test Action",'));
-      expect(swift, contains(r'"Test Action in \(.applicationName)",'));
+      expect(swift, contains(r'"Test Action with \(.applicationName)"'));
+      expect(swift, contains(r'"Test Action in \(.applicationName)"'));
     });
 
     test('limits intents to 10 and generates warning', () {

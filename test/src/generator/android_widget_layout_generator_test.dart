@@ -84,7 +84,7 @@ void main() {
         expect(xml, contains('android:orientation="vertical"'));
         expect(xml, contains('android:padding="16dp"'));
         expect(xml, contains('android:gravity="center"'));
-        expect(xml, contains('android:background="#FFFFFF"'));
+        expect(xml, contains('android:background="#00000000"'));
       });
 
       test('generates title TextView with correct attributes', () {
@@ -125,11 +125,11 @@ void main() {
 
         final xml = generator.generateLayout(intent);
 
-        // The title should be in the XML
-        expect(xml, contains('>Get Weather<'));
+        // The title should be in the XML as an attribute
+        expect(xml, contains('android:text="Get Weather"'));
       });
 
-      test('result TextView shows default loading text', () {
+      test('result TextView references string resource for loading text', () {
         final intent = ExtractedIntent()
           ..identifier = 'get_weather'
           ..title = 'Get Weather'
@@ -137,8 +137,8 @@ void main() {
 
         final xml = generator.generateLayout(intent);
 
-        // The default loading text should be present
-        expect(xml, contains('>Loading...<'));
+        // The loading text should reference a string resource
+        expect(xml, contains('@string/widget_get_weather_loading'));
       });
 
       test('uses "Result" as default title when intent title is null', () {
@@ -149,7 +149,7 @@ void main() {
         final xml = generator.generateLayout(intent);
 
         // Should use "Result" as fallback title
-        expect(xml, contains('>Result<'));
+        expect(xml, contains('android:text="Result"'));
       });
     });
 
@@ -326,9 +326,7 @@ void main() {
 
         // Should have exactly 2 TextView elements
         final textViewOpen = '<TextView'.allMatches(xml!).length;
-        final textViewClose = '</TextView>'.allMatches(xml).length;
         expect(textViewOpen, equals(2));
-        expect(textViewClose, equals(2));
 
         // LinearLayout should appear exactly once
         expect('<LinearLayout'.allMatches(xml).length, equals(1));
@@ -405,7 +403,7 @@ void main() {
 
         expect(xml, isNotNull);
         // Should use "Result" as default title
-        expect(xml, contains('>Result<'));
+        expect(xml, contains('android:text="Result"'));
       });
 
       test('handles intent with empty title', () {
@@ -476,7 +474,7 @@ void main() {
           xmlOutputs.add(xml!);
 
           // Each should have the correct title
-          expect(xml, contains('>${intent.title}<'));
+          expect(xml, contains('android:text="${intent.title}"'));
         }
 
         // All outputs should be unique (different titles)
@@ -502,7 +500,10 @@ void main() {
           expect(xml, contains('<LinearLayout'));
           expect(xml, contains('@+id/widget_title'));
           expect(xml, contains('@+id/widget_result'));
-          expect(xml, contains('>Loading...<'));
+          expect(
+            xml,
+            contains('@string/widget_${intent.identifier}_loading'),
+          );
           expect(xml, contains('android:orientation="vertical"'));
         }
       });

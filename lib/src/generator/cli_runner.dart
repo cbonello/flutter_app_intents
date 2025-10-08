@@ -399,11 +399,8 @@ class CliRunner {
   /// Generate Android widget files for intents that present results
   Future<void> _generateAndroidWidgets(List<ExtractedIntent> intents) async {
     // Filter intents that present results
-    final widgetIntents = intents
-        .where(
-          (i) => i.presentsResult ?? false,
-        )
-        .toList();
+    final widgetIntents =
+        intents.where((i) => i.presentsResult ?? false).toList();
 
     if (widgetIntents.isEmpty) {
       return; // No widgets to generate
@@ -511,7 +508,7 @@ class CliRunner {
   Future<String?> _getAndroidPackageName() async {
     // Try build.gradle.kts first (modern Flutter apps use namespace)
     final buildGradleKtsFile = File('android/app/build.gradle.kts');
-    if (await buildGradleKtsFile.exists()) {
+    if (buildGradleKtsFile.existsSync()) {
       final buildContent = await buildGradleKtsFile.readAsString();
       final namespaceMatch =
           RegExp(r'namespace\s*=\s*"([^"]+)"').firstMatch(buildContent);
@@ -522,7 +519,7 @@ class CliRunner {
 
     // Fall back to build.gradle (Groovy)
     final buildGradleFile = File('android/app/build.gradle');
-    if (await buildGradleFile.exists()) {
+    if (buildGradleFile.existsSync()) {
       final buildContent = await buildGradleFile.readAsString();
       // Match namespace with double quotes
       var namespaceMatch =
@@ -537,11 +534,10 @@ class CliRunner {
 
     // Fall back to AndroidManifest.xml (legacy)
     final manifestFile = File('android/app/src/main/AndroidManifest.xml');
-    if (await manifestFile.exists()) {
+    if (manifestFile.existsSync()) {
       final manifestContent = await manifestFile.readAsString();
-      final packageMatch = RegExp(
-        'package="([^"]+)"',
-      ).firstMatch(manifestContent);
+      final packageMatch =
+          RegExp('package="([^"]+)"').firstMatch(manifestContent);
       if (packageMatch != null) {
         return packageMatch.group(1);
       }
@@ -634,17 +630,26 @@ class CliRunner {
 
   /// Generate display phrases (mimics the generator logic)
   List<String> _generatePhrasesForDisplay(String title, {String? appName}) {
-    final displayName = appName ?? 'Your App Name';
-    return [
-      '$title with $displayName',
-      '$title in $displayName',
-    ];
+    if (appName != null && appName.isNotEmpty) {
+      return [
+        '$title with $appName',
+        '$title in $appName',
+        '$title using $appName',
+      ];
+    } else {
+      // Fallback to generic placeholder
+      const displayName = 'Your App Name';
+      return [
+        '$title with $displayName',
+        '$title in $displayName',
+      ];
+    }
   }
 
   /// Extract app name from pubspec.yaml
   Future<String?> _getAppName() async {
     final pubspecFile = File('pubspec.yaml');
-    if (!await pubspecFile.exists()) {
+    if (!pubspecFile.existsSync()) {
       return null;
     }
 
