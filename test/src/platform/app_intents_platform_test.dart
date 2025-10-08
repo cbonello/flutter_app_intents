@@ -2,7 +2,7 @@ import 'package:flutter_app_intents/src/platform/app_intents_platform.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  group('FlutterAppIntentsException', () {
+  group(FlutterAppIntentsException, () {
     test('toString() includes message without code', () {
       const exception = FlutterAppIntentsException('Test message');
       expect(

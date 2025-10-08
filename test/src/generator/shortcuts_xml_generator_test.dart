@@ -12,7 +12,7 @@ import 'package:flutter_test/flutter_test.dart';
 /// XML.
 void main() {
   /// A group of tests for the [ShortcutsXmlGenerator].
-  group('ShortcutsXmlGenerator', () {
+  group(ShortcutsXmlGenerator, () {
     late Directory tempDir;
 
     setUp(() {

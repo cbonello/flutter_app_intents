@@ -2,7 +2,7 @@ import 'package:flutter_app_intents/src/models/result_layout.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  group('ResultLayout', () {
+  group(ResultLayout, () {
     group('text factory', () {
       test('creates text-only layout', () {
         final layout = ResultLayout.text(value: 'result');
@@ -83,7 +83,6 @@ void main() {
         final layout = ResultLayout.card(
           title: 'temp',
           description: 'conditions',
-          image: null,
         );
 
         expect(layout.fields, hasLength(2));
@@ -256,9 +255,11 @@ void main() {
       test('each layout type has distinct structure', () {
         final textLayout = ResultLayout.text(value: 'v');
         final cardLayout = ResultLayout.card(title: 't', description: 'd');
-        final listLayout = ResultLayout.list(items: [
-          const ListItem(title: 'item'),
-        ]);
+        final listLayout = ResultLayout.list(
+          items: [
+            const ListItem(title: 'item'),
+          ],
+        );
 
         expect(textLayout.type, equals(ResultLayoutType.text));
         expect(cardLayout.type, equals(ResultLayoutType.card));
@@ -339,7 +340,6 @@ void main() {
       const field = ResultField(
         key: 'title',
         type: ResultFieldType.title,
-        index: null,
       );
 
       expect(field.index, isNull);
@@ -450,7 +450,7 @@ void main() {
     test('supports special characters', () {
       const item = ListItem(
         title: 'Title with émojis 🎉 and spëcial chars',
-        subtitle: 'Subtitle with <tags> & symbols @#\$%',
+        subtitle: r'Subtitle with <tags> & symbols @#$%',
       );
 
       expect(item.title, contains('🎉'));
@@ -476,7 +476,10 @@ void main() {
       }
 
       expect(fieldsByType[ResultFieldType.title]?.key, equals('temperature'));
-      expect(fieldsByType[ResultFieldType.description]?.key, equals('conditions'));
+      expect(
+        fieldsByType[ResultFieldType.description]?.key,
+        equals('conditions'),
+      );
       expect(fieldsByType[ResultFieldType.image]?.key, equals('weatherIcon'));
     });
 

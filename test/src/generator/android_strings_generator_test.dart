@@ -231,7 +231,7 @@ void main() {
         // Root element should not be indented
         expect(
           lines.firstWhere((line) => line.contains('<resources>')),
-          matches(RegExp(r'^<resources>')),
+          matches(RegExp('^<resources>')),
         );
       });
 
@@ -284,7 +284,8 @@ void main() {
 
     group('mergeWithExisting', () {
       test('preserves non-widget strings', () {
-        const existingContent = '''<?xml version="1.0" encoding="utf-8"?>
+        const existingContent = '''
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">My App</string>
     <string name="welcome_message">Welcome!</string>
@@ -318,7 +319,8 @@ void main() {
       });
 
       test('removes old widget strings', () {
-        const existingContent = '''<?xml version="1.0" encoding="utf-8"?>
+        const existingContent = '''
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">My App</string>
     <string name="widget_old_intent_description">Old description</string>
@@ -352,7 +354,8 @@ void main() {
       });
 
       test('updates widget strings when regenerated', () {
-        const existingContent = '''<?xml version="1.0" encoding="utf-8"?>
+        const existingContent = '''
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="widget_get_counter_description">Old description</string>
     <string name="widget_get_counter_loading">Old loading</string>
@@ -400,7 +403,8 @@ void main() {
       });
 
       test('handles empty existing resources', () {
-        const existingContent = '''<?xml version="1.0" encoding="utf-8"?>
+        const existingContent = '''
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
 </resources>
 ''';

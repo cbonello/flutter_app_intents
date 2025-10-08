@@ -7,7 +7,7 @@ import 'package:flutter_test/flutter_test.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  group('IOSAppIntentsPlatform', () {
+  group(IOSAppIntentsPlatform, () {
     late IOSAppIntentsPlatform platform;
     late MethodChannel channel;
 

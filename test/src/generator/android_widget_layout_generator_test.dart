@@ -63,7 +63,8 @@ void main() {
         expect(
           xml,
           contains(
-              'xmlns:android="http://schemas.android.com/apk/res/android"'),
+            'xmlns:android="http://schemas.android.com/apk/res/android"',
+          ),
         );
       });
     });

@@ -3,7 +3,7 @@ import 'package:flutter_app_intents/src/generator/intent_validator.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  group('IntentValidator', () {
+  group(IntentValidator, () {
     group('Android validation', () {
       late IntentValidator validator;
 

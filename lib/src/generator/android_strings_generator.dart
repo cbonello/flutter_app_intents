@@ -27,8 +27,8 @@ class AndroidStringsGenerator {
     builder.element(
       'resources',
       nest: () {
-        // Add header comment
         builder
+          ..comment(' START: flutter_app_intents auto-generated strings ')
           ..comment(
             ' Widget string resources - auto-generated '
             'by flutter_app_intents ',
@@ -64,6 +64,7 @@ class AndroidStringsGenerator {
             )
             ..text('\n');
         }
+        builder.comment(' END: flutter_app_intents auto-generated strings ');
       },
     );
 
@@ -99,32 +100,46 @@ class AndroidStringsGenerator {
       final existingResources = existingDoc.findElements('resources').first;
       final newResources = newDoc.findElements('resources').first;
 
-      // Get all new string elements
-      final newStringElements = newResources.findElements('string').toList();
+      // Find the start and end markers in the existing document
+      final children = existingResources.children;
+      int? startIndex;
+      int? endIndex;
 
-      // Track which strings we need to add/update
-      final newStringNames = <String, XmlElement>{};
-      for (final element in newStringElements) {
-        final name = element.getAttribute('name');
-        if (name != null) {
-          newStringNames[name] = element;
+      for (var i = 0; i < children.length; i++) {
+        final node = children[i];
+        if (node is XmlComment &&
+            node.value.trim() ==
+                'START: flutter_app_intents auto-generated strings') {
+          startIndex = i;
+        } else if (node is XmlComment &&
+            node.value.trim() ==
+                'END: flutter_app_intents auto-generated strings') {
+          endIndex = i;
         }
       }
 
-      // Update or remove existing widget strings
-      final existingStrings = existingResources.findElements('string').toList();
-      for (final element in existingStrings) {
-        final name = element.getAttribute('name');
-        if (name != null && name.startsWith('widget_')) {
-          // Remove old widget strings (they'll be re-added with new content)
-          element.parent?.children.remove(element);
-        }
+      // If markers are found, remove the old block
+      if (startIndex != null && endIndex != null) {
+        children.removeRange(startIndex, endIndex + 1);
+      } else {
+        // No markers found - remove all widget_* strings before adding new
+        // block
+        children.removeWhere((node) {
+          if (node is XmlElement && node.name.local == 'string') {
+            final nameAttr = node.getAttribute('name');
+            return nameAttr != null && nameAttr.startsWith('widget_');
+          }
+          return false;
+        });
       }
 
-      // Add all new widget strings and comments
-      for (final child in newResources.children) {
-        existingResources.children.add(child.copy());
-      }
+      // Add the new block from newResources
+      // Find where to insert. If there was no old block, append at the end.
+      final insertIndex = startIndex ?? children.length;
+      existingResources.children.insertAll(
+        insertIndex,
+        newResources.children.map((n) => n.copy()),
+      );
 
       return existingDoc.toXmlString(pretty: true, indent: '    ');
     } on XmlException {

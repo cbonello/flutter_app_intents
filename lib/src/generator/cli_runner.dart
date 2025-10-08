@@ -399,17 +399,38 @@ class CliRunner {
   /// Generate Android widget files for intents that present results
   Future<void> _generateAndroidWidgets(List<ExtractedIntent> intents) async {
     // Filter intents that present results
-    final widgetIntents = intents.where((i) => i.presentsResult == true).toList();
+    final widgetIntents = intents
+        .where(
+          (i) => i.presentsResult ?? false,
+        )
+        .toList();
 
     if (widgetIntents.isEmpty) {
       return; // No widgets to generate
     }
 
-    stdout.writeln();
-    stdout.writeln('📱 Generating widgets for result presentation...');
+    stdout
+      ..writeln()
+      ..writeln('📱 Generating widgets for result presentation...');
 
-    // Get package name from AndroidManifest.xml
-    final packageName = await _getAndroidPackageName() ?? 'com.example.app';
+    // Get package name from build.gradle or AndroidManifest.xml
+    final packageName = await _getAndroidPackageName();
+    if (packageName == null) {
+      stdout
+        ..writeln()
+        ..writeln('⚠️  Could not detect Android package name!')
+        ..writeln('   Checked:')
+        ..writeln('   - android/app/build.gradle.kts (namespace)')
+        ..writeln('   - android/app/build.gradle (namespace)')
+        ..writeln('   - android/app/src/main/AndroidManifest.xml (package)')
+        ..writeln()
+        ..writeln(
+          '   Please ensure your Android project is properly configured.',
+        )
+        ..writeln('   Skipping widget generation...')
+        ..writeln();
+      return;
+    }
 
     for (final intent in widgetIntents) {
       // Generate widget layout XML
@@ -440,10 +461,12 @@ class CliRunner {
         packageName: packageName,
       );
       if (provider != null) {
-        final providerFileName = _widgetProviderGenerator.getProviderFileName(intent);
+        final providerFileName =
+            _widgetProviderGenerator.getProviderFileName(intent);
         // Use package path for Kotlin file
         final packagePath = packageName.replaceAll('.', '/');
-        final providerPath = 'android/app/src/main/kotlin/$packagePath/$providerFileName';
+        final providerPath =
+            'android/app/src/main/kotlin/$packagePath/$providerFileName';
         final providerFile = File(providerPath);
         await providerFile.parent.create(recursive: true);
         await providerFile.writeAsString(provider);
@@ -484,18 +507,47 @@ class CliRunner {
       ..writeln('   See documentation for complete setup instructions.');
   }
 
-  /// Extract Android package name from AndroidManifest.xml
+  /// Extract Android package name from build.gradle.kts or AndroidManifest.xml
   Future<String?> _getAndroidPackageName() async {
-    final manifestFile = File('android/app/src/main/AndroidManifest.xml');
-    if (!await manifestFile.exists()) {
-      return null;
+    // Try build.gradle.kts first (modern Flutter apps use namespace)
+    final buildGradleKtsFile = File('android/app/build.gradle.kts');
+    if (await buildGradleKtsFile.exists()) {
+      final buildContent = await buildGradleKtsFile.readAsString();
+      final namespaceMatch =
+          RegExp(r'namespace\s*=\s*"([^"]+)"').firstMatch(buildContent);
+      if (namespaceMatch != null) {
+        return namespaceMatch.group(1);
+      }
     }
 
-    final manifestContent = await manifestFile.readAsString();
-    final packageMatch = RegExp(r'package="([^"]+)"')
-        .firstMatch(manifestContent);
+    // Fall back to build.gradle (Groovy)
+    final buildGradleFile = File('android/app/build.gradle');
+    if (await buildGradleFile.exists()) {
+      final buildContent = await buildGradleFile.readAsString();
+      // Match namespace with double quotes
+      var namespaceMatch =
+          RegExp(r'namespace\s+"([^"]+)"').firstMatch(buildContent);
+      // Try single quotes if double quotes not found
+      namespaceMatch ??=
+          RegExp(r"namespace\s+'([^']+)'").firstMatch(buildContent);
+      if (namespaceMatch != null) {
+        return namespaceMatch.group(1);
+      }
+    }
 
-    return packageMatch?.group(1);
+    // Fall back to AndroidManifest.xml (legacy)
+    final manifestFile = File('android/app/src/main/AndroidManifest.xml');
+    if (await manifestFile.exists()) {
+      final manifestContent = await manifestFile.readAsString();
+      final packageMatch = RegExp(
+        'package="([^"]+)"',
+      ).firstMatch(manifestContent);
+      if (packageMatch != null) {
+        return packageMatch.group(1);
+      }
+    }
+
+    return null;
   }
 
   /// Generate iOS AppShortcuts.swift
@@ -597,8 +649,8 @@ class CliRunner {
     }
 
     final pubspecContent = await pubspecFile.readAsString();
-    final nameMatch = RegExp(r'^name:\s*(.+)$', multiLine: true)
-        .firstMatch(pubspecContent);
+    final nameMatch =
+        RegExp(r'^name:\s*(.+)$', multiLine: true).firstMatch(pubspecContent);
 
     return nameMatch?.group(1)?.trim();
   }
