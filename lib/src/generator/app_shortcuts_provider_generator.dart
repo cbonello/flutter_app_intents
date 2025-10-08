@@ -290,44 +290,59 @@ $phrasesStr
       return fullTitle;
     }
 
-    // Common filler words to skip (articles, prepositions, etc.)
+    // Expanded set of common filler words to generate more meaningful short
+    // titles.
     const fillerWords = {
       'a',
       'an',
       'the',
-      'to',
-      'of',
       'in',
       'on',
       'at',
       'for',
+      'to',
+      'of',
       'with',
+      'by',
+      'is',
+      'am',
+      'are',
+      'was',
+      'were',
+      'be',
+      'been',
+      'being',
+      'have',
+      'has',
+      'had',
+      'do',
+      'does',
+      'did',
+      'my',
+      'your',
+      'his',
+      'her',
+      'its',
+      'our',
+      'their',
+      'from',
+      'up',
+      'down',
+      'out',
+      'over',
+      'under',
     };
 
-    // Filter out filler words (but keep at least the first word)
-    final meaningfulWords = <String>[];
-    for (var i = 0; i < words.length; i++) {
-      final word = words[i];
-      final isFirstWord = i == 0;
-      final isFiller = fillerWords.contains(word.toLowerCase());
+    final meaningfulWords = words
+        .where((word) => !fillerWords.contains(word.toLowerCase()))
+        .take(2)
+        .toList();
 
-      // Keep first word always, or non-filler words
-      if (isFirstWord || !isFiller) {
-        meaningfulWords.add(word);
-      }
-
-      // Stop after 2 meaningful words
-      if (meaningfulWords.length >= 2) {
-        break;
-      }
-    }
-
-    // If we got at least one meaningful word, use them
     if (meaningfulWords.isNotEmpty) {
       return meaningfulWords.join(' ');
     }
 
-    // Fallback: use first 2 words
+    // Fallback: use first 2 words if all words are filler words
     return words.take(2).join(' ');
   }
 

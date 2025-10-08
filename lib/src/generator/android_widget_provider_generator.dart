@@ -152,30 +152,26 @@ class $className : AppWidgetProvider() {
     // Convert snake_case to PascalCase
     final parts = intent.identifier!.split('_');
     final pascalCase = parts.map(_capitalize).join();
+
     return '${pascalCase}WidgetProvider';
   }
 
   /// Gets the layout name for an intent.
-  String _getLayoutName(ExtractedIntent intent) {
-    return 'widget_${intent.identifier}';
-  }
+  String _getLayoutName(ExtractedIntent intent) =>
+      'widget_${intent.identifier}';
 
   /// Gets the file name for the provider class.
-  String getProviderFileName(ExtractedIntent intent) {
-    return '${_getProviderClassName(intent)}.kt';
-  }
+  String getProviderFileName(ExtractedIntent intent) =>
+      '${_getProviderClassName(intent)}.kt';
 
   /// Gets the fully qualified provider class name.
   String getProviderQualifiedName(
     ExtractedIntent intent, {
     required String packageName,
-  }) {
-    return '$packageName.${_getProviderClassName(intent)}';
-  }
+  }) =>
+      '$packageName.${_getProviderClassName(intent)}';
 
   /// Capitalizes the first letter of a string.
-  String _capitalize(String s) {
-    if (s.isEmpty) return s;
-    return s[0].toUpperCase() + s.substring(1);
-  }
+  String _capitalize(String s) =>
+      s.isEmpty ? s : s[0].toUpperCase() + s.substring(1);
 }

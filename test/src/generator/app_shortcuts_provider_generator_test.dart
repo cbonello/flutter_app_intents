@@ -159,7 +159,7 @@ void main() {
       }
     });
 
-    test('generates short title from long title', () {
+    test('generates short title from long title, filtering filler words', () {
       final intents = [
         ExtractedIntent()
           ..identifier = 'test'
@@ -170,8 +170,8 @@ void main() {
 
       final swift = generator.generate(intents);
 
-      // Should take first 2 words for short title
-      expect(swift, contains('shortTitle: "Start My",'));
+      // Should filter out "My" (filler word) and take first 2 meaningful words
+      expect(swift, contains('shortTitle: "Start Daily"'));
     });
 
     test('uses full title as short title for short titles', () {
@@ -185,7 +185,90 @@ void main() {
 
       final swift = generator.generate(intents);
 
-      expect(swift, contains('shortTitle: "Start Workout",'));
+      expect(swift, contains('shortTitle: "Start Workout"'));
+    });
+
+    test('filters out common articles (a, an, the) from short title', () {
+      final intents = [
+        ExtractedIntent()
+          ..identifier = 'test'
+          ..title = 'Get The Weather Forecast'
+          ..description = 'Test'
+          ..category = 'general',
+      ];
+
+      final swift = generator.generate(intents);
+
+      // "The" should be filtered out
+      expect(swift, contains('shortTitle: "Get Weather"'));
+    });
+
+    test(
+      'filters out prepositions (in, on, at, for, to, of, with) '
+      'from short title',
+      () {
+        final intents = [
+          ExtractedIntent()
+            ..identifier = 'test'
+            ..title = 'Check Balance For Account'
+            ..description = 'Test'
+            ..category = 'general',
+        ];
+
+        final swift = generator.generate(intents);
+
+        // "For" should be filtered out
+        expect(swift, contains('shortTitle: "Check Balance"'));
+      },
+    );
+
+    test(
+      'filters out possessive pronouns (my, your, his, her, etc.) '
+      'from short title',
+      () {
+        final intents = [
+          ExtractedIntent()
+            ..identifier = 'test'
+            ..title = 'Show Your Recent Activity'
+            ..description = 'Test'
+            ..category = 'general',
+        ];
+
+        final swift = generator.generate(intents);
+
+        // "Your" should be filtered out
+        expect(swift, contains('shortTitle: "Show Recent"'));
+      },
+    );
+
+    test('handles title with all filler words by using first 2 words', () {
+      final intents = [
+        ExtractedIntent()
+          ..identifier = 'test'
+          ..title = 'The Of At For In'
+          ..description = 'Test'
+          ..category = 'general',
+      ];
+
+      final swift = generator.generate(intents);
+
+      // When all words are filler words, use first 2 as fallback
+      expect(swift, contains('shortTitle: "The Of"'));
+    });
+
+    test('preserves action verbs in short title', () {
+      final intents = [
+        ExtractedIntent()
+          ..identifier = 'test'
+          ..title = 'Send Message To Contact'
+          ..description = 'Test'
+          ..category = 'general',
+      ];
+
+      final swift = generator.generate(intents);
+
+      // "Send" (action verb) preserved, "To" (preposition) filtered
+      expect(swift, contains('shortTitle: "Send Message"'));
     });
 
     test('generates Siri phrases with app name placeholder', () {

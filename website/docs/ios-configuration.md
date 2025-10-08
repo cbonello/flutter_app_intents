@@ -392,3 +392,17 @@ phrases: [
 - **Architecture Note**: iOS App Intents framework requires static intent declarations at compile time for Siri/Shortcuts discovery. Dynamic registration from Flutter plugins alone is not sufficient.
 - Always use `openAppWhenRun = true` for intents that should open your app
 - Use `ReturnsValue<String> & OpensIntent` return type for intents that open the app
+
+## Internationalization
+
+iOS has partial internationalization support for App Intents. See the [Internationalization Guide](./internationalization.md) to learn how to:
+- Localize intent titles with `Localizable.strings`
+- Translate Siri phrases for multiple languages
+- Handle region-specific variations
+- Test in different languages
+
+**Key Points:**
+- Intent titles automatically support `LocalizedStringResource`
+- Siri phrases require manual translation setup
+- Phrases must be static (cannot be dynamic)
+- Regenerating code requires re-applying manual translations

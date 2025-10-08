@@ -390,9 +390,18 @@ dart run flutter_app_intents:app_intents_cli --watch
 
 The generator will automatically regenerate `shortcuts.xml` when you change your Dart intent definitions.
 
+## Internationalization
+
+Android has full internationalization support for widgets and shortcuts. See the [Internationalization Guide](./internationalization.md) to learn how to:
+- Add translated widget strings
+- Localize shortcut labels
+- Support multiple languages
+- Test in different locales
+
 ## Next Steps
 
-- Learn about [iOS Configuration](../ios-configuration) for cross-platform support
-- Explore [Examples](../examples) with Android App Actions demonstrations
-- Check [Troubleshooting](../troubleshooting) for common issues
-- Review [API Reference](../api-reference) for complete API documentation
+- Learn about [iOS Configuration](./ios-configuration.md) for cross-platform support
+- Explore [Examples](./examples.md) with Android App Actions demonstrations
+- Check [Internationalization](./internationalization.md) for multi-language support
+- Check [Troubleshooting](./troubleshooting.md) for common issues
+- Review [API Reference](./api-reference.md) for complete API documentation

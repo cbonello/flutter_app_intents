@@ -4,17 +4,20 @@
   <img src="assets/logo.png" alt="Flutter App Intents Logo" width="200" height="200">
 </p>
 
-A Flutter plugin for integrating Apple App Intents with your iOS applications. This plugin enables your Flutter app to work seamlessly with Siri, Shortcuts, Spotlight, and other system experiences on iOS 16.0 and later.
+A Flutter plugin for integrating App Intents on iOS and Android. Enable your Flutter app to work seamlessly with Siri, Shortcuts, Spotlight on iOS, and Google Assistant on Android. Support both platforms with a unified Dart API.
 
 ## Features
 
-- **Siri Integration**: Create custom voice commands for your app
-- **Shortcuts Support**: Allow users to create custom shortcuts
-- **Spotlight Integration**: Make your app's actions discoverable in search
+- **Voice Assistant Integration**: Siri on iOS, Google Assistant on Android
+- **Shortcuts Support**: iOS Shortcuts app and Android App Actions
+- **Spotlight Integration**: Make your app's actions discoverable in iOS search
 - **Visual Intelligence**: Support for visual search results (iOS 2025+)
 - **Widgets and Controls**: Enhanced widget and control center integration
+- **Cross-Platform**: Unified Dart API for both iOS and Android
 - **Type-Safe API**: Strongly typed Dart API with comprehensive error handling
 - **Intent Donation**: Help Siri learn user patterns for improved predictions and suggestions
+- **Internationalization**: Multi-language support for widgets, shortcuts, and voice commands
+- **Code Generation**: Automatically generate platform-specific code from Dart definitions
 
 ## Documentation
 
@@ -22,9 +25,16 @@ A Flutter plugin for integrating Apple App Intents with your iOS applications. T
 
 ## Requirements
 
+### iOS
 - iOS 16.0 or later
-- Flutter 3.8.1 or later
 - Xcode 14.0 or later
+
+### Android
+- Android 6.0 (API level 23) or higher
+- Recommended: Android 10.0 (API level 29) or higher
+
+### Flutter
+- Flutter 3.8.1 or later
 
 ## Installation
 
@@ -1072,6 +1082,42 @@ Check out the [example apps](example/) for complete implementations showing diff
 - Context-aware donations
 - Siri integration testing
 - Navigation with Flutter Router and GoRouter
+
+## Internationalization
+
+The package supports internationalization (i18n) with different levels of support for each platform:
+
+### Android - Full Support ✅
+
+Android has complete i18n support through standard Android localization:
+- **Widget strings**: Automatically generated in `strings.xml`, add translations in locale-specific files (`values-es/`, `values-fr/`, etc.)
+- **Shortcut labels**: Can be localized using string resources
+- **How to use**: Create `values-{locale}/strings.xml` files with translated widget text
+
+### iOS - Partial Support ⚠️
+
+iOS has partial i18n support:
+- **Intent titles**: Automatically support `LocalizedStringResource` and `.strings` files
+- **Siri phrases**: Require manual translation setup in `Localizable.strings`
+- **Limitation**: Phrases must be static; regenerating code requires re-applying translations
+
+### Example: Adding Spanish Support
+
+**Android** (`android/app/src/main/res/values-es/strings.xml`):
+```xml
+<resources>
+    <string name="widget_get_weather_loading">Cargando el clima...</string>
+    <string name="widget_get_weather_description">Obtener información del clima</string>
+</resources>
+```
+
+**iOS** (`es.lproj/Localizable.strings`):
+```
+"intent.get_weather.phrase1" = "Obtener Clima con %@";
+"intent.get_weather.phrase2" = "Obtener Clima en %@";
+```
+
+📖 **[Full Internationalization Guide](https://cbonello.github.io/flutter_app_intents/docs/internationalization)** - Complete guide with examples, best practices, and testing instructions.
 
 ## Troubleshooting
 
