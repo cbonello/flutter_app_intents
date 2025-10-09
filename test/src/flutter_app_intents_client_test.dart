@@ -101,12 +101,11 @@ void main() {
   group(AppIntentBuilder, () {
     group('basic building', () {
       test('builds intent with required fields', () {
-        final builder = AppIntentBuilder()
-          ..identifier('test_intent')
-          ..title('Test Intent')
-          ..description('A test intent');
-
-        final intent = builder.build();
+        final intent = AppIntentBuilder()
+            .identifier('test_intent')
+            .title('Test Intent')
+            .description('A test intent')
+            .build();
 
         expect(intent.identifier, equals('test_intent'));
         expect(intent.title, equals('Test Intent'));
@@ -125,16 +124,15 @@ void main() {
           defaultValue: 1,
         );
 
-        final builder = AppIntentBuilder()
-          ..identifier('complex_intent')
-          ..title('Complex Intent')
-          ..description('A complex test intent')
-          ..parameter(parameter)
-          ..eligibleForSearch(eligible: false)
-          ..eligibleForPrediction(eligible: false)
-          ..authenticationPolicy(AuthenticationPolicy.requiresAuthentication);
-
-        final intent = builder.build();
+        final intent = AppIntentBuilder()
+            .identifier('complex_intent')
+            .title('Complex Intent')
+            .description('A complex test intent')
+            .parameter(parameter)
+            .eligibleForSearch(eligible: false)
+            .eligibleForPrediction(eligible: false)
+            .authenticationPolicy(AuthenticationPolicy.requiresAuthentication)
+            .build();
 
         expect(intent.identifier, equals('complex_intent'));
         expect(intent.title, equals('Complex Intent'));
@@ -162,14 +160,13 @@ void main() {
           type: AppIntentParameterType.string,
         );
 
-        final builder = AppIntentBuilder()
-          ..identifier('multi_param_intent')
-          ..title('Multi Parameter Intent')
-          ..description('Intent with multiple parameters')
-          ..parameter(param1)
-          ..parameter(param2);
-
-        final intent = builder.build();
+        final intent = AppIntentBuilder()
+            .identifier('multi_param_intent')
+            .title('Multi Parameter Intent')
+            .description('Intent with multiple parameters')
+            .parameter(param1)
+            .parameter(param2)
+            .build();
 
         expect(intent.parameters, hasLength(2));
         expect(intent.parameters[0], equals(param1));
@@ -180,8 +177,8 @@ void main() {
     group('validation', () {
       test('throws when identifier is missing', () {
         final builder = AppIntentBuilder()
-          ..title('Test Intent')
-          ..description('A test intent');
+            .title('Test Intent')
+            .description('A test intent');
 
         expect(
           builder.build,
@@ -189,7 +186,7 @@ void main() {
             isA<ArgumentError>().having(
               (e) => e.message,
               'message',
-              'Identifier, title, and description are required',
+              contains('identifier'),
             ),
           ),
         );
@@ -197,71 +194,91 @@ void main() {
 
       test('throws when title is missing', () {
         final builder = AppIntentBuilder()
-          ..identifier('test_intent')
-          ..description('A test intent');
+            .identifier('test_intent')
+            .description('A test intent');
 
         expect(builder.build, throwsA(isA<ArgumentError>()));
       });
 
       test('throws when description is missing', () {
         final builder = AppIntentBuilder()
-          ..identifier('test_intent')
-          ..title('Test Intent');
+            .identifier('test_intent')
+            .title('Test Intent');
 
         expect(builder.build, throwsA(isA<ArgumentError>()));
       });
     });
 
-    group('builder reuse', () {
-      test('can reuse builder for multiple intents', () {
-        final builder = AppIntentBuilder()
-          ..identifier('base_intent')
-          ..title('Base Intent')
-          ..description('Base description');
+    group('immutability', () {
+      test('returns new instance on each method call', () {
+        final builder1 = AppIntentBuilder();
+        final builder2 = builder1.identifier('test_intent');
+        final builder3 = builder2.title('Test Intent');
 
-        final intent1 = builder.build();
-
-        // Modify for second intent
-        builder
-          ..identifier('modified_intent')
-          ..title('Modified Intent');
-
-        final intent2 = builder.build();
-
-        expect(intent1.identifier, equals('base_intent'));
-        expect(intent1.title, equals('Base Intent'));
-
-        expect(intent2.identifier, equals('modified_intent'));
-        expect(intent2.title, equals('Modified Intent'));
-        expect(intent2.description, equals('Base description')); // unchanged
+        // Each method call should return a new instance
+        expect(identical(builder1, builder2), isFalse);
+        expect(identical(builder2, builder3), isFalse);
+        expect(identical(builder1, builder3), isFalse);
       });
 
-      test('preserves parameters across builds', () {
-        const parameter = AppIntentParameter(
-          name: 'test_param',
-          title: 'Test Parameter',
+      test('original builder remains unchanged after method calls', () {
+        final builder1 = AppIntentBuilder()
+            .identifier('intent_1')
+            .title('Title 1')
+            .description('Description 1');
+
+        final intent1 = builder1.build();
+
+        // Create a new builder from builder1 with different values
+        final builder2 = builder1
+            .identifier('intent_2')
+            .title('Title 2');
+
+        final intent2 = builder2.build();
+
+        // builder1's values should be unchanged
+        expect(intent1.identifier, equals('intent_1'));
+        expect(intent1.title, equals('Title 1'));
+        expect(intent1.description, equals('Description 1'));
+
+        // builder2 should have new values
+        expect(intent2.identifier, equals('intent_2'));
+        expect(intent2.title, equals('Title 2'));
+        expect(intent2.description, equals('Description 1')); // unchanged from builder1
+      });
+
+      test('parameters are immutable - adding parameter creates new builder', () {
+        const param1 = AppIntentParameter(
+          name: 'param1',
+          title: 'Parameter 1',
           type: AppIntentParameterType.string,
         );
 
-        final builder = AppIntentBuilder()
-          ..identifier('intent_1')
-          ..title('Intent 1')
-          ..description('First intent')
-          ..parameter(parameter);
+        const param2 = AppIntentParameter(
+          name: 'param2',
+          title: 'Parameter 2',
+          type: AppIntentParameterType.integer,
+        );
 
-        final intent1 = builder.build();
+        final builder1 = AppIntentBuilder()
+            .identifier('test_intent')
+            .title('Test Intent')
+            .description('Test description')
+            .parameter(param1);
 
-        builder
-          ..identifier('intent_2')
-          ..title('Intent 2')
-          ..description('Second intent');
+        final intent1 = builder1.build();
 
-        final intent2 = builder.build();
+        final builder2 = builder1.parameter(param2);
+        final intent2 = builder2.build();
 
+        // Original builder should only have one parameter
         expect(intent1.parameters, hasLength(1));
-        expect(intent2.parameters, hasLength(1));
-        expect(intent1.parameters.first, equals(parameter));
-        expect(intent2.parameters.first, equals(parameter));
+        expect(intent1.parameters.first, equals(param1));
+
+        // New builder should have both parameters
+        expect(intent2.parameters, hasLength(2));
+        expect(intent2.parameters[0], equals(param1));
+        expect(intent2.parameters[1], equals(param2));
       });
     });
 
@@ -274,30 +291,36 @@ void main() {
         ];
 
         for (final policy in policies) {
-          final builder = AppIntentBuilder()
-            ..identifier('policy_test')
-            ..title('Policy Test')
-            ..description('Testing authentication policy')
-            ..authenticationPolicy(policy);
+          final intent = AppIntentBuilder()
+              .identifier('policy_test')
+              .title('Policy Test')
+              .description('Testing authentication policy')
+              .authenticationPolicy(policy)
+              .build();
 
-          final intent = builder.build();
           expect(intent.authenticationPolicy, equals(policy));
         }
       });
     });
 
     group('fluent API behavior', () {
-      test('builder methods return builder for chaining', () {
+      test('builder methods return new builder instance for chaining', () {
         final builder = AppIntentBuilder();
 
-        // Test that each method returns the builder for chaining
+        // Test that each method returns a new builder instance
         final result1 = builder.identifier('test');
-        final result2 = builder.title('Test');
-        final result3 = builder.description('Test description');
+        final result2 = result1.title('Test');
+        final result3 = result2.description('Test description');
 
-        expect(identical(result1, builder), isTrue);
-        expect(identical(result2, builder), isTrue);
-        expect(identical(result3, builder), isTrue);
+        // Each should be a different instance
+        expect(identical(result1, builder), isFalse);
+        expect(identical(result2, result1), isFalse);
+        expect(identical(result3, result2), isFalse);
+
+        // But they should all be AppIntentBuilder instances
+        expect(result1, isA<AppIntentBuilder>());
+        expect(result2, isA<AppIntentBuilder>());
+        expect(result3, isA<AppIntentBuilder>());
       });
 
       test('supports method chaining', () {

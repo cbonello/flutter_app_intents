@@ -82,36 +82,41 @@ void main() {
         expect(builder.build, throwsArgumentError);
 
         // Should work with minimal required fields
-        builder
-          ..identifier('test')
-          ..title('Test')
-          ..description('Test description');
+        final intent = AppIntentBuilder()
+            .identifier('test')
+            .title('Test')
+            .description('Test description')
+            .build();
 
-        final intent = builder.build();
         expect(intent.identifier, equals('test'));
         expect(intent.title, equals('Test'));
         expect(intent.description, equals('Test description'));
       });
 
       test('AppIntentBuilder handles null and empty values correctly', () {
-        final builder = AppIntentBuilder()
-          ..identifier('test')
-          ..title('Test')
-          ..description('Test description');
-
         // Should handle empty parameters list
-        final intent = builder.build();
+        final intent = AppIntentBuilder()
+            .identifier('test')
+            .title('Test')
+            .description('Test description')
+            .build();
+
         expect(intent.parameters, isEmpty);
 
-        // Should handle parameter addition and removal
+        // Should handle parameter addition
         const param = AppIntentParameter(
           name: 'test',
           title: 'Test',
           type: AppIntentParameterType.string,
         );
 
-        builder.parameter(param);
-        final intentWithParam = builder.build();
+        final intentWithParam = AppIntentBuilder()
+            .identifier('test')
+            .title('Test')
+            .description('Test description')
+            .parameter(param)
+            .build();
+
         expect(intentWithParam.parameters, hasLength(1));
         expect(intentWithParam.parameters.first, equals(param));
       });
@@ -137,16 +142,18 @@ void main() {
     });
 
     group('Service Error Handling', () {
-      test('FlutterAppIntentsService methods handle platform correctly', () {
+      test('FlutterAppIntentsService methods handle platform correctly',
+          () async {
         // These tests verify the service handles non-iOS platforms gracefully
-        // by throwing appropriate UnsupportedError exceptions
+        // Most methods throw UnsupportedError on non-iOS
+        // Intent donation silently succeeds for cross-platform compatibility
         const testIntent = AppIntent(
           identifier: 'test',
           title: 'Test',
           description: 'Test intent',
         );
 
-        // All service methods should throw UnsupportedError on non-iOS
+        // Most service methods should throw UnsupportedError on non-iOS
         expect(
           () => FlutterAppIntentsService.registerIntent(testIntent),
           throwsA(isA<UnsupportedError>()),
@@ -172,10 +179,19 @@ void main() {
           throwsA(isA<UnsupportedError>()),
         );
 
-        expect(
-          () => FlutterAppIntentsService.donateIntent('test', {}),
-          throwsA(isA<UnsupportedError>()),
+        // Intent donation silently succeeds on all platforms for compatibility
+        // This allows cross-platform code without platform checks
+        final donationResult =
+            await FlutterAppIntentsService.donateIntent('test', {});
+        expect(donationResult, isTrue);
+
+        // Same behavior for donateIntentWithMetadata
+        final metadataResult =
+            await FlutterAppIntentsService.donateIntentWithMetadata(
+          'test',
+          {},
         );
+        expect(metadataResult, isTrue);
       });
 
       testWidgets('FlutterAppIntentsClient delegates to service correctly', (

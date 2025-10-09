@@ -617,6 +617,7 @@ The main client class for managing App Intents:
 - `getRegisteredIntents()` - Get all registered intents
 - `updateShortcuts()` - Refresh app shortcuts
 - `donateIntentWithMetadata(String identifier, parameters, {double relevanceScore, Map<String, dynamic>? context, DateTime? timestamp})` - Intent donation for Siri learning (iOS-only, silently ignored on Android)
+- `donateIntents(List<IntentDonation> donations)` - Batch intent donation for improved performance (iOS-only, silently ignored on Android)
 
 ### AppIntent
 
@@ -826,6 +827,69 @@ await FlutterAppIntentsClient.instance.donateIntentWithMetadata(
   {'param': 'value'},
 );
 ```
+
+### Batch Intent Donation
+
+For improved performance when donating multiple intents, use the batch donation API:
+
+```dart
+// Create multiple intent donations with metadata
+final donations = [
+  IntentDonation.userInitiated(
+    identifier: 'increment_counter',
+    parameters: {'amount': 5},
+  ),
+  IntentDonation.userInitiated(
+    identifier: 'reset_counter',
+    parameters: {},
+  ),
+  IntentDonation.automated(
+    identifier: 'check_counter',
+    parameters: {},
+    context: {'trigger': 'background_refresh'},
+  ),
+];
+
+// Donate all intents in a single batch (more efficient than individual donations)
+await FlutterAppIntentsClient.instance.donateIntents(donations);
+```
+
+**Advanced batch donation with custom metadata:**
+
+```dart
+// Create donations with full control over relevance, context, and timestamp
+final donations = [
+  IntentDonation(
+    identifier: 'send_message',
+    parameters: {'recipient': 'Alice', 'message': 'Hello'},
+    relevanceScore: 0.9,  // High relevance - user-initiated
+    context: {'source': 'quick_action', 'time_of_day': 'morning'},
+    timestamp: DateTime.now(),
+  ),
+  IntentDonation(
+    identifier: 'send_message',
+    parameters: {'recipient': 'Bob', 'message': 'Hi'},
+    relevanceScore: 0.9,
+    context: {'source': 'quick_action', 'time_of_day': 'morning'},
+    timestamp: DateTime.now(),
+  ),
+  IntentDonation(
+    identifier: 'check_messages',
+    parameters: {},
+    relevanceScore: 0.5,  // Medium relevance - automated check
+    context: {'trigger': 'app_launch'},
+    timestamp: DateTime.now(),
+  ),
+];
+
+await FlutterAppIntentsClient.instance.donateIntents(donations);
+```
+
+**Benefits of batch donation:**
+- More efficient than multiple individual `donateIntentWithMetadata()` calls
+- Reduced platform channel overhead
+- Atomic processing on iOS for better performance
+- Ideal for bulk imports, syncing, or processing queued actions
 
 ## Donation Best Practices
 

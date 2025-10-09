@@ -23,16 +23,21 @@ void main() {
       expect(find.text('App Intents Status:'), findsOneWidget);
 
       // The status should reflect the platform
+      final statusCard = find.ancestor(
+        of: find.text('App Intents Status:'),
+        matching: find.byType(Card),
+      );
+      expect(statusCard, findsOneWidget);
+
+      // Should show platform-specific success message
       if (Platform.isIOS) {
-        // On iOS, should show either success or specific error
-        final statusCard = find.ancestor(
-          of: find.text('App Intents Status:'),
-          matching: find.byType(Card),
-        );
-        expect(statusCard, findsOneWidget);
-      } else {
-        // On non-iOS, should show platform warning
         expect(find.textContaining('iOS'), findsOneWidget);
+      } else if (Platform.isAndroid) {
+        expect(find.textContaining('Android'), findsOneWidget);
+      } else {
+        // On other platforms (like macOS during testing),
+        // shows Android message as fallback
+        expect(find.textContaining('Android'), findsOneWidget);
       }
     });
 
@@ -158,12 +163,11 @@ void main() {
       });
 
       test('AppIntentBuilder works correctly', () {
-        final builder = AppIntentBuilder()
-          ..identifier('test_builder')
-          ..title('Test Builder Intent')
-          ..description('Testing the builder pattern');
-
-        final intent = builder.build();
+        final intent = AppIntentBuilder()
+            .identifier('test_builder')
+            .title('Test Builder Intent')
+            .description('Testing the builder pattern')
+            .build();
 
         expect(intent.identifier, equals('test_builder'));
         expect(intent.title, equals('Test Builder Intent'));
@@ -178,16 +182,20 @@ void main() {
         await tester.pumpWidget(const MyApp());
         await tester.pumpAndSettle();
 
-        if (Platform.isIOS) {
-          // On iOS, should attempt to register intents
-          final statusTexts = find.byType(Text);
-          expect(statusTexts, findsWidgets);
+        // App now supports both iOS and Android
+        final statusTexts = find.byType(Text);
+        expect(statusTexts, findsWidgets);
 
-          // Should not show the iOS-only warning
-          expect(find.textContaining('only supported on iOS'), findsNothing);
-        } else {
-          // On non-iOS platforms, should show platform limitation
+        if (Platform.isIOS) {
+          // On iOS, should show iOS-specific success message
           expect(find.textContaining('iOS'), findsOneWidget);
+        } else if (Platform.isAndroid) {
+          // On Android, should show Android-specific message
+          expect(find.textContaining('Android'), findsOneWidget);
+        } else {
+          // On other platforms (like macOS during testing),
+          // shows Android message as fallback
+          expect(find.textContaining('Android'), findsOneWidget);
         }
       });
 

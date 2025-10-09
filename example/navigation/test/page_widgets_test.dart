@@ -10,7 +10,7 @@ import 'package:navigation_example/main.dart';
 
 void main() {
   group('Pages Widgets Tests', () {
-    group('ProfilePage', () {
+    group(ProfilePage, () {
       testWidgets('should display default user ID', (tester) async {
         await tester.pumpWidget(
           const MaterialApp(home: ProfilePage(userId: 'current')),
@@ -62,7 +62,7 @@ void main() {
       });
     });
 
-    group('ChatPage', () {
+    group(ChatPage, () {
       testWidgets('should display contact name', (tester) async {
         await tester.pumpWidget(
           const MaterialApp(home: ChatPage(contactName: 'Alice')),
@@ -96,7 +96,7 @@ void main() {
       });
     });
 
-    group('SearchPage', () {
+    group(SearchPage, () {
       testWidgets('should display search query', (tester) async {
         await tester.pumpWidget(
           const MaterialApp(home: SearchPage(query: 'flutter tutorials')),
@@ -125,7 +125,7 @@ void main() {
       });
     });
 
-    group('SettingsPage', () {
+    group(SettingsPage, () {
       testWidgets('should display settings content', (tester) async {
         await tester.pumpWidget(const MaterialApp(home: SettingsPage()));
 
@@ -145,7 +145,7 @@ void main() {
       });
     });
 
-    group('NavigationHomePage', () {
+    group(NavigationHomePage, () {
       testWidgets('should display home page content', (tester) async {
         await tester.pumpWidget(const MaterialApp(home: NavigationHomePage()));
         await tester.pumpAndSettle();

@@ -86,15 +86,14 @@ void main() {
           defaultValue: 1,
         );
 
-        final intent = AppIntentBuilder()
-          ..identifier('integration_test_intent')
-          ..title('Integration Test Intent')
-          ..description('Testing complete workflow')
-          ..parameter(parameter)
-          ..authenticationPolicy(AuthenticationPolicy.requiresAuthentication)
-          ..eligibleForSearch(eligible: false);
-
-        final builtIntent = intent.build();
+        final builtIntent = AppIntentBuilder()
+            .identifier('integration_test_intent')
+            .title('Integration Test Intent')
+            .description('Testing complete workflow')
+            .parameter(parameter)
+            .authenticationPolicy(AuthenticationPolicy.requiresAuthentication)
+            .eligibleForSearch(eligible: false)
+            .build();
 
         expect(builtIntent.identifier, equals('integration_test_intent'));
         expect(builtIntent.title, equals('Integration Test Intent'));

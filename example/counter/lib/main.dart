@@ -158,7 +158,7 @@ class _MyHomePageState extends State<MyHomePage> {
           .description('Returns the current counter value')
           .category(IntentCategory.general)
           .eligibleForSearch(eligible: true)
-          .presentsResult(true) // Query intent - show result in dialog
+          .presentsResult(presents: true) // Query intent - show result in dialog
           .build();
 
       // Register all intents with their corresponding handlers

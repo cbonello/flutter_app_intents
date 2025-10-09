@@ -16,6 +16,7 @@ The main client class for managing App Intents:
 - `getRegisteredIntents()` - Get all registered intents
 - `updateShortcuts()` - Refresh app shortcuts
 - `donateIntentWithMetadata(String identifier, parameters, {double relevanceScore, Map<String, dynamic>? context, DateTime? timestamp})` - Intent donation for Siri learning and predictions
+- `donateIntents(List&lt;IntentDonation&gt; donations)` - Batch intent donation for improved performance
 
 ## AppIntent
 
@@ -173,6 +174,89 @@ Control when intents can be executed:
 
 ## Intent Donation Classes
 
+### IntentDonation
+
+Model class for batch intent donations with metadata:
+
+```dart
+const IntentDonation({
+  required String identifier,           // Intent identifier
+  required Map<String, dynamic> parameters,  // Intent parameters
+  double relevanceScore = 1.0,         // Relevance score (0.0 - 1.0)
+  Map<String, dynamic>? context,       // Additional context
+  DateTime? timestamp,                 // Donation timestamp
+});
+```
+
+#### Named Constructors
+
+**High Relevance (0.9):**
+```dart
+IntentDonation.highRelevance(
+  identifier: 'my_intent',
+  parameters: {'key': 'value'},
+  context: {'source': 'user_action'},
+);
+```
+
+**Medium Relevance (0.5):**
+```dart
+IntentDonation.mediumRelevance(
+  identifier: 'my_intent',
+  parameters: {'key': 'value'},
+);
+```
+
+**Low Relevance (0.3):**
+```dart
+IntentDonation.lowRelevance(
+  identifier: 'my_intent',
+  parameters: {'key': 'value'},
+);
+```
+
+**User Initiated (0.9):**
+```dart
+IntentDonation.userInitiated(
+  identifier: 'send_message',
+  parameters: {'recipient': 'Alice'},
+);
+```
+
+**Automated (0.5):**
+```dart
+IntentDonation.automated(
+  identifier: 'background_sync',
+  parameters: {},
+  context: {'trigger': 'scheduled'},
+);
+```
+
+#### Properties
+
+- `identifier` (String): Intent identifier matching a registered intent
+- `parameters` (Map&lt;String, dynamic&gt;): Parameter values for the intent
+- `relevanceScore` (double): Relevance score from 0.0 to 1.0 (default: 1.0)
+- `context` (Map&lt;String, dynamic&gt;?): Optional context metadata
+- `timestamp` (DateTime?): Optional timestamp (defaults to current time)
+
+#### Usage with Batch Donation
+
+```dart
+final donations = [
+  IntentDonation.userInitiated(
+    identifier: 'increment_counter',
+    parameters: {'amount': 5},
+  ),
+  IntentDonation.automated(
+    identifier: 'check_status',
+    parameters: {},
+    context: {'trigger': 'background'},
+  ),
+];
+
+await FlutterAppIntentsClient.instance.donateIntents(donations);
+```
 
 ## Error Handling
 

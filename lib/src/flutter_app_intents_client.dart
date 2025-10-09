@@ -1,5 +1,3 @@
-// ignore_for_file: avoid_returning_this - AppIntentBuilder uses fluent
-// interface pattern where methods return `this` to enable method chaining.
 // ignore_for_file: prefer_constructors_over_static_methods
 
 import 'dart:async';
@@ -8,6 +6,7 @@ import 'package:flutter_app_intents/src/models/app_intent.dart';
 import 'package:flutter_app_intents/src/models/app_intent_parameter.dart';
 import 'package:flutter_app_intents/src/models/app_intent_result.dart';
 import 'package:flutter_app_intents/src/models/intent_category.dart';
+import 'package:flutter_app_intents/src/models/intent_donation.dart';
 import 'package:flutter_app_intents/src/models/platform_hints.dart';
 import 'package:flutter_app_intents/src/models/result_layout.dart';
 import 'package:flutter_app_intents/src/services/flutter_app_intents_service.dart';
@@ -45,8 +44,6 @@ import 'package:flutter_app_intents/src/services/flutter_app_intents_service.dar
 class FlutterAppIntentsClient {
   FlutterAppIntentsClient._();
 
-  static FlutterAppIntentsClient? _instance;
-
   /// Get the singleton instance of the App Intents client
   ///
   /// Returns the same instance across your app, ensuring consistent state
@@ -56,8 +53,7 @@ class FlutterAppIntentsClient {
   /// ```dart
   /// final client = FlutterAppIntentsClient.instance;
   /// ```
-  static FlutterAppIntentsClient get instance =>
-      _instance ??= FlutterAppIntentsClient._();
+  static final FlutterAppIntentsClient instance = FlutterAppIntentsClient._();
 
   final Map<String, Future<AppIntentResult> Function(Map<String, dynamic>)>
       _intentHandlers = {};
@@ -143,9 +139,11 @@ class FlutterAppIntentsClient {
         intentsWithHandlers,
   ) async {
     // Store all handlers
-    for (final entry in intentsWithHandlers.entries) {
-      _intentHandlers[entry.key.identifier] = entry.value;
-    }
+    _intentHandlers.addEntries(
+      intentsWithHandlers.entries.map(
+        (entry) => MapEntry(entry.key.identifier, entry.value),
+      ),
+    );
 
     // Set up the global handler if not already done
     if (_intentHandlers.isNotEmpty) {
@@ -234,6 +232,9 @@ class FlutterAppIntentsClient {
 
   /// Donate an intent execution to help Siri learn user patterns
   ///
+  /// **Deprecated:** Use [donateIntentWithMetadata] instead for better control
+  /// over relevance score, context, and timestamp.
+  ///
   /// Call this method after successfully executing an intent to teach Siri
   /// when and how users typically invoke your intents. This improves:
   /// - Proactive Siri suggestions at relevant times/locations
@@ -261,11 +262,122 @@ class FlutterAppIntentsClient {
   /// - parameters: The actual parameter values used in execution
   ///
   /// Returns: true if donation succeeded, false if it failed
+  @Deprecated(
+    'Use donateIntentWithMetadata instead for better control over metadata. '
+    'This method will be removed in v1.0.0.',
+  )
   Future<bool> donateIntent(
     String identifier,
     Map<String, dynamic> parameters,
   ) async {
     return FlutterAppIntentsService.donateIntent(identifier, parameters);
+  }
+
+  /// Donate an intent with enhanced metadata for better Siri learning
+  ///
+  /// Call this method after successfully executing an intent to teach Siri
+  /// when and how users typically invoke your intents. This improves:
+  /// - Proactive Siri suggestions at relevant times/locations
+  /// - Better voice recognition and user experience
+  /// - More accurate predictions in Shortcuts app
+  /// - Enhanced user experience through learning
+  ///
+  /// This method provides enhanced control compared to [donateIntent]:
+  /// - Custom relevance scores for fine-tuning prediction importance
+  /// - Contextual metadata for location/time-based learning
+  /// - Custom timestamps for accurate pattern tracking
+  ///
+  /// Best practices:
+  /// - Donate immediately after successful intent execution
+  /// - Include actual parameter values used (not placeholders)
+  /// - Don't donate sensitive data that shouldn't be learned
+  /// - Donate consistently for all intent invocations
+  /// - Use appropriate relevance scores based on user intent
+  ///
+  /// Example:
+  /// ```dart
+  /// // After incrementing counter by 5 with high relevance
+  /// await client.donateIntentWithMetadata(
+  ///   'increment_counter',
+  ///   {'amount': 5},
+  ///   relevanceScore: 0.9,
+  /// );
+  ///
+  /// // After opening profile with context
+  /// await client.donateIntentWithMetadata(
+  ///   'open_profile',
+  ///   {'userId': 'user123'},
+  ///   relevanceScore: 0.8,
+  ///   context: {'source': 'notification'},
+  /// );
+  /// ```
+  ///
+  /// Parameters:
+  /// - identifier: The intent identifier that was executed
+  /// - parameters: The actual parameter values used in execution
+  /// - relevanceScore: Score from 0.0 to 1.0 indicating importance
+  ///   (default: 1.0)
+  /// - context: Additional contextual information for learning
+  /// - timestamp: When the intent was executed (default: now)
+  ///
+  /// Returns: true if donation succeeded, false if it failed
+  Future<bool> donateIntentWithMetadata(
+    String identifier,
+    Map<String, dynamic> parameters, {
+    double relevanceScore = 1.0,
+    Map<String, dynamic>? context,
+    DateTime? timestamp,
+  }) async {
+    return FlutterAppIntentsService.donateIntentWithMetadata(
+      identifier,
+      parameters,
+      relevanceScore: relevanceScore,
+      context: context,
+      timestamp: timestamp,
+    );
+  }
+
+  /// Donate multiple intent executions in a single batch
+  ///
+  /// More efficient than calling [donateIntentWithMetadata] multiple times
+  /// when you need to donate several intent executions at once. This is
+  /// particularly useful for:
+  /// - Batch processing of queued intent executions
+  /// - Bulk import of historical user actions
+  /// - Syncing intent history across devices
+  /// - Reducing platform channel overhead
+  ///
+  /// On iOS, batch donations are processed atomically with better performance.
+  /// On Android and other platforms, this silently succeeds (no-op) since
+  /// intent donation is an iOS-specific optimization feature.
+  ///
+  /// Example:
+  /// ```dart
+  /// final donations = [
+  ///   IntentDonation.userInitiated(
+  ///     identifier: 'increment_counter',
+  ///     parameters: {'amount': 5},
+  ///   ),
+  ///   IntentDonation.userInitiated(
+  ///     identifier: 'reset_counter',
+  ///     parameters: {},
+  ///   ),
+  ///   IntentDonation.automated(
+  ///     identifier: 'check_counter',
+  ///     parameters: {},
+  ///     context: {'trigger': 'scheduled'},
+  ///   ),
+  /// ];
+  ///
+  /// await client.donateIntents(donations);
+  /// ```
+  ///
+  /// Parameters:
+  /// - donations: List of intent donations with their metadata
+  ///
+  /// Returns: true if batch donation succeeded, false if it failed
+  Future<bool> donateIntents(List<IntentDonation> donations) async {
+    return FlutterAppIntentsService.donateIntentBatch(donations);
   }
 
   /// Internal handler that routes to the appropriate intent handler
@@ -282,25 +394,77 @@ class FlutterAppIntentsClient {
 
     try {
       return await handler(parameters);
-    } on Object catch (e) {
+    }
+    // Intentionally catch all throwable objects (Error, Exception, etc.)
+    // for maximum robustness in intent handling
+    // ignore: avoid_catches_without_on_clauses
+    catch (e, s) {
+      // Using print for debugging - helps developers troubleshoot failures
+      // ignore: avoid_print
+      print('Intent handler for $identifier failed with error: $e');
+      // ignore: avoid_print
+      print(s);
       return AppIntentResult.failed(error: 'Intent handler failed: $e');
     }
   }
 }
 
 /// Builder for creating App Intents with a fluent API
+///
+/// This builder uses an immutable pattern where each method returns a new
+/// instance with the updated value. This prevents accidental mutations and
+/// makes the API more predictable and thread-safe.
 class AppIntentBuilder {
-  String? _identifier;
-  String? _title;
-  String? _description;
-  final List<AppIntentParameter> _parameters = [];
-  IntentCategory? _category;
-  PlatformHints? _hints;
-  bool _isEligibleForSearch = true;
-  bool _isEligibleForPrediction = true;
-  AuthenticationPolicy _authenticationPolicy = AuthenticationPolicy.none;
-  bool _presentsResult = false;
-  ResultLayout? _resultLayout;
+  /// Public constructor creates a builder with default values
+  AppIntentBuilder()
+      : _identifier = null,
+        _title = null,
+        _description = null,
+        _parameters = const [],
+        _category = null,
+        _hints = null,
+        _isEligibleForSearch = true,
+        _isEligibleForPrediction = true,
+        _authenticationPolicy = AuthenticationPolicy.none,
+        _presentsResult = false,
+        _resultLayout = null;
+
+  /// Private constructor for creating modified copies
+  const AppIntentBuilder._({
+    required String? identifier,
+    required String? title,
+    required String? description,
+    required List<AppIntentParameter> parameters,
+    required IntentCategory? category,
+    required PlatformHints? hints,
+    required bool isEligibleForSearch,
+    required bool isEligibleForPrediction,
+    required AuthenticationPolicy authenticationPolicy,
+    required bool presentsResult,
+    required ResultLayout? resultLayout,
+  })  : _identifier = identifier,
+        _title = title,
+        _description = description,
+        _parameters = parameters,
+        _category = category,
+        _hints = hints,
+        _isEligibleForSearch = isEligibleForSearch,
+        _isEligibleForPrediction = isEligibleForPrediction,
+        _authenticationPolicy = authenticationPolicy,
+        _presentsResult = presentsResult,
+        _resultLayout = resultLayout;
+
+  final String? _identifier;
+  final String? _title;
+  final String? _description;
+  final List<AppIntentParameter> _parameters;
+  final IntentCategory? _category;
+  final PlatformHints? _hints;
+  final bool _isEligibleForSearch;
+  final bool _isEligibleForPrediction;
+  final AuthenticationPolicy _authenticationPolicy;
+  final bool _presentsResult;
+  final ResultLayout? _resultLayout;
 
   /// Set the unique identifier for this intent
   ///
@@ -314,10 +478,22 @@ class AppIntentBuilder {
   /// - Debugging and logging
   ///
   /// Required field - intent creation will fail without it.
+  ///
+  /// Returns a new builder instance with the identifier set.
   AppIntentBuilder identifier(String identifier) {
-    _identifier = identifier;
-
-    return this;
+    return AppIntentBuilder._(
+      identifier: identifier,
+      title: _title,
+      description: _description,
+      parameters: _parameters,
+      category: _category,
+      hints: _hints,
+      isEligibleForSearch: _isEligibleForSearch,
+      isEligibleForPrediction: _isEligibleForPrediction,
+      authenticationPolicy: _authenticationPolicy,
+      presentsResult: _presentsResult,
+      resultLayout: _resultLayout,
+    );
   }
 
   /// Set the display title for this intent
@@ -332,10 +508,22 @@ class AppIntentBuilder {
   /// Counter', 'Send Message', 'Start Workout').
   ///
   /// Required field - intent creation will fail without it.
+  ///
+  /// Returns a new builder instance with the title set.
   AppIntentBuilder title(String title) {
-    _title = title;
-
-    return this;
+    return AppIntentBuilder._(
+      identifier: _identifier,
+      title: title,
+      description: _description,
+      parameters: _parameters,
+      category: _category,
+      hints: _hints,
+      isEligibleForSearch: _isEligibleForSearch,
+      isEligibleForPrediction: _isEligibleForPrediction,
+      authenticationPolicy: _authenticationPolicy,
+      presentsResult: _presentsResult,
+      resultLayout: _resultLayout,
+    );
   }
 
   /// Set a detailed description of what this intent does
@@ -350,10 +538,22 @@ class AppIntentBuilder {
   /// the app counter by a specified amount', 'Sends a message to a contact').
   ///
   /// Required field - intent creation will fail without it.
+  ///
+  /// Returns a new builder instance with the description set.
   AppIntentBuilder description(String description) {
-    _description = description;
-
-    return this;
+    return AppIntentBuilder._(
+      identifier: _identifier,
+      title: _title,
+      description: description,
+      parameters: _parameters,
+      category: _category,
+      hints: _hints,
+      isEligibleForSearch: _isEligibleForSearch,
+      isEligibleForPrediction: _isEligibleForPrediction,
+      authenticationPolicy: _authenticationPolicy,
+      presentsResult: _presentsResult,
+      resultLayout: _resultLayout,
+    );
   }
 
   /// Add a parameter that users can provide to this intent
@@ -371,10 +571,22 @@ class AppIntentBuilder {
   /// - Contact name for calling intent
   ///
   /// Can be called multiple times to add multiple parameters.
+  ///
+  /// Returns a new builder instance with the parameter added.
   AppIntentBuilder parameter(AppIntentParameter parameter) {
-    _parameters.add(parameter);
-
-    return this;
+    return AppIntentBuilder._(
+      identifier: _identifier,
+      title: _title,
+      description: _description,
+      parameters: [..._parameters, parameter],
+      category: _category,
+      hints: _hints,
+      isEligibleForSearch: _isEligibleForSearch,
+      isEligibleForPrediction: _isEligibleForPrediction,
+      authenticationPolicy: _authenticationPolicy,
+      presentsResult: _presentsResult,
+      resultLayout: _resultLayout,
+    );
   }
 
   /// Set whether the intent can appear in Spotlight search results
@@ -391,9 +603,22 @@ class AppIntentBuilder {
   /// - Actions that require specific app context
   ///
   /// Default: true (recommended for user-facing intents)
+  ///
+  /// Returns a new builder instance with search eligibility set.
   AppIntentBuilder eligibleForSearch({required bool eligible}) {
-    _isEligibleForSearch = eligible;
-    return this;
+    return AppIntentBuilder._(
+      identifier: _identifier,
+      title: _title,
+      description: _description,
+      parameters: _parameters,
+      category: _category,
+      hints: _hints,
+      isEligibleForSearch: eligible,
+      isEligibleForPrediction: _isEligibleForPrediction,
+      authenticationPolicy: _authenticationPolicy,
+      presentsResult: _presentsResult,
+      resultLayout: _resultLayout,
+    );
   }
 
   /// Set whether the intent is eligible for Siri's proactive predictions
@@ -409,10 +634,22 @@ class AppIntentBuilder {
   /// intents with side effects that shouldn't be triggered accidentally.
   ///
   /// Default: true (recommended for most intents)
+  ///
+  /// Returns a new builder instance with prediction eligibility set.
   AppIntentBuilder eligibleForPrediction({required bool eligible}) {
-    _isEligibleForPrediction = eligible;
-
-    return this;
+    return AppIntentBuilder._(
+      identifier: _identifier,
+      title: _title,
+      description: _description,
+      parameters: _parameters,
+      category: _category,
+      hints: _hints,
+      isEligibleForSearch: _isEligibleForSearch,
+      isEligibleForPrediction: eligible,
+      authenticationPolicy: _authenticationPolicy,
+      presentsResult: _presentsResult,
+      resultLayout: _resultLayout,
+    );
   }
 
   /// Set the category for this intent
@@ -433,10 +670,22 @@ class AppIntentBuilder {
   /// (validated at build-time by code generator).
   ///
   /// Default: null (uses IntentCategory.general on Android if not specified)
+  ///
+  /// Returns a new builder instance with the category set.
   AppIntentBuilder category(IntentCategory category) {
-    _category = category;
-
-    return this;
+    return AppIntentBuilder._(
+      identifier: _identifier,
+      title: _title,
+      description: _description,
+      parameters: _parameters,
+      category: category,
+      hints: _hints,
+      isEligibleForSearch: _isEligibleForSearch,
+      isEligibleForPrediction: _isEligibleForPrediction,
+      authenticationPolicy: _authenticationPolicy,
+      presentsResult: _presentsResult,
+      resultLayout: _resultLayout,
+    );
   }
 
   /// Set platform-specific hints for advanced customization
@@ -453,10 +702,22 @@ class AppIntentBuilder {
   /// ```
   ///
   /// Optional: Only needed for advanced platform-specific customization
+  ///
+  /// Returns a new builder instance with the hints set.
   AppIntentBuilder hints(PlatformHints hints) {
-    _hints = hints;
-
-    return this;
+    return AppIntentBuilder._(
+      identifier: _identifier,
+      title: _title,
+      description: _description,
+      parameters: _parameters,
+      category: _category,
+      hints: hints,
+      isEligibleForSearch: _isEligibleForSearch,
+      isEligibleForPrediction: _isEligibleForPrediction,
+      authenticationPolicy: _authenticationPolicy,
+      presentsResult: _presentsResult,
+      resultLayout: _resultLayout,
+    );
   }
 
   /// Set the authentication requirements for this intent
@@ -477,10 +738,22 @@ class AppIntentBuilder {
   ///   * Required for sensitive data access or critical operations
   ///
   /// Default: AuthenticationPolicy.none (no authentication required)
+  ///
+  /// Returns a new builder instance with the authentication policy set.
   AppIntentBuilder authenticationPolicy(AuthenticationPolicy policy) {
-    _authenticationPolicy = policy;
-
-    return this;
+    return AppIntentBuilder._(
+      identifier: _identifier,
+      title: _title,
+      description: _description,
+      parameters: _parameters,
+      category: _category,
+      hints: _hints,
+      isEligibleForSearch: _isEligibleForSearch,
+      isEligibleForPrediction: _isEligibleForPrediction,
+      authenticationPolicy: policy,
+      presentsResult: _presentsResult,
+      resultLayout: _resultLayout,
+    );
   }
 
   /// Set whether this intent presents its result in a dialog (iOS only)
@@ -511,10 +784,22 @@ class AppIntentBuilder {
   ///   .presentsResult(true)  // iOS: Shows result in dialog
   ///   .build()
   /// ```
-  AppIntentBuilder presentsResult(bool presents) {
-    _presentsResult = presents;
-
-    return this;
+  ///
+  /// Returns a new builder instance with presentsResult set.
+  AppIntentBuilder presentsResult({required bool presents}) {
+    return AppIntentBuilder._(
+      identifier: _identifier,
+      title: _title,
+      description: _description,
+      parameters: _parameters,
+      category: _category,
+      hints: _hints,
+      isEligibleForSearch: _isEligibleForSearch,
+      isEligibleForPrediction: _isEligibleForPrediction,
+      authenticationPolicy: _authenticationPolicy,
+      presentsResult: presents,
+      resultLayout: _resultLayout,
+    );
   }
 
   /// Set the layout for displaying the intent result
@@ -538,12 +823,12 @@ class AppIntentBuilder {
   /// that display the result in a widget after intent execution.
   /// For iOS, this configures the IntentDialog presentation format.
   ///
-  /// Example:
+  /// Example with intent definition:
   /// ```dart
   /// AppIntentBuilder()
   ///   .identifier('get_weather')
   ///   .title('Get Weather')
-  ///   .presentsResult(true)
+  ///   .presentsResult(presents: true)
   ///   .resultLayout(
   ///     ResultLayout.card(
   ///       title: 'temperature',
@@ -554,13 +839,37 @@ class AppIntentBuilder {
   ///   .build()
   /// ```
   ///
+  /// Example intent handler return value:
+  /// ```dart
+  /// // In your intent handler:
+  /// return AppIntentResult.successful(
+  ///   value: {
+  ///     'temperature': '72°F',
+  ///     'conditions': 'Sunny',
+  ///     'weatherIcon': 'sun.max.fill', // SF Symbol name on iOS
+  ///   },
+  /// );
+  /// ```
+  ///
   /// **Note:** The keys specified in the layout (e.g., 'temperature',
   /// 'conditions') must match the keys in the Map returned by your intent
   /// handler in `AppIntentResult.successful(value: {...})`.
+  ///
+  /// Returns a new builder instance with the result layout set.
   AppIntentBuilder resultLayout(ResultLayout layout) {
-    _resultLayout = layout;
-
-    return this;
+    return AppIntentBuilder._(
+      identifier: _identifier,
+      title: _title,
+      description: _description,
+      parameters: _parameters,
+      category: _category,
+      hints: _hints,
+      isEligibleForSearch: _isEligibleForSearch,
+      isEligibleForPrediction: _isEligibleForPrediction,
+      authenticationPolicy: _authenticationPolicy,
+      presentsResult: _presentsResult,
+      resultLayout: layout,
+    );
   }
 
   /// Build the final AppIntent from the configured properties
@@ -581,14 +890,23 @@ class AppIntentBuilder {
   ///
   /// Returns: A configured AppIntent ready for registration
   AppIntent build() {
+    // Validate required fields with helpful error messages
     if (_identifier == null || _title == null || _description == null) {
-      throw ArgumentError('Identifier, title, and description are required');
+      final missing = <String>[];
+      if (_identifier == null) missing.add('identifier');
+      if (_title == null) missing.add('title');
+      if (_description == null) missing.add('description');
+
+      throw ArgumentError(
+        'Missing required fields: ${missing.join(', ')}. '
+        'Use .identifier(), .title(), and .description() methods to set them.',
+      );
     }
 
     return AppIntent(
-      identifier: _identifier!,
-      title: _title!,
-      description: _description!,
+      identifier: _identifier,
+      title: _title,
+      description: _description,
       parameters: _parameters,
       category: _category,
       hints: _hints,

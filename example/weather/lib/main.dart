@@ -82,7 +82,7 @@ class _WeatherHomePageState extends State<WeatherHomePage> {
         )
         .eligibleForSearch(eligible: true)
         .eligibleForPrediction(eligible: true)
-        .presentsResult(true)
+        .presentsResult(presents: true)
         .build();
 
     // Temperature query intent
@@ -102,7 +102,7 @@ class _WeatherHomePageState extends State<WeatherHomePage> {
         )
         .eligibleForSearch(eligible: true)
         .eligibleForPrediction(eligible: true)
-        .presentsResult(true)
+        .presentsResult(presents: true)
         .build();
 
     // Weather forecast intent
@@ -131,7 +131,7 @@ class _WeatherHomePageState extends State<WeatherHomePage> {
         )
         .eligibleForSearch(eligible: true)
         .eligibleForPrediction(eligible: true)
-        .presentsResult(true)
+        .presentsResult(presents: true)
         .build();
 
     // Rain check intent
@@ -151,7 +151,7 @@ class _WeatherHomePageState extends State<WeatherHomePage> {
         )
         .eligibleForSearch(eligible: true)
         .eligibleForPrediction(eligible: true)
-        .presentsResult(true)
+        .presentsResult(presents: true)
         .build();
 
     // Register intents - iOS will register with system, Android handlers only
