@@ -88,10 +88,12 @@ void main() {
       });
 
       test('donateIntent accepts parameters', () async {
-        expect(
-          () => client.donateIntent('test_intent', {'key': 'value'}),
-          throwsA(isA<UnsupportedError>()),
+        // donateIntent silently succeeds on non-iOS platforms (returns true)
+        final result = await client.donateIntent(
+          'test_intent',
+          {'key': 'value'},
         );
+        expect(result, isTrue);
       });
     });
   });

@@ -1,3 +1,5 @@
+// Cascade invocations would make the code generation logic less readable
+// by forcing all buffer operations into cascades, reducing clarity.
 // ignore_for_file: cascade_invocations
 
 import 'package:flutter_app_intents/src/generator/intent_extractor.dart';

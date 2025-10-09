@@ -181,9 +181,9 @@ class FlutterAppIntentsService {
 
   /// Donates an intent with enhanced metadata for better Siri learning
   ///
-  /// On iOS, this helps Siri learn user patterns and provide better predictions.
-  /// On Android and other platforms, this is a no-op (silently ignored) since
-  /// intent donation is an iOS-specific optimization feature.
+  /// On iOS, this helps Siri learn user patterns and provide better
+  /// predictions. On Android and other platforms, this is a no-op (silently
+  /// ignored) since intent donation is an iOS-specific optimization feature.
   static Future<bool> donateIntentWithMetadata(
     String identifier,
     Map<String, dynamic> parameters, {

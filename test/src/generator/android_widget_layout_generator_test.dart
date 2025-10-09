@@ -183,7 +183,8 @@ void main() {
 
         // Both TextViews should have match_parent width and wrap_content height
         final textViewMatches = RegExp(
-          '<TextView[^>]*android:layout_width="match_parent"[^>]*android:layout_height="wrap_content"',
+          '<TextView[^>]*android:layout_width="match_parent"[^>]*'
+          'android:layout_height="wrap_content"',
           multiLine: true,
         ).allMatches(xml!);
 

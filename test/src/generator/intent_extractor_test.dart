@@ -68,10 +68,9 @@ final intent2 = AppIntentBuilder()
     });
 
     group('Variable assignment pattern', () {
-      // TODO(flutter_app_intents): Variable assignment pattern support needs
-      // debugging. The AST visitor doesn't correctly track builder variables
-      // across statements. For now, users should use the method chaining
-      // pattern instead.
+      // Variable assignment pattern support needs debugging. The AST visitor
+      // doesn't correctly track builder variables across statements.
+      // For now, users should use the method chaining pattern instead.
       const skipReason =
           'Variable assignment pattern needs AST visitor improvements';
 

@@ -502,12 +502,9 @@ void main() {
         final xml = generator.generateStrings(intents);
 
         expect(xml, isNotNull);
-        expect(
-          xml,
-          contains(
-            '<string name="widget_get_very_long_counter_value_from_database_description">',
-          ),
-        );
+        // Long XML attribute name cannot be reasonably split
+        // ignore: lines_longer_than_80_chars
+        expect(xml, contains('<string name="widget_get_very_long_counter_value_from_database_description">'));
       });
 
       test('handles multiple intents with similar identifiers', () {

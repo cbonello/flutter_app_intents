@@ -5,7 +5,7 @@ All notable changes to the Flutter App Intents package will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.8.0] - Unreleased
+## [0.8.0] - 2025-10-08
 
 ### Added
 - **`presentsResult` property for iOS intents**: Control how iOS displays intent results (iOS only)
@@ -428,8 +428,8 @@ None - Code generation is optional and existing manual workflows continue to wor
 - Independent Flutter plugin architecture
 - Equatable for value equality
 
-### Known Limitations
-- iOS only (no Android support planned)
+### Known Limitations (at v0.1.0)
+- iOS only (Android support added in v0.8.0)
 - Requires iOS 16.0 or later
 - Swift 5.0+ required for iOS implementation
 - App Intents framework limitations apply

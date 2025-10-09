@@ -1,5 +1,5 @@
 name: flutter_app_intents
-description: "A Flutter plugin for integrating Apple App Intents with your iOS applications."
+description: "A Flutter plugin for integrating App Intents on iOS (Siri) and Android (Google Assistant) with a unified Dart API."
 repository: https://github.com/cbonello/flutter_app_intents
 issue_tracker: https://github.com/cbonello/flutter_app_intents/issues
 homepage: https://cbonello.github.io/flutter_app_intents/

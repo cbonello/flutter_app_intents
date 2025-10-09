@@ -120,8 +120,8 @@ class AppIntent extends Equatable {
   /// - ✅ **iOS**: Supports text-only results via IntentDialog
   /// - ✅ **Android**: Generates app widget using RemoteViews
   ///
-  /// If not specified, simple text results are returned from the intent handler.
-  /// When specified, defines how the result should be displayed:
+  /// If not specified, simple text results are returned from the intent
+  /// handler. When specified, defines how the result should be displayed:
   /// - [ResultLayout.text]: Simple text display
   /// - [ResultLayout.card]: Card with title, description, and optional image
   /// - [ResultLayout.list]: List of items with titles and optional subtitles

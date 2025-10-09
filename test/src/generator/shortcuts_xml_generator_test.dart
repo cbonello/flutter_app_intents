@@ -419,7 +419,7 @@ void main() {
         expect(messageParamMatch![0], isNot(contains('android:required')));
       });
 
-      test('does not generate parameters for intent without parameters', () {
+      test('generates feature parameter for general category intents', () {
         final generator = ShortcutsXmlGenerator();
         final intents = [
           ExtractedIntent()
@@ -432,7 +432,11 @@ void main() {
 
         final xml = generator.generate(intents);
 
-        expect(xml, isNot(contains('<parameter')));
+        // General category uses OPEN_APP_FEATURE BII which requires a feature
+        // parameter
+        expect(xml, contains('<parameter'));
+        expect(xml, contains('android:name="feature"'));
+        expect(xml, contains('android:key="feature"'));
       });
 
       test('generates correct MIME types for different parameter types', () {
@@ -560,9 +564,10 @@ void main() {
 
         final xml = generator.generate(intents);
 
-        // Should have 2 capabilities and 2 parameters
+        // Should have 2 capabilities and 4 parameters (2 feature params + 2
+        // intent params)
         expect('<capability'.allMatches(xml).length, equals(2));
-        expect('<parameter'.allMatches(xml).length, equals(2));
+        expect('<parameter'.allMatches(xml).length, equals(4));
         expect(xml, contains('android:name="param1"'));
         expect(xml, contains('android:name="param2"'));
       });
