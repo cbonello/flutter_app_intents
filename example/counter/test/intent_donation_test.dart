@@ -146,7 +146,7 @@ void main() {
         'donateIntentWithMetadata validates relevance score range',
         () async {
           // Test invalid relevance scores (should throw ArgumentError before
-          //platform check)
+          // platform check)
           expect(
             () => FlutterAppIntentsService.donateIntentWithMetadata(
               'test_intent',
@@ -165,56 +165,47 @@ void main() {
             throwsArgumentError,
           );
 
-          // Test valid relevance scores (should throw UnsupportedError on
-          // non-iOS)
-          expect(
-            () => FlutterAppIntentsService.donateIntentWithMetadata(
-              'test_intent',
-              {},
-              relevanceScore: 0,
-            ),
-            throwsA(isA<UnsupportedError>()),
+          // Test valid relevance scores (silently succeeds on non-iOS)
+          final result1 = await FlutterAppIntentsService.donateIntentWithMetadata(
+            'test_intent',
+            {},
+            relevanceScore: 0,
           );
+          expect(result1, isTrue);
 
-          expect(
-            () => FlutterAppIntentsService.donateIntentWithMetadata(
-              'test_intent',
-              {},
-              // relevanceScore: 1,
-            ),
-            throwsA(isA<UnsupportedError>()),
+          final result2 = await FlutterAppIntentsService.donateIntentWithMetadata(
+            'test_intent',
+            {},
+            // relevanceScore: 1,
           );
+          expect(result2, isTrue);
 
-          expect(
-            () => FlutterAppIntentsService.donateIntentWithMetadata(
-              'test_intent',
-              {},
-              relevanceScore: 0.5,
-            ),
-            throwsA(isA<UnsupportedError>()),
+          final result3 = await FlutterAppIntentsService.donateIntentWithMetadata(
+            'test_intent',
+            {},
+            relevanceScore: 0.5,
           );
+          expect(result3, isTrue);
         },
       );
 
-      test('donateIntentWithMetadata handles default parameters correctly', () {
-        // Should throw UnsupportedError on non-iOS platforms
-        expect(
-          () => FlutterAppIntentsService.donateIntentWithMetadata(
-            'test_intent',
-            {'param': 'value'},
-          ),
-          throwsA(isA<UnsupportedError>()),
+      test('donateIntentWithMetadata handles default parameters correctly',
+          () async {
+        // Silently succeeds on non-iOS platforms
+        final result = await FlutterAppIntentsService.donateIntentWithMetadata(
+          'test_intent',
+          {'param': 'value'},
         );
+        expect(result, isTrue);
       });
 
-      test('donateIntentBatch handles empty list correctly', () {
-        expect(
-          () => FlutterAppIntentsService.donateIntentBatch([]),
-          throwsA(isA<UnsupportedError>()),
-        );
+      test('donateIntentBatch handles empty list correctly', () async {
+        // Silently succeeds on non-iOS platforms
+        final result = await FlutterAppIntentsService.donateIntentBatch([]);
+        expect(result, isTrue);
       });
 
-      test('donateIntentBatch handles multiple donations correctly', () {
+      test('donateIntentBatch handles multiple donations correctly', () async {
         const donations = [
           IntentDonation.highRelevance(
             identifier: 'intent1',
@@ -230,34 +221,28 @@ void main() {
           ),
         ];
 
-        expect(
-          () => FlutterAppIntentsService.donateIntentBatch(donations),
-          throwsA(isA<UnsupportedError>()),
-        );
+        // Silently succeeds on non-iOS platforms
+        final result = await FlutterAppIntentsService.donateIntentBatch(donations);
+        expect(result, isTrue);
       });
     });
 
     group('Platform Support', () {
-      test('enhanced donation methods throw UnsupportedError on non-iOS', () {
-        // All enhanced donation methods should throw UnsupportedError on
-        // non-iOS
-        expect(
-          () => FlutterAppIntentsService.donateIntentWithMetadata(
-            'test_intent',
-            {},
-          ),
-          throwsA(isA<UnsupportedError>()),
+      test('donation methods silently succeed on non-iOS', () async {
+        // All donation methods should silently succeed (no-op) on non-iOS
+        final result1 = await FlutterAppIntentsService.donateIntentWithMetadata(
+          'test_intent',
+          {},
         );
+        expect(result1, isTrue);
 
-        expect(
-          () => FlutterAppIntentsService.donateIntentBatch([
-            const IntentDonation.highRelevance(
-              identifier: 'test',
-              parameters: {},
-            ),
-          ]),
-          throwsA(isA<UnsupportedError>()),
-        );
+        final result2 = await FlutterAppIntentsService.donateIntentBatch([
+          const IntentDonation.highRelevance(
+            identifier: 'test',
+            parameters: {},
+          ),
+        ]);
+        expect(result2, isTrue);
       });
     });
 
@@ -363,33 +348,33 @@ void main() {
         expect(donations.first.relevanceScore, equals(0.0));
         expect(donations.last.relevanceScore, equals(0.9));
 
-        // On non-iOS platforms, should throw UnsupportedError
-        expect(
-          () => FlutterAppIntentsService.donateIntentBatch(donations),
-          throwsA(isA<UnsupportedError>()),
-        );
+        // On non-iOS platforms, silently succeeds (no-op)
+        FlutterAppIntentsService.donateIntentBatch(donations).then((result) {
+          expect(result, isTrue);
+        });
       });
     });
 
     group('Integration with Existing APIs', () {
-      test('legacy donateIntent throws UnsupportedError on non-iOS', () {
-        expect(
-          () => FlutterAppIntentsService.donateIntent('legacy_intent', {}),
-          throwsA(isA<UnsupportedError>()),
+      test('legacy donateIntent silently succeeds on non-iOS', () async {
+        // Silently succeeds (no-op) on non-iOS
+        final result = await FlutterAppIntentsService.donateIntent(
+          'legacy_intent',
+          {},
         );
+        expect(result, isTrue);
       });
 
-      test('enhanced donation has same error handling as legacy', () {
-        // Both should throw UnsupportedError on non-iOS
-        expect(
-          () => FlutterAppIntentsService.donateIntent('intent', {}),
-          throwsA(isA<UnsupportedError>()),
-        );
+      test('enhanced donation has same behavior as legacy', () async {
+        // Both should silently succeed (no-op) on non-iOS
+        final result1 = await FlutterAppIntentsService.donateIntent('intent', {});
+        expect(result1, isTrue);
 
-        expect(
-          () => FlutterAppIntentsService.donateIntentWithMetadata('intent', {}),
-          throwsA(isA<UnsupportedError>()),
+        final result2 = await FlutterAppIntentsService.donateIntentWithMetadata(
+          'intent',
+          {},
         );
+        expect(result2, isTrue);
       });
     });
   });

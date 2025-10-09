@@ -96,10 +96,18 @@ void main() {
             throwsA(isA<UnsupportedError>()),
           );
 
-          expect(
-            () => FlutterAppIntentsService.donateIntent('test_intent', {}),
-            throwsA(isA<UnsupportedError>()),
+          // donateIntent silently succeeds on non-iOS platforms (no-op)
+          final donateResult = await FlutterAppIntentsService.donateIntent(
+            'test_intent',
+            {},
           );
+          expect(donateResult, isTrue);
+
+          // donateIntentBatch also silently succeeds on non-iOS platforms
+          final batchResult = await FlutterAppIntentsService.donateIntentBatch(
+            [],
+          );
+          expect(batchResult, isTrue);
         }
       });
     });

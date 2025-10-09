@@ -5,6 +5,11 @@ import 'dart:io';
 import 'package:args/args.dart';
 import 'package:flutter_app_intents/src/generator/cli_runner.dart';
 
+/// Version of the flutter_app_intents package
+///
+/// This should be kept in sync with pubspec.yaml
+const String version = '0.8.0';
+
 /// Main entry point for the code generator CLI
 ///
 /// Usage:
@@ -14,6 +19,7 @@ import 'package:flutter_app_intents/src/generator/cli_runner.dart';
 ///   `--platform=<ios,android>`  Target platforms (comma-separated).
 ///   --watch                   Watch for changes and regenerate.
 ///   --help                    Show usage information.
+///   --version                 Show version information.
 Future<void> main(List<String> args) async {
   final parser = ArgParser()
     ..addOption(
@@ -35,6 +41,12 @@ Future<void> main(List<String> args) async {
       'help',
       abbr: 'h',
       help: 'Show this help message',
+    )
+    ..addFlag(
+      'version',
+      abbr: 'v',
+      help: 'Show version information',
+      negatable: false,
     );
 
   ArgResults argResults;
@@ -44,6 +56,11 @@ Future<void> main(List<String> args) async {
     stdout.writeln('Error: ${e.message}\n');
     _printUsage(parser);
     exit(1);
+  }
+
+  if (argResults['version'] as bool) {
+    stdout.writeln('flutter_app_intents v$version');
+    exit(0);
   }
 
   if (argResults['help'] as bool) {

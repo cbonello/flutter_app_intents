@@ -6,10 +6,20 @@ sidebar_position: 5
 
 Intent donation helps Siri learn user patterns and provide better predictions. When you donate an intent, you're telling iOS that the user performed a specific action, which helps Siri suggest it at appropriate times.
 
+## Platform Support
+
+> **📱 Platform Support:** Intent donation is an **iOS-only** feature for Siri learning and predictions. On Android and other platforms, donation calls are **silently ignored** (no-op) and return `true`. This allows you to write cross-platform code without platform checks.
+
+**Why iOS-only?**
+- iOS uses intent donations to power Siri Suggestions and predictive features
+- Android uses a different system for app actions (no equivalent donation mechanism)
+- The API silently succeeds on Android to maintain code consistency across platforms
+
 ## Basic Intent Donation
 
 ```dart
 // Donate after successful intent execution
+// (iOS-only feature, silently ignored on Android)
 await FlutterAppIntentsClient.instance.donateIntent(
   'my_intent',
   {'param': 'value'},
@@ -45,6 +55,7 @@ Future<AppIntentResult> handleIncrementIntent(
     final newValue = incrementCounter(amount);
 
     // Donate the intent to help Siri learn
+    // No Platform.isIOS check needed - silently ignored on Android
     await FlutterAppIntentsClient.instance.donateIntent(
       'increment_counter',
       parameters,
@@ -62,14 +73,16 @@ Future<AppIntentResult> handleIncrementIntent(
 }
 ```
 
-## How Intent Donation Improves Siri
+## How Intent Donation Improves Siri (iOS)
 
-When you consistently donate intents:
+When you consistently donate intents on iOS:
 
 1. **Proactive Suggestions**: Siri learns when users typically perform actions and suggests them at relevant times
 2. **Shortcuts Discovery**: Donated intents appear more prominently in the Shortcuts app
 3. **Spotlight Integration**: Actions become searchable in Spotlight
 4. **Contextual Awareness**: Siri learns patterns based on time, location, and usage frequency
+
+> **Note:** These benefits are iOS-specific. On Android, while donations are safely ignored, app actions are still fully functional through Google Assistant.
 
 ## Example: Navigation Intent
 
@@ -80,7 +93,7 @@ await client.registerIntent(openProfileIntent, (parameters) async {
   // Navigate to profile
   navigateToProfile(userId);
 
-  // Donate so Siri learns this pattern
+  // Donate so Siri learns this pattern (iOS-only, ignored on Android)
   await FlutterAppIntentsClient.instance.donateIntent(
     'open_profile',
     {'userId': userId},
@@ -95,16 +108,24 @@ await client.registerIntent(openProfileIntent, (parameters) async {
 
 ## Troubleshooting
 
-### Intent donations not improving predictions
+### Intent donations not improving predictions (iOS)
 
 1. **Donate consistently**: Make sure you're donating after every successful execution
 2. **Use correct parameters**: Ensure parameter names and values match your intent definition
 3. **Check registration**: Verify the intent is registered before donating
 4. **Give it time**: Siri needs multiple donations over time to learn patterns
 
-### Donation fails silently
+### Donation returns true but nothing happens (Android)
 
-If `donateIntent()` returns false:
+This is expected behavior:
+- On Android, `donateIntent()` always returns `true` and does nothing (no-op)
+- Android App Actions don't use donation-based learning like iOS
+- Your app actions will still work perfectly via Google Assistant
+- The silent success allows cross-platform code without platform checks
+
+### Donation fails on iOS
+
+If `donateIntent()` returns false on iOS:
 - Verify the intent identifier matches a registered intent
 - Check that parameters are valid for the intent
 - Ensure the iOS device is running iOS 16.0+

@@ -6,6 +6,8 @@
 
 A Flutter plugin for integrating App Intents on iOS and Android. Enable your Flutter app to work seamlessly with Siri, Shortcuts, Spotlight on iOS, and Google Assistant on Android. Support both platforms with a unified Dart API.
 
+> **📝 Note on Naming:** This package is called `flutter_app_intents` because it was originally designed for iOS App Intents. Since version 0.8.0, it supports both iOS (App Intents/Siri) and Android (App Actions/Google Assistant) with a unified API.
+
 ## Features
 
 - **Voice Assistant Integration**: Siri on iOS, Google Assistant on Android
@@ -30,7 +32,7 @@ A Flutter plugin for integrating App Intents on iOS and Android. Enable your Flu
 - Xcode 14.0 or later
 
 ### Android
-- Android 6.0 (API level 23) or higher
+- Android 7.1 (API level 25) or higher
 - Recommended: Android 10.0 (API level 29) or higher
 
 ### Flutter
@@ -60,9 +62,66 @@ Or add via Xcode: **File → Add Package Dependencies** → `https://github.com/
 
 > **Note:** SPM support is provided for advanced use cases. Most Flutter developers should use the standard plugin installation above. See [SPM_README.md](SPM_README.md) for detailed SPM integration instructions.
 
+## Quick Start
+
+Create a voice-controlled counter app that works on both iOS and Android:
+
+### Using Code Generation (Recommended)
+
+```dart
+// 1. Define your intent in Dart
+final intent = AppIntentBuilder()
+    .identifier('increment_counter')
+    .title('Increment Counter')
+    .description('Increments the counter by one')
+    .category(IntentCategory.general)
+    .build();
+
+// 2. Register with a handler
+final client = FlutterAppIntentsClient.instance;
+await client.registerIntent(intent, (parameters) async {
+  incrementCounter();
+  return AppIntentResult.successful(value: 'Counter incremented!');
+});
+```
+
+```bash
+# 3. Generate platform code
+dart run flutter_app_intents:app_intents_cli
+```
+
+✅ That's it! The generator creates platform-specific code automatically (iOS: Swift intents, Android: shortcuts.xml).
+
+### Manual Setup (Alternative)
+
+> **Note:** This shows manual iOS setup. Most developers should use the code generator above instead, which supports both iOS and Android.
+
+If you prefer not to use the code generator, you can manually write the static intents:
+
+```swift
+// 1. Define your intent in Dart (same as above)
+// 2. Add static intent to iOS (AppDelegate.swift)
+import AppIntents
+
+struct IncrementCounterIntent: AppIntent {
+    static var title: LocalizedStringResource = "Increment Counter"
+
+    func perform() async throws -> some IntentResult {
+        await FlutterAppIntentsPlugin.shared.handleIntent("increment_counter", [:])
+        return .result()
+    }
+}
+```
+
+**Test it:**
+- **iOS**: *"Hey Siri, increment counter with MyApp"*
+- **Android**: Use ADB (`adb shell am start -a android.intent.action.VIEW -d "app://intent/increment_counter"`) or *"Hey Google, open increment counter in MyApp"* (requires publishing)
+
 ## Architecture Overview
 
-This plugin uses a **hybrid approach** combining:
+This plugin uses a **hybrid approach** combining platform-specific configuration with shared Flutter business logic:
+
+### iOS Architecture
 
 1. **Static Swift intents** in your main iOS app target (required for iOS discovery)
 2. **Dynamic Flutter handlers** registered through the plugin (your business logic)
@@ -72,6 +131,18 @@ iOS Shortcuts/Siri → Static Swift Intent → Flutter Plugin Bridge → Your Fl
 ```
 
 The static Swift intents act as a bridge, calling your Flutter handlers when executed.
+
+### Android Architecture
+
+1. **Static shortcuts.xml** configuration (defines Google Assistant integration)
+2. **Deep link routing** via MainActivity (handles intent URIs)
+3. **Dynamic Flutter handlers** registered through the plugin (your business logic)
+
+```
+Google Assistant → shortcuts.xml → Deep Link (app://intent/id) → MainActivity → Flutter Plugin Bridge → Your Flutter Handler
+```
+
+The shortcuts.xml file maps voice commands to deep links, which are routed to your Flutter handlers.
 
 ## Code Generation (Recommended)
 
@@ -96,16 +167,24 @@ dart run flutter_app_intents:app_intents_cli
 ### What Gets Generated?
 
 **For Android:**
-- `android/app/src/main/res/xml/shortcuts.xml` - Google Assistant integration
+- `android/app/src/main/res/xml/shortcuts.xml` - Google Assistant integration and app launcher shortcuts
+- `android/app/src/main/res/values/strings.xml` - Auto-generated widget string resources (merged with existing)
+- **For query intents** (with `presentsResult: true`) - ⚠️ **Experimental**:
+  - `android/app/src/main/res/layout/widget_{intent_id}.xml` - Widget layouts for result presentation
+  - `android/app/src/main/res/xml/widget_{intent_id}_info.xml` - Widget metadata
+  - `android/app/src/main/kotlin/{package}/{IntentId}WidgetProvider.kt` - Widget provider classes
+  - **Note**: Requires manual AndroidManifest.xml registration and result passing implementation
 
 **For iOS:**
-- `ios/Runner/AppShortcuts.swift` - Siri shortcuts and App Intents
+- `ios/Runner/AppShortcuts.swift` - Siri shortcuts and App Intents with phrase definitions
 
 ### How It Works
 
 1. **Define intents in Dart** using `AppIntentBuilder()`
 2. **Run the generator** with `dart run flutter_app_intents:app_intents_cli`
-3. **Add generated files to your project** (iOS: add to Xcode)
+3. **Add generated files to your project**:
+   - **iOS**: Add `AppShortcuts.swift` to Xcode (right-click Runner → Add Files to Runner)
+   - **Android**: Files are auto-placed in correct locations (no manual steps needed)
 4. **Build and test** your app
 
 ### Installation Options
@@ -126,26 +205,48 @@ app_intents_cli
 
 After global installation, you can use `app_intents_cli` as a command from any directory.
 
-### Generator Options
+### CLI Options Reference
+
+| Option | Short | Description | Default |
+|--------|-------|-------------|---------|
+| `--platform=<platforms>` | `-p` | Target platform(s) for code generation. Comma-separated list: `ios`, `android`, or `ios,android` | Auto-detect from project structure |
+| `--main-activity=<name>` | - | Android main activity class name (e.g., `MainActivity`, `SplashActivity`) | Auto-detect from `AndroidManifest.xml` |
+| `--watch` | `-w` | Watch mode: automatically regenerate when `.dart` files in `lib/` change | Disabled |
+| `--version` | `-v` | Show version information and exit | - |
+| `--help` | `-h` | Show help message with usage information | - |
+
+### Generator Usage Examples
 
 ```bash
-# Auto-detect platforms (default)
+# Auto-detect platforms (recommended)
 dart run flutter_app_intents:app_intents_cli
-# or (if installed globally)
-app_intents_cli
 
-# Specify platform(s)
-app_intents_cli --platform=ios
-app_intents_cli --platform=android,ios
+# Generate for specific platform
+dart run flutter_app_intents:app_intents_cli --platform=ios
+dart run flutter_app_intents:app_intents_cli -p android
+
+# Generate for both platforms explicitly
+dart run flutter_app_intents:app_intents_cli --platform=ios,android
 
 # Watch mode (regenerate on file changes)
-app_intents_cli --watch
+dart run flutter_app_intents:app_intents_cli --watch
+dart run flutter_app_intents:app_intents_cli -w
 
 # Custom main activity (Android)
-app_intents_cli --main-activity=SplashActivity
+dart run flutter_app_intents:app_intents_cli --main-activity=SplashActivity
+
+# Combine options
+dart run flutter_app_intents:app_intents_cli --platform=android --watch --main-activity=SplashActivity
+
+# Show version
+dart run flutter_app_intents:app_intents_cli --version
+dart run flutter_app_intents:app_intents_cli -v
+
+# Show help
+dart run flutter_app_intents:app_intents_cli --help
 ```
 
-> **Note:** Replace `app_intents_cli` with `dart run flutter_app_intents:app_intents_cli` if not using global installation.
+> **Note:** Replace `dart run flutter_app_intents:app_intents_cli` with `app_intents_cli` if using global installation.
 
 ### Benefits
 
@@ -157,82 +258,22 @@ app_intents_cli --main-activity=SplashActivity
 
 > **Note:** You can still manually write static intents if you prefer. The generator is optional but strongly recommended for most use cases.
 
-## Simple Example
-
-Create a voice-controlled counter app in just a few steps:
-
-### Using Code Generation (Recommended)
-
-```dart
-// 1. Define your intent in Dart
-final intent = AppIntentBuilder()
-    .identifier('increment_counter')
-    .title('Increment Counter')
-    .description('Increments the counter by one')
-    .category(IntentCategory.general)
-    .build();
-
-// 2. Register with a handler
-await client.registerIntent(intent, (parameters) async {
-  incrementCounter();
-  return AppIntentResult.successful(value: 'Counter incremented!');
-});
-```
-
-```bash
-# 3. Generate platform code
-dart run flutter_app_intents:app_intents_cli
-```
-
-✅ That's it! The generator creates the static Swift intents automatically.
-
-### Manual Setup (Alternative)
-
-> **Note:** This shows manual setup. Most developers should use the code generator above instead.
-
-```dart
-// 1. Register your intent
-final client = FlutterAppIntentsClient.instance;
-final intent = AppIntentBuilder()
-    .identifier('increment_counter')
-    .title('Increment Counter')
-    .build();
-
-await client.registerIntent(intent, (parameters) async {
-  // Your business logic here
-  incrementCounter();
-  return AppIntentResult.successful(value: 'Counter incremented!');
-});
-```
-
-```swift
-// 2. Add static intent to iOS (AppDelegate.swift)
-import AppIntents
-
-struct IncrementCounterIntent: AppIntent {
-    static var title: LocalizedStringResource = "Increment Counter"
-
-    func perform() async throws -> some IntentResult {
-        await FlutterAppIntentsPlugin.shared.handleIntent("increment_counter", [:])
-        return .result()
-    }
-}
-```
-
-**Result:** Say *"Hey Siri, increment counter"* and your Flutter function runs! 🎉
-
 ## Migration Guide
 
 ### New in v0.8.0: Action vs Query Intents
 
-**✨ New Feature:** Use `.presentsResult()` to control how iOS displays intent results.
+**✨ New Feature:** Use `.presentsResult()` to control how intents display results.
 
 #### Intent Types
 
 v0.8.0 introduces a clear distinction between two types of intents:
 
-- **Action intents** (default): Open the app silently - no dialog
-- **Query intents** (`.presentsResult(true)`): Show result in a dialog
+- **Action intents** (default): Open the app silently
+  - **iOS**: No dialog shown
+  - **Android**: Opens app immediately
+- **Query intents** (`.presentsResult(true)`): Present results to user
+  - **iOS**: Shows result string in a system dialog ✅ (text only, no rich content)
+  - **Android**: Generates widget infrastructure (experimental) ⚠️
 
 #### Usage Guide
 
@@ -244,7 +285,7 @@ final actionIntent = AppIntentBuilder()
     .title('Send Message')
     .build();  // presentsResult defaults to false
 
-// Opens app immediately, no dialog ✨
+// Both platforms: Opens app immediately ✨
 ```
 
 **For Query Intents** (get information):
@@ -253,10 +294,11 @@ final actionIntent = AppIntentBuilder()
 final queryIntent = AppIntentBuilder()
     .identifier('get_status')
     .title('Get Status')
-    .presentsResult(true)  // ← Shows result in dialog
+    .presentsResult(true)  // ← Platform-specific behavior
     .build();
 
-// Shows result value, then opens app 📱
+// iOS: Shows result string in a system dialog, then opens app 📱 (text only)
+// Android: Generates widgets for result display (experimental, requires manual setup) ⚠️
 ```
 
 **Quick Rule of Thumb:**
@@ -267,10 +309,12 @@ final queryIntent = AppIntentBuilder()
 
 The `.presentsResult()` property provides better UX by:
 - Eliminating annoying dialogs for action intents
-- Showing helpful information for query intents
+- Showing helpful text information for query intents (iOS: system dialog with string result)
 - Making intent behavior explicit in your code
 
-## Quick Start
+**Important Limitation (iOS)**: Query dialogs can only display plain text strings. For rich content (images, formatted text, custom UI), use action intents with `needsToContinueInApp: true` to open your app and display custom UI.
+
+## Detailed Example
 
 > 📖 **New to App Intents?** Check out our [Step-by-Step Tutorial](documentation/TUTORIAL.md) for a complete walkthrough from `flutter create` to working Siri integration!
 
@@ -360,11 +404,16 @@ Future<AppIntentResult> handleIncrementIntent(Map<String, dynamic> parameters) a
 
 ## Navigation with App Intents
 
-Our plugin excels at handling app navigation through voice commands and shortcuts. Here's how to implement navigation intents:
+Our plugin excels at handling app navigation through voice commands and shortcuts on both iOS and Android. Here's how to implement navigation intents:
 
 ### Navigation Intent Pattern
 
-For navigation, use `needsToContinueInApp: true` to tell iOS to focus your app and `OpensIntent` return type in Swift:
+Navigation intents work on both platforms with the same Flutter code. The platform-specific part is just how the intent is invoked:
+
+**Platform-Specific Invocation:**
+
+- **iOS**: Use `OpensIntent` return type in Swift and `needsToContinueInApp: true` in Flutter
+- **Android**: Use the same deep link scheme (`app://intent/<identifier>`), navigation happens automatically when the Flutter handler returns
 
 **iOS Implementation:**
 ```swift
@@ -396,36 +445,46 @@ struct OpenProfileIntent: AppIntent {
 }
 ```
 
-**Flutter Handler:**
+**Android Setup:**
+
+For Android, the code generator creates the shortcuts.xml entry automatically. No additional platform-specific code is needed - the deep link routing handles navigation intents the same as any other intent.
+
+**Flutter Handler (Works for Both Platforms):**
 ```dart
 Future<AppIntentResult> _handleOpenProfileIntent(
   Map<String, dynamic> parameters,
 ) async {
   final userId = parameters['userId'] as String? ?? 'current';
-  
+
   // Navigate to the target page
+  // This Flutter code works identically on both iOS and Android
   Navigator.of(context).pushNamed('/profile', arguments: {'userId': userId});
-  
+
   return AppIntentResult.successful(
     value: 'Opening profile for user $userId',
-    needsToContinueInApp: true, // Critical: focuses the app
+    needsToContinueInApp: true, // iOS: focuses the app, Android: opens the app
   );
 }
 ```
 
+> **Note:** The Flutter navigation code is identical for both platforms. The difference is only in how the intent is invoked (Siri/Shortcuts on iOS, Google Assistant/deep links on Android).
+
 ### Common Navigation Patterns
+
+All these Flutter patterns work identically on both iOS and Android:
 
 #### 1. Deep Linking with Parameters
 ```dart
 // Navigate to specific content with parameters
+// Works on both iOS and Android
 Future<AppIntentResult> _handleOpenChatIntent(Map<String, dynamic> parameters) async {
   final contactName = parameters['contactName'] as String;
-  
+
   Navigator.of(context).pushNamed('/chat', arguments: {
     'contactName': contactName,
     'openedViaIntent': true,
   });
-  
+
   return AppIntentResult.successful(
     value: 'Opening chat with $contactName',
     needsToContinueInApp: true,
@@ -436,11 +495,12 @@ Future<AppIntentResult> _handleOpenChatIntent(Map<String, dynamic> parameters) a
 #### 2. Search Navigation
 ```dart
 // Handle search queries with navigation
+// Works on both iOS and Android
 Future<AppIntentResult> _handleSearchIntent(Map<String, dynamic> parameters) async {
   final query = parameters['query'] as String;
-  
+
   Navigator.of(context).pushNamed('/search', arguments: {'query': query});
-  
+
   return AppIntentResult.successful(
     value: 'Searching for "$query"',
     needsToContinueInApp: true,
@@ -451,11 +511,12 @@ Future<AppIntentResult> _handleSearchIntent(Map<String, dynamic> parameters) asy
 #### 3. Settings/Configuration Navigation
 ```dart
 // Navigate to specific settings pages
+// Works on both iOS and Android
 Future<AppIntentResult> _handleOpenSettingsIntent(Map<String, dynamic> parameters) async {
   final section = parameters['section'] as String? ?? 'general';
-  
+
   Navigator.of(context).pushNamed('/settings/$section');
-  
+
   return AppIntentResult.successful(
     value: 'Opening $section settings',
     needsToContinueInApp: true,
@@ -465,15 +526,16 @@ Future<AppIntentResult> _handleOpenSettingsIntent(Map<String, dynamic> parameter
 
 ### Navigation with GoRouter
 
-If you're using GoRouter, the pattern is similar:
+If you're using GoRouter, the pattern works the same on both platforms:
 
 ```dart
+// Works on both iOS and Android
 Future<AppIntentResult> _handleNavigationIntent(Map<String, dynamic> parameters) async {
   final route = parameters['route'] as String;
-  
+
   // Use GoRouter for navigation
   context.go(route);
-  
+
   return AppIntentResult.successful(
     value: 'Navigating to $route',
     needsToContinueInApp: true,
@@ -481,9 +543,11 @@ Future<AppIntentResult> _handleNavigationIntent(Map<String, dynamic> parameters)
 }
 ```
 
-### AppShortcuts for Navigation
+### Platform-Specific Configuration
 
-Add navigation shortcuts to your `AppShortcutsProvider`:
+#### iOS: AppShortcuts for Navigation
+
+Add navigation shortcuts to your `AppShortcutsProvider` (or use the code generator):
 
 ```swift
 @available(iOS 16.0, *)
@@ -494,23 +558,42 @@ struct AppShortcuts: AppShortcutsProvider {
             AppShortcut(
                 intent: OpenProfileIntent(),
                 phrases: [
-                    "Open my profile in ${applicationName}",
-                    "Show profile using ${applicationName}",
-                    "Go to profile with ${applicationName}"
+                    "Open my profile in \(.applicationName)",
+                    "Show profile using \(.applicationName)",
+                    "Go to profile with \(.applicationName)"
                 ]
             ),
             AppShortcut(
                 intent: OpenChatIntent(),
                 phrases: [
-                    "Chat with \\(.contactName) using ${applicationName}",
-                    "Open chat with \\(.contactName) in ${applicationName}",
-                    "Message \\(.contactName) with ${applicationName}"
+                    "Chat with \\(.contactName) using \(.applicationName)",
+                    "Open chat with \\(.contactName) in \(.applicationName)",
+                    "Message \\(.contactName) with \(.applicationName)"
                 ]
             )
         ]
     }
 }
 ```
+
+#### Android: Testing Navigation Intents
+
+Test navigation intents using ADB during development:
+
+```bash
+# Open profile page
+adb shell am start -a android.intent.action.VIEW -d "app://intent/open_profile"
+
+# Open chat with parameter
+adb shell am start -a android.intent.action.VIEW -d "app://intent/open_chat?contactName=Alice"
+
+# Open settings section
+adb shell am start -a android.intent.action.VIEW -d "app://intent/open_settings?section=notifications"
+```
+
+**In Production:**
+- Voice: *"Hey Google, open profile in MyApp"*
+- Launcher: Long-press app icon → Tap navigation shortcut
 
 ### Navigation vs Action Intents
 
@@ -533,7 +616,7 @@ The main client class for managing App Intents:
 - `unregisterIntent(String identifier)` - Remove an intent
 - `getRegisteredIntents()` - Get all registered intents
 - `updateShortcuts()` - Refresh app shortcuts
-- `donateIntent(String identifier, parameters)` - Intent donation for Siri learning and predictions
+- `donateIntent(String identifier, parameters)` - Intent donation for Siri learning (iOS-only, silently ignored on Android)
 
 ### AppIntent
 
@@ -592,6 +675,7 @@ final intent = AppIntentBuilder()
     .identifier('my_intent')
     .title('My Intent')
     .description('Does something useful')
+    .category(IntentCategory.general)  // Semantic category for the intent
     .parameter(myParameter)
     .eligibleForSearch(true)
     .presentsResult(false)  // Action intent - opens app silently
@@ -599,13 +683,104 @@ final intent = AppIntentBuilder()
     .build();
 ```
 
+**Available Methods:**
+- `.identifier(String)` - Unique identifier for the intent (required)
+- `.title(String)` - Display name shown to users (required)
+- `.description(String)` - Detailed description of what the intent does
+- `.category(IntentCategory)` - Semantic category (maps to platform capabilities)
+- `.parameter(AppIntentParameter)` - Add a parameter (can be called multiple times)
+- `.eligibleForSearch(bool)` - Make discoverable in Spotlight/search (default: true)
+- `.eligibleForPrediction(bool)` - Enable Siri predictions (default: true)
+- `.presentsResult(bool)` - Show result dialog vs open app silently (default: false)
+- `.authenticationPolicy(AuthenticationPolicy)` - Set authentication requirements
+- `.build()` - Create the AppIntent instance
+
+### IntentCategory
+
+Semantic categories that map to platform-specific capabilities:
+
+```dart
+enum IntentCategory {
+  general,        // Default fallback for any app feature
+  fitness,        // Exercise and workout activities
+  messaging,      // Messaging and communication
+  calling,        // Phone calls
+  music,          // Music playback
+  video,          // Video playback
+  notes,          // Note taking
+  tasks,          // Task management
+  calendar,       // Calendar events
+  navigation,     // Navigation and directions
+  taxi,           // Ride sharing
+  ordering,       // Food ordering
+  cart,           // Shopping cart operations
+  deviceControl,  // Smart home control
+  nutrition,      // Food tracking
+  timer,          // Timer management
+  alarm,          // Alarm management
+  reminder,       // Reminders
+  weather,        // Weather information
+  news,           // News and articles
+}
+```
+
+**Platform Mapping:**
+- **Android**: Maps to Google Built-in Intents (BII) for better voice recognition
+- **iOS**: Provides semantic meaning for Siri integration
+
+**Example:**
+```dart
+// Messaging app
+final intent = AppIntentBuilder()
+    .identifier('send_message')
+    .title('Send Message')
+    .category(IntentCategory.messaging)  // Maps to Android messaging BII
+    .build();
+
+// Fitness app
+final workoutIntent = AppIntentBuilder()
+    .identifier('start_workout')
+    .title('Start Workout')
+    .category(IntentCategory.fitness)  // Maps to Android exercise BII
+    .build();
+```
+
+### AppIntentParameterType
+
+Parameter types supported by the plugin:
+
+```dart
+enum AppIntentParameterType {
+  string,   // Text input
+  integer,  // Whole numbers
+  boolean,  // True/false values
+  double,   // Decimal numbers
+  date,     // Date/time values
+  url,      // Web URLs
+  file,     // File references
+  entity,   // Custom app-specific types
+}
+```
+
+### AuthenticationPolicy
+
+Control when intents can be executed:
+
+```dart
+enum AuthenticationPolicy {
+  none,                      // No authentication required
+  requiresAuthentication,    // User must be authenticated
+  requiresUnlockedDevice,    // Device must be unlocked
+}
+```
+
 #### Action vs Query Intents
 
 Use `.presentsResult()` to control how intents display results:
 
 > **Platform Support:**
-> ✅ **iOS**: Fully supported
-> ❌ **Android**: Not yet supported - all intents open the app (widget-based fulfillment planned)
+> ✅ **iOS**: Fully supported - shows result string in system dialog (text only) or opens app silently
+> ⚠️ **Android**: Experimental widget-based support - generates widget infrastructure (requires manual AndroidManifest.xml setup and result passing implementation)
 
 **Action Intents** (default behavior):
 ```dart
@@ -627,22 +802,25 @@ final queryIntent = AppIntentBuilder()
     .identifier('get_counter')
     .title('Get Counter Value')
     .description('Returns the current counter value')
-    .presentsResult(true)  // ← Shows result in dialog
+    .presentsResult(true)  // ← Shows result string in dialog (iOS), generates widgets (Android - experimental)
     .build();
 
-// Shows result value in a dialog before opening app 📱
+// iOS: Shows result string in a system dialog before opening app 📱 (text only)
+// Android: Generates widget infrastructure (requires manual setup)
 ```
 
-> **💡 UX Tip**: Use action intents (default) for operations that modify state, and query intents for operations that return information to the user.
+> **💡 UX Tip**: Use action intents (default) for operations that modify state, and query intents for operations that return information to the user. **Important**: iOS query dialogs can only display plain text strings - use action intents with `needsToContinueInApp: true` if you need to show rich content or custom UI in your app.
 
 ## Enhanced Intent Donation
 
 The plugin provides advanced intent donation capabilities to help Siri learn user patterns and provide better predictions.
 
+> **📱 Platform Support:** Intent donation is an **iOS-only** feature for Siri learning and predictions. On Android and other platforms, donation calls are **silently ignored** (no-op) and return `true`. This allows you to write cross-platform code without platform checks.
+
 ### Basic Intent Donation
 
 ```dart
-// Donate intent for Siri learning
+// Donate intent for Siri learning (iOS-only, silently ignored on Android)
 await FlutterAppIntentsClient.instance.donateIntent(
   'my_intent',
   {'param': 'value'},
@@ -658,6 +836,7 @@ Donate intents after successful execution to help Siri learn user patterns:
 final result = await performAction();
 
 // Donate if successful
+// No Platform.isIOS check needed - silently ignored on Android
 if (result.isSuccess) {
   await FlutterAppIntentsClient.instance.donateIntent(
     'my_intent',
@@ -970,27 +1149,6 @@ Ensure your iOS deployment target is set to 16.0 or later:
 platform :ios, '16.0'
 ```
 
-## Parameter Types
-
-The following parameter types are supported:
-
-- `AppIntentParameterType.string` - Text input
-- `AppIntentParameterType.integer` - Whole numbers
-- `AppIntentParameterType.boolean` - True/false values
-- `AppIntentParameterType.double` - Decimal numbers
-- `AppIntentParameterType.date` - Date/time values
-- `AppIntentParameterType.url` - Web URLs
-- `AppIntentParameterType.file` - File references
-- `AppIntentParameterType.entity` - Custom app-specific types
-
-## Authentication Policies
-
-Control when intents can be executed:
-
-- `AuthenticationPolicy.none` - No authentication required
-- `AuthenticationPolicy.requiresAuthentication` - User must be authenticated
-- `AuthenticationPolicy.requiresUnlockedDevice` - Device must be unlocked
-
 ## Best Practices
 
 ### General Practices
@@ -1251,7 +1409,7 @@ For deeper understanding of the underlying iOS concepts, refer to these official
 - **[Intent Result](https://developer.apple.com/documentation/appintents/intentresult)** - Understanding intent return values
 
 ### Siri Integration
-- **[Making App Intents Available to Siri](https://developer.apple.com/documentation/appintents/making-app-intents-available-to-siri)** - Core Siri integration guide
+- **[Making Your App's Functionality Available to Siri](https://developer.apple.com/documentation/appintents/making-your-app-s-functionality-available-to-siri)** - Core Siri integration guide
 - **[App Shortcuts](https://developer.apple.com/documentation/appintents/appshortcut)** - AppShortcut protocol documentation
 - **[App Shortcuts Provider](https://developer.apple.com/documentation/appintents/appshortcutsprovider)** - Managing app shortcuts
 - **[Shortcuts App Integration](https://developer.apple.com/documentation/appintents/making-your-app-available-with-app-intents)** - Shortcuts app integration
@@ -1263,7 +1421,7 @@ For deeper understanding of the underlying iOS concepts, refer to these official
 - **[Parameter Summary](https://developer.apple.com/documentation/appintents/parametersummary)** - Parameter display configuration
 
 ### Intent Donation and Learning
-- **[Making App Intents Available to Siri](https://developer.apple.com/documentation/appintents/making-app-intents-available-to-siri)** - Core donation and prediction guide
+- **[Making Your App's Functionality Available to Siri](https://developer.apple.com/documentation/appintents/making-your-app-s-functionality-available-to-siri)** - Core donation and prediction guide
 - **[App Intents and User Activity](https://developer.apple.com/documentation/appintents/making-your-app-available-with-app-intents)** - Integration patterns
 - **[Siri Tips and Suggestions](https://developer.apple.com/documentation/sirikit/donating_shortcuts_to_siri)** - Improving suggestions and learning
 
@@ -1289,7 +1447,7 @@ For deeper understanding of the underlying iOS concepts, refer to these official
 - **[WWDC 2023: Explore enhancements to App Intents](https://developer.apple.com/videos/play/wwdc2023/10103/)** - Latest features and improvements
 
 ### Design Guidelines
-- **[Human Interface Guidelines: Siri](https://developer.apple.com/design/human-interface-guidelines/technologies/siri/)** - Designing for Siri interactions
+- **[Human Interface Guidelines: Siri](https://developer.apple.com/design/human-interface-guidelines/siri)** - Designing for Siri interactions
 - **[App Shortcuts Guidelines](https://developer.apple.com/design/human-interface-guidelines/app-shortcuts)** - User experience patterns for shortcuts
 - **[Accessibility in Siri](https://developer.apple.com/design/human-interface-guidelines/accessibility)** - Inclusive voice interface design
 

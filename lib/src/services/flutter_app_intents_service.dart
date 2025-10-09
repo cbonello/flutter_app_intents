@@ -180,6 +180,10 @@ class FlutterAppIntentsService {
   }
 
   /// Donates an intent with enhanced metadata for better Siri learning
+  ///
+  /// On iOS, this helps Siri learn user patterns and provide better predictions.
+  /// On Android and other platforms, this is a no-op (silently ignored) since
+  /// intent donation is an iOS-specific optimization feature.
   static Future<bool> donateIntentWithMetadata(
     String identifier,
     Map<String, dynamic> parameters, {
@@ -193,7 +197,15 @@ class FlutterAppIntentsService {
     }
 
     if (!_isIOS) {
-      throw UnsupportedError('App Intents are only supported on iOS');
+      // Silently return true (no-op) on non-iOS platforms
+      // Intent donation is an iOS-specific optimization for Siri learning
+      if (kDebugMode) {
+        debugPrint(
+          'Intent donation is iOS-only, '
+          'ignoring on ${Platform.operatingSystem}',
+        );
+      }
+      return true;
     }
 
     try {
@@ -222,11 +234,23 @@ class FlutterAppIntentsService {
   }
 
   /// Donates multiple intents in a batch for better performance
+  ///
+  /// On iOS, this helps Siri learn user patterns and provide better
+  /// predictions. On Android and other platforms, this is a no-op (silently
+  /// ignored) since intent donation is an iOS-specific optimization feature.
   static Future<bool> donateIntentBatch(
     List<IntentDonation> donations,
   ) async {
     if (!_isIOS) {
-      throw UnsupportedError('App Intents are only supported on iOS');
+      // Silently return true (no-op) on non-iOS platforms
+      // Intent donation is an iOS-specific optimization for Siri learning
+      if (kDebugMode) {
+        debugPrint(
+          'Intent donation is iOS-only, '
+          'ignoring on ${Platform.operatingSystem}',
+        );
+      }
+      return true;
     }
 
     try {
