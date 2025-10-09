@@ -17,24 +17,14 @@ AppIntentsPlatform? _platformInstance;
 ///
 /// Throws [UnsupportedError] if called on an unsupported platform
 /// (web, desktop, etc).
-AppIntentsPlatform getPlatformInstance() {
-  if (_platformInstance != null) {
-    return _platformInstance!;
-  }
-
-  if (Platform.isIOS) {
-    _platformInstance = IOSAppIntentsPlatform();
-    return _platformInstance!;
-  } else if (Platform.isAndroid) {
-    _platformInstance = AndroidAppActionsPlatform();
-    return _platformInstance!;
-  } else {
-    throw UnsupportedError(
-      'App Intents are only supported on iOS and Android. '
-      'Current platform: ${Platform.operatingSystem}',
-    );
-  }
-}
+AppIntentsPlatform getPlatformInstance() => _platformInstance ??= Platform.isIOS
+    ? IOSAppIntentsPlatform()
+    : Platform.isAndroid
+        ? AndroidAppActionsPlatform()
+        : throw UnsupportedError(
+            'App Intents are only supported on iOS and Android. '
+            'Current platform: ${Platform.operatingSystem}',
+          );
 
 /// Resets the platform instance singleton.
 ///

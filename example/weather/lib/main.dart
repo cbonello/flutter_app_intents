@@ -184,7 +184,7 @@ class _WeatherHomePageState extends State<WeatherHomePage> {
       });
 
       // Donate intent for Siri learning
-      await _client.donateIntent('get_current_weather', parameters);
+      await _client.donateIntentWithMetadata('get_current_weather', parameters);
 
       // Format response optimized for Siri voice output
       final response = _formatCurrentWeatherResponse(weatherData, location);
@@ -212,7 +212,7 @@ class _WeatherHomePageState extends State<WeatherHomePage> {
         _queryLog.insert(0, 'Temperature for $location');
       });
 
-      await _client.donateIntent('get_temperature', parameters);
+      await _client.donateIntentWithMetadata('get_temperature', parameters);
 
       final response =
           'The current temperature in $location is '
@@ -238,7 +238,7 @@ class _WeatherHomePageState extends State<WeatherHomePage> {
         _queryLog.insert(0, '$days-day forecast for $location');
       });
 
-      await _client.donateIntent('get_weather_forecast', parameters);
+      await _client.donateIntentWithMetadata('get_weather_forecast', parameters);
 
       final response = _formatForecastResponse(forecastData, location, days);
 
@@ -261,7 +261,7 @@ class _WeatherHomePageState extends State<WeatherHomePage> {
         _queryLog.insert(0, 'Rain check for $location');
       });
 
-      await _client.donateIntent('check_rain', parameters);
+      await _client.donateIntentWithMetadata('check_rain', parameters);
 
       final isRaining = weatherData['precipitation'] as bool;
       final response = isRaining

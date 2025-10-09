@@ -178,7 +178,7 @@ class _CounterHomePageState extends State<CounterHomePage> {
 
     // Donate the intent to help Siri learn user patterns
     // (iOS-only feature, silently ignored on Android)
-    await _client.donateIntent('increment_counter', parameters);
+    await _client.donateIntentWithMetadata('increment_counter', parameters);
 
     return AppIntentResult.successful(
       value: 'Counter incremented to $_counter',

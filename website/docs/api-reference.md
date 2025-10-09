@@ -15,7 +15,7 @@ The main client class for managing App Intents:
 - `unregisterIntent(String identifier)` - Remove an intent
 - `getRegisteredIntents()` - Get all registered intents
 - `updateShortcuts()` - Refresh app shortcuts
-- `donateIntent(String identifier, parameters)` - Intent donation for Siri learning and predictions
+- `donateIntentWithMetadata(String identifier, parameters, {double relevanceScore, Map<String, dynamic>? context, DateTime? timestamp})` - Intent donation for Siri learning and predictions
 
 ## AppIntent
 
@@ -208,10 +208,13 @@ Static service class providing utility methods:
 
 ```dart
 // Intent donation
-static Future<void> donateIntent(
+static Future<void> donateIntentWithMetadata(
   String identifier,
-  Map&lt;String, dynamic&gt; parameters,
-);
+  Map&lt;String, dynamic&gt; parameters, {
+  double relevanceScore = 1.0,
+  Map&lt;String, dynamic&gt;? context,
+  DateTime? timestamp,
+});
 ```
 
 ## Example Usage
@@ -254,7 +257,7 @@ class MyAppIntents {
       final newValue = await incrementCounter(amount);
 
       // Donate intent
-      await FlutterAppIntentsClient.instance.donateIntent(
+      await FlutterAppIntentsClient.instance.donateIntentWithMetadata(
         'increment_counter',
         parameters,
       );

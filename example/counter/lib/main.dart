@@ -229,7 +229,7 @@ class _MyHomePageState extends State<MyHomePage> {
     }
 
     // Donate this intent execution to help Siri learn user patterns
-    await _client.donateIntent('increment_counter', parameters);
+    await _client.donateIntentWithMetadata('increment_counter', parameters);
 
     // Return successful result with informative message
     return AppIntentResult.successful(
@@ -258,7 +258,7 @@ class _MyHomePageState extends State<MyHomePage> {
     }
 
     // Donate for Siri learning
-    await _client.donateIntent('reset_counter', parameters);
+    await _client.donateIntentWithMetadata('reset_counter', parameters);
 
     // Return success confirmation
     return AppIntentResult.successful(value: 'Counter reset to 0');
@@ -278,7 +278,7 @@ class _MyHomePageState extends State<MyHomePage> {
     Map<String, dynamic> parameters,
   ) async {
     // Donate for learning (queries are also valuable for predictions)
-    await _client.donateIntent('get_counter', parameters);
+    await _client.donateIntentWithMetadata('get_counter', parameters);
 
     final resultValue = 'Current counter value is $_counter';
 

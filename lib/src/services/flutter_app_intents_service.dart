@@ -20,65 +20,61 @@ class FlutterAppIntentsService {
 
   static const MethodChannel _channel = MethodChannel('flutter_app_intents');
 
-  /// Registers an App Intent with the system
-  static Future<bool> registerIntent(AppIntent intent) async {
+  /// Helper method to invoke platform methods with consistent error handling
+  ///
+  /// Performs platform check and wraps PlatformException in
+  /// FlutterAppIntentsException with a custom error message.
+  static Future<T> _invokePlatformMethod<T>(
+    String method,
+    dynamic arguments, {
+    required String errorMessage,
+    T? defaultValue,
+  }) async {
     if (!_isIOS) {
       throw UnsupportedError('App Intents are only supported on iOS');
     }
 
     try {
-      final result = await _channel.invokeMethod<bool>(
-        'registerIntent',
-        intent.toMap(),
-      );
-
-      return result ?? false;
+      final result = await _channel.invokeMethod<T>(method, arguments);
+      return result ?? defaultValue as T;
     } on PlatformException catch (e) {
       throw FlutterAppIntentsException(
-        'Failed to register intent: ${e.message}',
+        '$errorMessage: ${e.message}',
         e.code,
       );
     }
+  }
+
+  /// Registers an App Intent with the system
+  static Future<bool> registerIntent(AppIntent intent) async {
+    return _invokePlatformMethod<bool>(
+      'registerIntent',
+      intent.toMap(),
+      errorMessage: 'Failed to register intent',
+      defaultValue: false,
+    );
   }
 
   /// Registers multiple App Intents with the system
   static Future<bool> registerIntents(List<AppIntent> intents) async {
-    if (!_isIOS) {
-      throw UnsupportedError('App Intents are only supported on iOS');
-    }
-
-    try {
-      final result = await _channel.invokeMethod<bool>('registerIntents', {
+    return _invokePlatformMethod<bool>(
+      'registerIntents',
+      {
         'intents': intents.map((intent) => intent.toMap()).toList(),
-      });
-
-      return result ?? false;
-    } on PlatformException catch (e) {
-      throw FlutterAppIntentsException(
-        'Failed to register intents: ${e.message}',
-        e.code,
-      );
-    }
+      },
+      errorMessage: 'Failed to register intents',
+      defaultValue: false,
+    );
   }
 
   /// Unregisters an App Intent from the system
   static Future<bool> unregisterIntent(String identifier) async {
-    if (!_isIOS) {
-      throw UnsupportedError('App Intents are only supported on iOS');
-    }
-
-    try {
-      final result = await _channel.invokeMethod<bool>('unregisterIntent', {
-        'identifier': identifier,
-      });
-
-      return result ?? false;
-    } on PlatformException catch (e) {
-      throw FlutterAppIntentsException(
-        'Failed to unregister intent: ${e.message}',
-        e.code,
-      );
-    }
+    return _invokePlatformMethod<bool>(
+      'unregisterIntent',
+      {'identifier': identifier},
+      errorMessage: 'Failed to unregister intent',
+      defaultValue: false,
+    );
   }
 
   /// Gets all registered App Intents
@@ -92,14 +88,13 @@ class FlutterAppIntentsService {
         'getRegisteredIntents',
       );
 
-      if (result == null) return [];
-
       return result
-          .map(
-            (intentMap) =>
-                AppIntent.fromMap(Map<String, dynamic>.from(intentMap)),
-          )
-          .toList();
+              ?.map(
+                (intentMap) =>
+                    AppIntent.fromMap(Map<String, dynamic>.from(intentMap)),
+              )
+              .toList() ??
+          [];
     } on PlatformException catch (e) {
       throw FlutterAppIntentsException(
         'Failed to get registered intents: ${e.message}',
@@ -117,58 +112,71 @@ class FlutterAppIntentsService {
   ) {
     _channel.setMethodCallHandler((call) async {
       if (call.method == 'handleIntent') {
-        // Platform channel arguments are dynamic by design, type cast safely
-        final arguments = call.arguments as Map<Object?, Object?>?;
-        if (arguments == null) {
-          return AppIntentResult.failed(
-            error: 'Missing intent arguments',
-          ).toMap();
-        }
-
-        final identifier = arguments['identifier'] as String?;
-        final parametersRaw = arguments['parameters'] as Map<Object?, Object?>?;
-
-        if (identifier == null || parametersRaw == null) {
-          return AppIntentResult.failed(
-            error: 'Invalid intent arguments',
-          ).toMap();
-        }
-
-        final parameters = Map<String, dynamic>.from(parametersRaw);
-
-        try {
-          final result = await handler(identifier, parameters);
-          return result.toMap();
-        } on Object catch (e) {
-          return AppIntentResult.failed(
-            error: 'Intent handler failed: $e',
-          ).toMap();
-        }
+        return _handleIntentCall(call, handler);
       }
-
       return null;
     });
   }
 
-  /// Updates the app shortcuts (for iOS 14+ App Shortcuts)
-  static Future<bool> updateShortcuts() async {
-    if (!_isIOS) {
-      throw UnsupportedError('App Intents are only supported on iOS');
+  /// Handles an intent invocation from the platform channel
+  ///
+  /// Performs type-safe extraction and validation of intent arguments.
+  static Future<Map<String, dynamic>> _handleIntentCall(
+    MethodCall call,
+    Future<AppIntentResult> Function(
+      String identifier,
+      Map<String, dynamic> parameters,
+    ) handler,
+  ) async {
+    // Extract and validate arguments
+    final arguments = call.arguments as Map<Object?, Object?>?;
+    if (arguments == null) {
+      return AppIntentResult.failed(
+        error: 'Missing intent arguments',
+      ).toMap();
     }
 
-    try {
-      final result = await _channel.invokeMethod<bool>('updateShortcuts');
+    final identifier = arguments['identifier'] as String?;
+    final parametersRaw = arguments['parameters'] as Map<Object?, Object?>?;
 
-      return result ?? false;
-    } on PlatformException catch (e) {
-      throw FlutterAppIntentsException(
-        'Failed to update shortcuts: ${e.message}',
-        e.code,
-      );
+    if (identifier == null || parametersRaw == null) {
+      return AppIntentResult.failed(
+        error: 'Invalid intent arguments',
+      ).toMap();
+    }
+
+    // Convert to typed map
+    final parameters = Map<String, dynamic>.from(parametersRaw);
+
+    // Invoke handler with proper error handling
+    try {
+      final result = await handler(identifier, parameters);
+      return result.toMap();
+    } on Object catch (e) {
+      return AppIntentResult.failed(
+        error: 'Intent handler failed: $e',
+      ).toMap();
     }
   }
 
+  /// Updates the app shortcuts (for iOS 14+ App Shortcuts)
+  static Future<bool> updateShortcuts() async {
+    return _invokePlatformMethod<bool>(
+      'updateShortcuts',
+      null,
+      errorMessage: 'Failed to update shortcuts',
+      defaultValue: false,
+    );
+  }
+
   /// Donates an intent to the system (for prediction)
+  ///
+  /// **Deprecated:** Use [donateIntentWithMetadata] instead for better control
+  /// over relevance score, context, and timestamp.
+  @Deprecated(
+    'Use donateIntentWithMetadata instead for better control over metadata. '
+    'This method will be removed in v1.0.0.',
+  )
   static Future<bool> donateIntent(
     String identifier,
     Map<String, dynamic> parameters,

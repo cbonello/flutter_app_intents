@@ -386,7 +386,7 @@ Future<AppIntentResult> handleIncrementIntent(Map<String, dynamic> parameters) a
     final newValue = incrementCounter(amount);
     
     // Donate the intent to help Siri learn
-    await FlutterAppIntentsClient.instance.donateIntent(
+    await FlutterAppIntentsClient.instance.donateIntentWithMetadata(
       'increment_counter',
       parameters,
     );
@@ -616,7 +616,7 @@ The main client class for managing App Intents:
 - `unregisterIntent(String identifier)` - Remove an intent
 - `getRegisteredIntents()` - Get all registered intents
 - `updateShortcuts()` - Refresh app shortcuts
-- `donateIntent(String identifier, parameters)` - Intent donation for Siri learning (iOS-only, silently ignored on Android)
+- `donateIntentWithMetadata(String identifier, parameters, {double relevanceScore, Map<String, dynamic>? context, DateTime? timestamp})` - Intent donation for Siri learning (iOS-only, silently ignored on Android)
 
 ### AppIntent
 
@@ -821,7 +821,7 @@ The plugin provides advanced intent donation capabilities to help Siri learn use
 
 ```dart
 // Donate intent for Siri learning (iOS-only, silently ignored on Android)
-await FlutterAppIntentsClient.instance.donateIntent(
+await FlutterAppIntentsClient.instance.donateIntentWithMetadata(
   'my_intent',
   {'param': 'value'},
 );
@@ -838,7 +838,7 @@ final result = await performAction();
 // Donate if successful
 // No Platform.isIOS check needed - silently ignored on Android
 if (result.isSuccess) {
-  await FlutterAppIntentsClient.instance.donateIntent(
+  await FlutterAppIntentsClient.instance.donateIntentWithMetadata(
     'my_intent',
     parameters,
   );

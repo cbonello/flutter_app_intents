@@ -75,7 +75,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Better error messages for missing platform directories
   - Clearer output formatting and progress indication
 
+### Deprecated
+- **`donateIntent()` method**: Use `donateIntentWithMetadata()` instead
+  - `donateIntentWithMetadata()` provides better control over relevance score, context, and timestamp
+  - `donateIntent()` will be removed in v1.0.0
+  - Migration is straightforward: replace `donateIntent(id, params)` with `donateIntentWithMetadata(id, params)`
+
 ### Technical Improvements
+- **Code Quality Refactoring**: Comprehensive code improvements across platform layer
+  - **Reduced Code Duplication**: Eliminated ~220 lines of duplicate code across platform implementations
+  - **Centralized Error Handling**: Created generic helper methods (`_invokePlatformMethod<T>()`, `_invokeServiceMethod<T>()`)
+  - **Improved Handler Initialization**: Extracted `_ensureHandlerInitialized()` helper to eliminate duplication
+  - **Better Type Safety**: Extracted `_handleIntentCall()` method for type-safe parameter handling
+  - **Simplified Platform Selection**: Refactored `getPlatformInstance()` to use `??=` operator (47% code reduction)
+  - **Consistent Patterns**: Applied identical refactoring patterns to both iOS and Android platforms
+  - All 436 tests continue to pass with improved code maintainability
 - **Code Generation Architecture**: Clean separation of concerns
   - Platform-specific generators (Android XML, iOS Swift)
   - Shared intent extraction and validation

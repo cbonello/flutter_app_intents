@@ -20,7 +20,7 @@ Intent donation helps Siri learn user patterns and provide better predictions. W
 ```dart
 // Donate after successful intent execution
 // (iOS-only feature, silently ignored on Android)
-await FlutterAppIntentsClient.instance.donateIntent(
+await FlutterAppIntentsClient.instance.donateIntentWithMetadata(
   'my_intent',
   {'param': 'value'},
 );
@@ -56,7 +56,7 @@ Future<AppIntentResult> handleIncrementIntent(
 
     // Donate the intent to help Siri learn
     // No Platform.isIOS check needed - silently ignored on Android
-    await FlutterAppIntentsClient.instance.donateIntent(
+    await FlutterAppIntentsClient.instance.donateIntentWithMetadata(
       'increment_counter',
       parameters,
     );
@@ -94,7 +94,7 @@ await client.registerIntent(openProfileIntent, (parameters) async {
   navigateToProfile(userId);
 
   // Donate so Siri learns this pattern (iOS-only, ignored on Android)
-  await FlutterAppIntentsClient.instance.donateIntent(
+  await FlutterAppIntentsClient.instance.donateIntentWithMetadata(
     'open_profile',
     {'userId': userId},
   );
@@ -118,14 +118,14 @@ await client.registerIntent(openProfileIntent, (parameters) async {
 ### Donation returns true but nothing happens (Android)
 
 This is expected behavior:
-- On Android, `donateIntent()` always returns `true` and does nothing (no-op)
+- On Android, `donateIntentWithMetadata()` always returns `true` and does nothing (no-op)
 - Android App Actions don't use donation-based learning like iOS
 - Your app actions will still work perfectly via Google Assistant
 - The silent success allows cross-platform code without platform checks
 
 ### Donation fails on iOS
 
-If `donateIntent()` returns false on iOS:
+If `donateIntentWithMetadata()` returns false on iOS:
 - Verify the intent identifier matches a registered intent
 - Check that parameters are valid for the intent
 - Ensure the iOS device is running iOS 16.0+

@@ -172,7 +172,7 @@ class _NavigationHomePageState extends State<NavigationHomePage> {
       ).pushNamed('/profile', arguments: {'userId': userId});
     }
 
-    await _client.donateIntent('open_profile', parameters);
+    await _client.donateIntentWithMetadata('open_profile', parameters);
 
     return AppIntentResult.successful(
       value: 'Opening profile for user $userId',
@@ -191,7 +191,7 @@ class _NavigationHomePageState extends State<NavigationHomePage> {
       ).pushNamed('/chat', arguments: {'contactName': contactName});
     }
 
-    await _client.donateIntent('open_chat', parameters);
+    await _client.donateIntentWithMetadata('open_chat', parameters);
 
     return AppIntentResult.successful(
       value: 'Opening chat with $contactName',
@@ -208,7 +208,7 @@ class _NavigationHomePageState extends State<NavigationHomePage> {
       Navigator.of(context).pushNamed('/search', arguments: {'query': query});
     }
 
-    await _client.donateIntent('search_content', parameters);
+    await _client.donateIntentWithMetadata('search_content', parameters);
 
     return AppIntentResult.successful(
       value: 'Searching for "$query"',
@@ -223,7 +223,7 @@ class _NavigationHomePageState extends State<NavigationHomePage> {
       Navigator.of(context).pushNamed('/settings');
     }
 
-    await _client.donateIntent('open_settings', parameters);
+    await _client.donateIntentWithMetadata('open_settings', parameters);
 
     return AppIntentResult.successful(
       value: 'Opening settings',

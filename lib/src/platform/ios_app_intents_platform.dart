@@ -29,19 +29,9 @@ class IOSAppIntentsPlatform extends AppIntentsPlatform {
 
   @override
   bool get isSupported {
-    // Return cached value if available
-    if (_isSupportedCache != null) {
-      return _isSupportedCache!;
-    }
-
-    if (!Platform.isIOS) {
-      _isSupportedCache = false;
-      return false;
-    }
-
-    // Check will be performed asynchronously on first method call
-    // For now, assume supported if on iOS
-    return true;
+    // Return cached value if available, otherwise assume iOS is supported
+    // (actual iOS version check happens asynchronously on first method call)
+    return _isSupportedCache ?? Platform.isIOS;
   }
 
   /// Check if the platform is supported (async version)
@@ -80,17 +70,12 @@ class IOSAppIntentsPlatform extends AppIntentsPlatform {
     _handlers[intent.identifier] = handler;
 
     // Set up global handler if first registration
-    if (!_handlerInitialized) {
-      service.FlutterAppIntentsService.setIntentHandler(_handleIntent);
-      _handlerInitialized = true;
-    }
+    _ensureHandlerInitialized();
 
     // Register with iOS system
-    try {
-      return await service.FlutterAppIntentsService.registerIntent(intent);
-    } on service.FlutterAppIntentsException catch (e) {
-      throw FlutterAppIntentsException(e.message, e.code);
-    }
+    return _invokeServiceMethod(
+      () => service.FlutterAppIntentsService.registerIntent(intent),
+    );
   }
 
   @override
@@ -104,17 +89,12 @@ class IOSAppIntentsPlatform extends AppIntentsPlatform {
     _handlers.addAll(handlers);
 
     // Set up global handler if first registration
-    if (!_handlerInitialized) {
-      service.FlutterAppIntentsService.setIntentHandler(_handleIntent);
-      _handlerInitialized = true;
-    }
+    _ensureHandlerInitialized();
 
     // Register with iOS system
-    try {
-      return await service.FlutterAppIntentsService.registerIntents(intents);
-    } on service.FlutterAppIntentsException catch (e) {
-      throw FlutterAppIntentsException(e.message, e.code);
-    }
+    return _invokeServiceMethod(
+      () => service.FlutterAppIntentsService.registerIntents(intents),
+    );
   }
 
   @override
@@ -123,35 +103,27 @@ class IOSAppIntentsPlatform extends AppIntentsPlatform {
 
     _handlers.remove(identifier);
 
-    try {
-      return await service.FlutterAppIntentsService.unregisterIntent(
-        identifier,
-      );
-    } on service.FlutterAppIntentsException catch (e) {
-      throw FlutterAppIntentsException(e.message, e.code);
-    }
+    return _invokeServiceMethod(
+      () => service.FlutterAppIntentsService.unregisterIntent(identifier),
+    );
   }
 
   @override
   Future<List<AppIntent>> getRegisteredIntents() async {
     await _ensureSupported();
 
-    try {
-      return await service.FlutterAppIntentsService.getRegisteredIntents();
-    } on service.FlutterAppIntentsException catch (e) {
-      throw FlutterAppIntentsException(e.message, e.code);
-    }
+    return _invokeServiceMethod(
+      service.FlutterAppIntentsService.getRegisteredIntents,
+    );
   }
 
   @override
   Future<bool> updateShortcuts() async {
     await _ensureSupported();
 
-    try {
-      return await service.FlutterAppIntentsService.updateShortcuts();
-    } on service.FlutterAppIntentsException catch (e) {
-      throw FlutterAppIntentsException(e.message, e.code);
-    }
+    return _invokeServiceMethod(
+      service.FlutterAppIntentsService.updateShortcuts,
+    );
   }
 
   @override
@@ -162,15 +134,13 @@ class IOSAppIntentsPlatform extends AppIntentsPlatform {
   }) async {
     await _ensureSupported();
 
-    try {
-      return await service.FlutterAppIntentsService.donateIntentWithMetadata(
+    return _invokeServiceMethod(
+      () => service.FlutterAppIntentsService.donateIntentWithMetadata(
         identifier,
         parameters,
         relevanceScore: relevanceScore,
-      );
-    } on service.FlutterAppIntentsException catch (e) {
-      throw FlutterAppIntentsException(e.message, e.code);
-    }
+      ),
+    );
   }
 
   @override
@@ -179,14 +149,10 @@ class IOSAppIntentsPlatform extends AppIntentsPlatform {
   ) async {
     await _ensureSupported();
 
-    try {
-      // Both platform and service now use the same IntentDonation model
-      return await service.FlutterAppIntentsService.donateIntentBatch(
-        donations,
-      );
-    } on service.FlutterAppIntentsException catch (e) {
-      throw FlutterAppIntentsException(e.message, e.code);
-    }
+    // Both platform and service now use the same IntentDonation model
+    return _invokeServiceMethod(
+      () => service.FlutterAppIntentsService.donateIntentBatch(donations),
+    );
   }
 
   /// Ensures that the platform is supported before proceeding.
@@ -198,6 +164,29 @@ class IOSAppIntentsPlatform extends AppIntentsPlatform {
       throw UnsupportedError(
         'iOS App Intents require iOS 16 or higher$versionInfo',
       );
+    }
+  }
+
+  /// Initializes the intent handler if not already initialized.
+  /// This sets up the handler to receive intent invocations from iOS.
+  void _ensureHandlerInitialized() {
+    if (!_handlerInitialized) {
+      service.FlutterAppIntentsService.setIntentHandler(_handleIntent);
+      _handlerInitialized = true;
+    }
+  }
+
+  /// Invokes a service method with standardized error handling.
+  ///
+  /// Wraps FlutterAppIntentsException from the service layer and re-throws
+  /// it as a platform-level exception with the same message and code.
+  Future<T> _invokeServiceMethod<T>(
+    Future<T> Function() serviceCall,
+  ) async {
+    try {
+      return await serviceCall();
+    } on service.FlutterAppIntentsException catch (e) {
+      throw FlutterAppIntentsException(e.message, e.code);
     }
   }
 
