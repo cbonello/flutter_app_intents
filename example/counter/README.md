@@ -50,6 +50,17 @@ This example uses the **hybrid approach** with:
 - Flutter 3.8.1+
 - Android Studio or VS Code
 
+### Supported Platforms
+
+This example is fully functional on **iOS** and **Android** with complete App Intents/App Actions support including voice commands.
+
+The app will also compile and run on **macOS**, **Windows**, and **Linux**, but with limited functionality:
+- ✅ **UI works**: You can use the floating action button to increment the counter manually
+- ❌ **Voice commands disabled**: App Intents/App Actions are not available on these platforms
+- ℹ️ **Status message**: The app will display `"App Intents disabled - unsupported platform (macOS)"` (or the respective platform name)
+
+This allows you to test the UI and business logic on desktop platforms during development, even though voice assistant integration won't be available.
+
 ### Run the Example
 
 ```bash

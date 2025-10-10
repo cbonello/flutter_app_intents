@@ -35,17 +35,28 @@ This example uses the **hybrid approach** with:
 
 ## Quick Start
 
-## Screenshots
-
-| App Interface | iOS Shortcuts |
-|---------------|---------------|
-| <img src="screenshots/app_interface.png" alt="Counter App Interface" width="250"> | <img src="screenshots/ios_shortcuts.png" alt="iOS Shortcuts" width="250"> |
-| Navigation app | iOS Shortcuts app |
-
 ### Prerequisites
+
+**iOS:**
 - iOS 16.0+ device or simulator
 - Flutter 3.8.1+
 - Xcode 14.0+
+
+**Android:**
+- Android 7.1+ (API 25+) device or emulator
+- Flutter 3.8.1+
+- Android Studio or VS Code
+
+### Supported Platforms
+
+This example is fully functional on **iOS** and **Android** with complete App Intents/App Actions support including voice commands.
+
+The app will also compile and run on **macOS**, **Windows**, and **Linux**, but with limited functionality:
+- ✅ **UI works**: You can use the manual query buttons to test weather data retrieval
+- ❌ **Voice commands disabled**: App Intents/App Actions are not available on these platforms
+- ℹ️ **Status message**: The app will display `"App Intents disabled - unsupported platform (macOS)"` (or the respective platform name)
+
+This allows you to test the UI and weather query logic on desktop platforms during development, even though voice assistant integration won't be available.
 
 ### Run the Example
 
