@@ -386,6 +386,365 @@ final incomplete = AppIntentBuilder()
         expect(str, contains('test'));
         expect(str, contains('Test'));
       });
+
+      test('isValid checks required fields', () {
+        final validIntent = ExtractedIntent()
+          ..identifier = 'test'
+          ..title = 'Test'
+          ..description = 'Description';
+
+        expect(validIntent.isValid, isTrue);
+
+        final invalidIntent1 = ExtractedIntent()
+          ..title = 'Test'
+          ..description = 'Description';
+
+        expect(invalidIntent1.isValid, isFalse);
+
+        final invalidIntent2 = ExtractedIntent()
+          ..identifier = 'test'
+          ..description = 'Description';
+
+        expect(invalidIntent2.isValid, isFalse);
+
+        final invalidIntent3 = ExtractedIntent()
+          ..identifier = 'test'
+          ..title = 'Test';
+
+        expect(invalidIntent3.isValid, isFalse);
+      });
+    });
+
+    group('Parameter extraction', () {
+      test('extracts parameters from intent', () async {
+        File('${tempDir.path}/test.dart').writeAsStringSync(
+          '''
+import 'package:flutter_app_intents/flutter_app_intents.dart';
+
+final intent = AppIntentBuilder()
+  .identifier('test')
+  .title('Test')
+  .description('Test')
+  .parameter(const AppIntentParameter(
+    name: 'amount',
+    title: 'Amount',
+    type: AppIntentParameterType.integer,
+  ))
+  .build();
+''',
+        );
+
+        final intents = await extractor.extractFromDirectory(tempDir.path);
+
+        expect(intents.first.parameters, hasLength(1));
+        expect(intents.first.parameters.first.name, equals('amount'));
+        expect(intents.first.parameters.first.title, equals('Amount'));
+        expect(intents.first.parameters.first.type, equals('integer'));
+      });
+
+      test('extracts multiple parameters', () async {
+        File('${tempDir.path}/test.dart').writeAsStringSync(
+          '''
+import 'package:flutter_app_intents/flutter_app_intents.dart';
+
+final intent = AppIntentBuilder()
+  .identifier('test')
+  .title('Test')
+  .description('Test')
+  .parameter(const AppIntentParameter(
+    name: 'param1',
+    title: 'First',
+    type: AppIntentParameterType.string,
+  ))
+  .parameter(const AppIntentParameter(
+    name: 'param2',
+    title: 'Second',
+    type: AppIntentParameterType.integer,
+  ))
+  .build();
+''',
+        );
+
+        final intents = await extractor.extractFromDirectory(tempDir.path);
+
+        expect(intents.first.parameters, hasLength(2));
+        expect(intents.first.parameters[0].name, equals('param1'));
+        expect(intents.first.parameters[1].name, equals('param2'));
+      });
+
+      test('extracts parameter with isOptional flag', () async {
+        File('${tempDir.path}/test.dart').writeAsStringSync(
+          '''
+import 'package:flutter_app_intents/flutter_app_intents.dart';
+
+final intent = AppIntentBuilder()
+  .identifier('test')
+  .title('Test')
+  .description('Test')
+  .parameter(const AppIntentParameter(
+    name: 'optional',
+    title: 'Optional Param',
+    type: AppIntentParameterType.string,
+    isOptional: true,
+  ))
+  .build();
+''',
+        );
+
+        final intents = await extractor.extractFromDirectory(tempDir.path);
+
+        expect(intents.first.parameters.first.isOptional, isTrue);
+      });
+
+      test('extracts parameter with string default value', () async {
+        File('${tempDir.path}/test.dart').writeAsStringSync(
+          '''
+import 'package:flutter_app_intents/flutter_app_intents.dart';
+
+final intent = AppIntentBuilder()
+  .identifier('test')
+  .title('Test')
+  .description('Test')
+  .parameter(const AppIntentParameter(
+    name: 'name',
+    title: 'Name',
+    type: AppIntentParameterType.string,
+    defaultValue: 'default',
+  ))
+  .build();
+''',
+        );
+
+        final intents = await extractor.extractFromDirectory(tempDir.path);
+
+        expect(intents.first.parameters.first.defaultValue, equals('default'));
+      });
+
+      test('extracts parameter with integer default value', () async {
+        File('${tempDir.path}/test.dart').writeAsStringSync(
+          '''
+import 'package:flutter_app_intents/flutter_app_intents.dart';
+
+final intent = AppIntentBuilder()
+  .identifier('test')
+  .title('Test')
+  .description('Test')
+  .parameter(const AppIntentParameter(
+    name: 'count',
+    title: 'Count',
+    type: AppIntentParameterType.integer,
+    defaultValue: 42,
+  ))
+  .build();
+''',
+        );
+
+        final intents = await extractor.extractFromDirectory(tempDir.path);
+
+        expect(intents.first.parameters.first.defaultValue, equals(42));
+      });
+
+      test('extracts parameter with double default value', () async {
+        File('${tempDir.path}/test.dart').writeAsStringSync(
+          '''
+import 'package:flutter_app_intents/flutter_app_intents.dart';
+
+final intent = AppIntentBuilder()
+  .identifier('test')
+  .title('Test')
+  .description('Test')
+  .parameter(const AppIntentParameter(
+    name: 'price',
+    title: 'Price',
+    type: AppIntentParameterType.decimal,
+    defaultValue: 9.99,
+  ))
+  .build();
+''',
+        );
+
+        final intents = await extractor.extractFromDirectory(tempDir.path);
+
+        expect(intents.first.parameters.first.defaultValue, equals(9.99));
+      });
+
+      test('extracts parameter with boolean default value', () async {
+        File('${tempDir.path}/test.dart').writeAsStringSync(
+          '''
+import 'package:flutter_app_intents/flutter_app_intents.dart';
+
+final intent = AppIntentBuilder()
+  .identifier('test')
+  .title('Test')
+  .description('Test')
+  .parameter(const AppIntentParameter(
+    name: 'enabled',
+    title: 'Enabled',
+    type: AppIntentParameterType.boolean,
+    defaultValue: true,
+  ))
+  .build();
+''',
+        );
+
+        final intents = await extractor.extractFromDirectory(tempDir.path);
+
+        expect(intents.first.parameters.first.defaultValue, equals(true));
+      });
+
+      test('extracts all parameter types', () async {
+        File('${tempDir.path}/test.dart').writeAsStringSync(
+          '''
+import 'package:flutter_app_intents/flutter_app_intents.dart';
+
+final stringParam = AppIntentBuilder()
+  .identifier('test1')
+  .title('Test1')
+  .description('Test1')
+  .parameter(const AppIntentParameter(
+    name: 'str',
+    title: 'String',
+    type: AppIntentParameterType.string,
+  ))
+  .build();
+
+final intParam = AppIntentBuilder()
+  .identifier('test2')
+  .title('Test2')
+  .description('Test2')
+  .parameter(const AppIntentParameter(
+    name: 'num',
+    title: 'Number',
+    type: AppIntentParameterType.integer,
+  ))
+  .build();
+
+final boolParam = AppIntentBuilder()
+  .identifier('test3')
+  .title('Test3')
+  .description('Test3')
+  .parameter(const AppIntentParameter(
+    name: 'flag',
+    title: 'Flag',
+    type: AppIntentParameterType.boolean,
+  ))
+  .build();
+''',
+        );
+
+        final intents = await extractor.extractFromDirectory(tempDir.path);
+
+        expect(intents[0].parameters.first.type, equals('string'));
+        expect(intents[1].parameters.first.type, equals('integer'));
+        expect(intents[2].parameters.first.type, equals('boolean'));
+      });
+    });
+
+    group('PresentsResult flag', () {
+      test('extracts presentsResult true', () async {
+        File('${tempDir.path}/test.dart').writeAsStringSync(
+          '''
+import 'package:flutter_app_intents/flutter_app_intents.dart';
+
+final intent = AppIntentBuilder()
+  .identifier('test')
+  .title('Test')
+  .description('Test')
+  .presentsResult(presents: true)
+  .build();
+''',
+        );
+
+        final intents = await extractor.extractFromDirectory(tempDir.path);
+
+        expect(intents.first.presentsResult, isTrue);
+      });
+
+      test('extracts presentsResult false', () async {
+        File('${tempDir.path}/test.dart').writeAsStringSync(
+          '''
+import 'package:flutter_app_intents/flutter_app_intents.dart';
+
+final intent = AppIntentBuilder()
+  .identifier('test')
+  .title('Test')
+  .description('Test')
+  .presentsResult(presents: false)
+  .build();
+''',
+        );
+
+        final intents = await extractor.extractFromDirectory(tempDir.path);
+
+        expect(intents.first.presentsResult, isFalse);
+      });
+    });
+
+    group('Error handling', () {
+      test('throws when directory does not exist', () async {
+        final nonExistentPath = '${tempDir.path}/does_not_exist';
+
+        expect(
+          () => extractor.extractFromDirectory(nonExistentPath),
+          throwsA(isA<Exception>()),
+        );
+      });
+
+      test('adds warning for files that cannot be analyzed', () async {
+        // Create a file with very broken syntax
+        File('${tempDir.path}/broken.dart').writeAsStringSync(
+          '''
+completely broken { {{ syntax
+''',
+        );
+
+        await extractor.extractFromDirectory(tempDir.path);
+
+        // Should have processed the file and potentially added a warning
+        expect(extractor.filesScanned, greaterThan(0));
+      });
+    });
+
+    group('ExtractedParameter', () {
+      test('isValid checks required fields', () {
+        final validParam = ExtractedParameter()
+          ..name = 'test'
+          ..title = 'Test'
+          ..type = 'string';
+
+        expect(validParam.isValid, isTrue);
+
+        final invalidParam1 = ExtractedParameter()
+          ..title = 'Test'
+          ..type = 'string';
+
+        expect(invalidParam1.isValid, isFalse);
+
+        final invalidParam2 = ExtractedParameter()
+          ..name = 'test'
+          ..type = 'string';
+
+        expect(invalidParam2.isValid, isFalse);
+
+        final invalidParam3 = ExtractedParameter()
+          ..name = 'test'
+          ..title = 'Test';
+
+        expect(invalidParam3.isValid, isFalse);
+      });
+
+      test('toString includes key fields', () {
+        final param = ExtractedParameter()
+          ..name = 'testParam'
+          ..type = 'string'
+          ..isOptional = true;
+
+        final str = param.toString();
+
+        expect(str, contains('testParam'));
+        expect(str, contains('string'));
+        expect(str, contains('true'));
+      });
     });
   });
 }

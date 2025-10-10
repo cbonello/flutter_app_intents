@@ -257,6 +257,9 @@ class _IntentVisitor extends RecursiveAstVisitor<void> {
       current = current.target;
     }
 
+    // Reverse parameters because we walked the chain backward
+    intent.parameters = intent.parameters.reversed.toList();
+
     return intent.isValid ? intent : null;
   }
 
@@ -283,7 +286,13 @@ class _IntentVisitor extends RecursiveAstVisitor<void> {
           expectedPrefix: 'IntentCategory',
         );
       case 'presentsResult':
-        data.presentsResult = _extractBooleanLiteral(args.first);
+        // Handle named parameter: presentsResult(presents: true)
+        if (args.first is NamedExpression) {
+          final namedArg = args.first as NamedExpression;
+          data.presentsResult = _extractBooleanLiteral(namedArg.expression);
+        } else {
+          data.presentsResult = _extractBooleanLiteral(args.first);
+        }
       case 'parameter':
         final param = _extractParameter(args.first);
         if (param != null) {
