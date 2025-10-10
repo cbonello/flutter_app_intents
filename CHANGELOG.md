@@ -43,13 +43,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Global installation support with `dart pub global activate flutter_app_intents`
   - Renamed CLI executable to `app_intents_cli` for better discoverability
   - Run with `dart run flutter_app_intents:app_intents_cli` or `app_intents_cli` (when installed globally)
-- **Comprehensive Test Coverage**: 221 total passing tests
+- **Comprehensive Test Coverage**: 456 total passing tests
   - 14 new tests for iOS generator (`app_shortcuts_provider_generator_test.dart`)
   - 6 new iOS integration tests in existing integration test suite
   - Updated CLI runner tests to cover both Android and iOS generation
   - Tests for SF Symbol mapping across all 20+ categories
   - Tests for 10-intent limit enforcement
   - Tests for struct name generation and phrase creation
+  - Updated platform detection tests for graceful degradation on unsupported platforms
 
 ### Enhanced
 - **Documentation**: Comprehensive updates across all documentation
@@ -59,6 +60,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Added iOS-specific generation instructions and Xcode integration steps
   - Enhanced "Simple Example" section with generator workflow
   - Clear benefits and use case guidance for code generation
+  - **Platform Support Documentation**: Added comprehensive platform support sections
+    - Main README now documents iOS, Android, and desktop platform behavior
+    - Website documentation (intro.md, getting-started.md, examples.md) includes platform support
+    - Troubleshooting guide updated with unsupported platform guidance
+    - All three example READMEs include "Supported Platforms" sections
+  - **Desktop Platform Guidance**: Clear documentation for macOS/Windows/Linux behavior
+    - UI and business logic work on all platforms
+    - Voice commands available only on iOS and Android
+    - Apps display platform-aware status messages
+    - Development workflow guidance for testing on desktop platforms
 - **Developer Experience**: Streamlined iOS App Intents integration
   - No more manual Swift coding for most use cases
   - Single command generates all platform code from Dart
@@ -89,7 +100,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - **Better Type Safety**: Extracted `_handleIntentCall()` method for type-safe parameter handling
   - **Simplified Platform Selection**: Refactored `getPlatformInstance()` to use `??=` operator (47% code reduction)
   - **Consistent Patterns**: Applied identical refactoring patterns to both iOS and Android platforms
-  - All 436 tests continue to pass with improved code maintainability
+  - All 456 tests continue to pass with improved code maintainability
+- **Platform-Aware Status Messages**: Enhanced user experience on all platforms
+  - Counter, navigation, and weather examples show platform-specific status messages
+  - iOS displays: "Intents registered successfully (iOS)"
+  - Android displays: "Intent handlers ready (Android)"
+  - Other platforms display: "App Intents disabled - unsupported platform (macOS/Windows/Linux)"
+  - Graceful degradation ensures UI and business logic work on all platforms
 - **Code Generation Architecture**: Clean separation of concerns
   - Platform-specific generators (Android XML, iOS Swift)
   - Shared intent extraction and validation
