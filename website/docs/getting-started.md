@@ -43,6 +43,21 @@ dependencies: [
 ### General
 - Flutter 3.8.1 or later
 
+## Platform Support
+
+This package provides full voice assistant integration for **iOS** and **Android**:
+
+- ✅ **iOS 16.0+**: Complete App Intents support with Siri voice commands and Shortcuts app integration
+- ✅ **Android API 23+**: Full App Actions support with Google Assistant voice commands
+
+The package also compiles and runs on **macOS**, **Windows**, and **Linux**, with graceful degradation:
+- ✅ **UI functionality**: All user interface elements work normally
+- ✅ **Business logic**: Your app's core functionality remains intact
+- ❌ **Voice commands**: App Intents/App Actions are disabled (not supported by these platforms)
+- ℹ️ **Status indication**: Apps display `"App Intents disabled - unsupported platform (macOS)"` (or the respective platform name)
+
+**Use case for desktop platforms**: This allows developers to test UI and business logic on desktop platforms during development, even though voice assistant integration won't be available. For example, you can develop and debug your app's navigation logic on macOS before testing the full voice command integration on iOS.
+
 ## Architecture Overview
 
 This plugin uses a **hybrid approach** combining:

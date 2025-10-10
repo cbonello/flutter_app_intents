@@ -6,11 +6,22 @@ sidebar_position: 7
 
 ## Common Issues
 
+### Platform Support Issues
+
+#### "App Intents disabled - unsupported platform" Message
+
+This message appears when running on **macOS**, **Windows**, or **Linux**. The plugin provides full voice assistant support only on:
+- ✅ **iOS 16.0+**: App Intents with Siri
+- ✅ **Android API 23+**: App Actions with Google Assistant
+
+**What works on unsupported platforms:**
+- ✅ UI functionality (all buttons and interface elements)
+- ✅ Business logic (your app's core functionality)
+- ❌ Voice commands (App Intents/App Actions disabled)
+
+**Use case**: This allows testing UI and business logic on desktop platforms during development. For voice command testing, use iOS or Android devices.
+
 ### iOS Issues
-
-#### "App Intents are only supported on iOS"
-
-This plugin only works on iOS 16.0+. Make sure you're testing on a compatible device or simulator.
 
 #### Intents not appearing in Siri/Shortcuts
 

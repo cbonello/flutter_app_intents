@@ -22,6 +22,21 @@ A Flutter plugin for integrating Apple App Intents with your iOS applications. T
 - **Error Handling**: Comprehensive exception management for robust integrations.
 - **Detailed Documentation**: Includes extensive documentation and example apps.
 
+## Platform Support
+
+This package provides full voice assistant integration for **iOS** and **Android**:
+
+- ✅ **iOS 16.0+**: Complete App Intents support with Siri voice commands and Shortcuts app integration
+- ✅ **Android API 23+**: Full App Actions support with Google Assistant voice commands
+
+The package also compiles and runs on **macOS**, **Windows**, and **Linux**, with graceful degradation:
+- ✅ **UI functionality**: All user interface elements work normally
+- ✅ **Business logic**: Your app's core functionality remains intact
+- ❌ **Voice commands**: App Intents/App Actions are disabled (not supported by these platforms)
+- ℹ️ **Status indication**: Apps display a clear message indicating voice features are unavailable
+
+This allows developers to test UI and business logic on desktop platforms during development, even though voice assistant integration won't be available.
+
 ## Getting Started
 
 ### Flutter Plugin Installation

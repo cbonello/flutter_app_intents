@@ -42,6 +42,21 @@ A Flutter plugin for integrating App Intents on iOS and Android. Enable your Flu
 ### Flutter
 - Flutter 3.8.1 or later
 
+## Platform Support
+
+This plugin provides full voice assistant integration for **iOS** and **Android**:
+
+- ✅ **iOS 16.0+**: Complete App Intents support with Siri voice commands, Shortcuts app integration, and Spotlight search
+- ✅ **Android API 23+**: Full App Actions support with Google Assistant voice commands and app launcher shortcuts
+
+The plugin also compiles and runs on **macOS**, **Windows**, and **Linux**, with graceful degradation:
+- ✅ **UI functionality**: All user interface elements work normally
+- ✅ **Business logic**: Your app's core functionality remains intact
+- ❌ **Voice commands**: App Intents/App Actions are disabled (not supported by these platforms)
+- ℹ️ **Status indication**: Apps display `"App Intents disabled - unsupported platform (macOS)"` (or the respective platform name)
+
+**Use case for desktop platforms**: This allows developers to test UI and business logic on desktop platforms during development, even though voice assistant integration won't be available. For example, you can develop and debug your app's navigation logic on macOS before testing the full voice command integration on iOS.
+
 ## Installation
 
 Add this to your package's `pubspec.yaml` file:
@@ -1416,9 +1431,18 @@ iOS has partial i18n support:
 
 ## Troubleshooting
 
-### "App Intents are only supported on iOS"
+### "App Intents disabled - unsupported platform" Message
 
-This plugin only works on iOS 16.0+. Make sure you're testing on a compatible device or simulator.
+This message appears when running on **macOS**, **Windows**, or **Linux**. The plugin provides full voice assistant support only on:
+- ✅ **iOS 16.0+**: App Intents with Siri and Shortcuts
+- ✅ **Android API 23+**: App Actions with Google Assistant
+
+**What works on unsupported platforms:**
+- ✅ UI functionality (all buttons and interface elements)
+- ✅ Business logic (your app's core functionality)
+- ❌ Voice commands (App Intents/App Actions disabled)
+
+**Use case**: This allows testing UI and business logic on desktop platforms during development. For voice command testing, use iOS or Android devices.
 
 ### Intents not appearing in Siri/Shortcuts
 

@@ -165,6 +165,17 @@ dart run flutter_app_intents:app_intents_cli
 **General:**
 - Flutter 3.8.1 or later
 
+### Platform Support
+
+All three examples (Counter, Navigation, Weather) are fully functional on **iOS** and **Android** with complete voice assistant integration.
+
+The examples also compile and run on **macOS**, **Windows**, and **Linux**, but with limited functionality:
+- ✅ **UI works**: You can use manual buttons to test all functionality
+- ❌ **Voice commands disabled**: App Intents/App Actions are not available on these platforms
+- ℹ️ **Status message**: Each example displays `"App Intents disabled - unsupported platform (macOS)"` (or the respective platform name)
+
+**Development tip**: Use desktop platforms to quickly iterate on UI and business logic, then test voice command integration on iOS/Android devices.
+
 ### Running the Examples
 
 **Counter Example (Action Intents):**
