@@ -158,7 +158,8 @@ class _MyHomePageState extends State<MyHomePage> {
           .description('Returns the current counter value')
           .category(IntentCategory.general)
           .eligibleForSearch(eligible: true)
-          .presentsResult(presents: true) // Query intent - show result in dialog
+          .presentsResult(
+              presents: true) // Query intent - show result in dialog
           .build();
 
       // Register all intents with their corresponding handlers
@@ -193,7 +194,10 @@ class _MyHomePageState extends State<MyHomePage> {
       setState(() {
         _status = Platform.isIOS
             ? 'Intents registered successfully (iOS)'
-            : 'Intent handlers ready (Android)';
+            : Platform.isAndroid
+                ? 'Intent handlers ready (Android)'
+                : 'App Intents disabled - unsupported platform '
+                    '(${Platform.operatingSystem})';
       });
     } on Object catch (e) {
       // Handle and display any setup errors

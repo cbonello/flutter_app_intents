@@ -194,8 +194,12 @@ void main() {
           expect(find.textContaining('Android'), findsOneWidget);
         } else {
           // On other platforms (like macOS during testing),
-          // shows Android message as fallback
-          expect(find.textContaining('Android'), findsOneWidget);
+          // shows disabled message with platform name
+          expect(find.textContaining('disabled'), findsOneWidget);
+          expect(
+            find.textContaining('unsupported platform'),
+            findsOneWidget,
+          );
         }
       });
 

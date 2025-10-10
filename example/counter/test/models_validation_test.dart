@@ -181,8 +181,11 @@ void main() {
 
         // Intent donation silently succeeds on all platforms for compatibility
         // This allows cross-platform code without platform checks
-        final donationResult =
-            await FlutterAppIntentsService.donateIntent('test', {});
+        // ignore: deprecated_member_use
+        final donationResult = await FlutterAppIntentsService.donateIntent(
+          'test',
+          {},
+        );
         expect(donationResult, isTrue);
 
         // Same behavior for donateIntentWithMetadata

@@ -1,5 +1,9 @@
 # Flutter App Intents
 
+[![pub version](https://img.shields.io/pub/v/flutter_app_intents.svg)](https://pub.dev/packages/flutter_app_intents)
+[![license](https://img.shields.io/badge/license-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+[![documentation](https://img.shields.io/badge/documentation-brightgreen.svg)](https://cbonello.github.io/flutter_app_intents/)
+
 <p align="center">
   <img src="assets/logo.png" alt="Flutter App Intents Logo" width="200" height="200">
 </p>

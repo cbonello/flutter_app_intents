@@ -166,21 +166,24 @@ void main() {
           );
 
           // Test valid relevance scores (silently succeeds on non-iOS)
-          final result1 = await FlutterAppIntentsService.donateIntentWithMetadata(
+          final result1 =
+              await FlutterAppIntentsService.donateIntentWithMetadata(
             'test_intent',
             {},
             relevanceScore: 0,
           );
           expect(result1, isTrue);
 
-          final result2 = await FlutterAppIntentsService.donateIntentWithMetadata(
+          final result2 =
+              await FlutterAppIntentsService.donateIntentWithMetadata(
             'test_intent',
             {},
             // relevanceScore: 1,
           );
           expect(result2, isTrue);
 
-          final result3 = await FlutterAppIntentsService.donateIntentWithMetadata(
+          final result3 =
+              await FlutterAppIntentsService.donateIntentWithMetadata(
             'test_intent',
             {},
             relevanceScore: 0.5,
@@ -222,7 +225,8 @@ void main() {
         ];
 
         // Silently succeeds on non-iOS platforms
-        final result = await FlutterAppIntentsService.donateIntentBatch(donations);
+        final result =
+            await FlutterAppIntentsService.donateIntentBatch(donations);
         expect(result, isTrue);
       });
     });
@@ -358,6 +362,7 @@ void main() {
     group('Integration with Existing APIs', () {
       test('legacy donateIntent silently succeeds on non-iOS', () async {
         // Silently succeeds (no-op) on non-iOS
+        // ignore: deprecated_member_use
         final result = await FlutterAppIntentsService.donateIntent(
           'legacy_intent',
           {},
@@ -367,7 +372,11 @@ void main() {
 
       test('enhanced donation has same behavior as legacy', () async {
         // Both should silently succeed (no-op) on non-iOS
-        final result1 = await FlutterAppIntentsService.donateIntent('intent', {});
+        // ignore: deprecated_member_use
+        final result1 = await FlutterAppIntentsService.donateIntent(
+          'intent',
+          {},
+        );
         expect(result1, isTrue);
 
         final result2 = await FlutterAppIntentsService.donateIntentWithMetadata(

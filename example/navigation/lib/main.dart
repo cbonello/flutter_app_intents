@@ -152,7 +152,10 @@ class _NavigationHomePageState extends State<NavigationHomePage> {
       setState(() {
         _status = Platform.isIOS
             ? 'Navigation intents registered successfully (iOS)'
-            : 'Intent handlers ready (Android)';
+            : Platform.isAndroid
+            ? 'Intent handlers ready (Android)'
+            : 'App Intents disabled - unsupported platform '
+                  '(${Platform.operatingSystem})';
       });
     } catch (e) {
       setState(() {
