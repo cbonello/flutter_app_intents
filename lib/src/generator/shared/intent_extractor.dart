@@ -4,10 +4,15 @@ import 'package:analyzer/dart/analysis/analysis_context_collection.dart';
 import 'package:analyzer/dart/analysis/results.dart';
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/ast/visitor.dart';
+import 'package:analyzer/diagnostic/diagnostic.dart';
 import 'package:flutter_app_intents/src/models/intent_category.dart';
 import 'package:path/path.dart' as p;
 
 /// Extracts intent definitions from Dart code using AST analysis.
+///
+/// Scans `.dart` files for `AppIntentBuilder` usage and extracts all
+/// configured fields: identifier, title, description, category,
+/// presentsResult, parameters, widgetLoadingText, and widgetDescription.
 ///
 /// Supports two patterns:
 /// 1. Method chaining: `AppIntentBuilder().identifier('x').build()`
@@ -66,6 +71,16 @@ class IntentExtractor {
         if (result is! ResolvedUnitResult) {
           warnings.add('Could not analyze file: ${file.path}');
           continue;
+        }
+
+        // Warn about serious analysis errors (syntax errors, etc.)
+        final severeErrors = result.errors.where(
+          (e) => e.severity == Severity.error,
+        );
+        for (final error in severeErrors) {
+          warnings.add(
+            '${file.path}:${error.offset}: ${error.message}',
+          );
         }
 
         // Extract intents from this file
@@ -151,6 +166,8 @@ abstract class _IntentDataContainer {
   String? description;
   String? category;
   bool? presentsResult;
+  String? widgetLoadingText;
+  String? widgetDescription;
   List<ExtractedParameter> parameters = [];
 }
 
@@ -158,9 +175,19 @@ abstract class _IntentDataContainer {
 class _IntentVisitor extends RecursiveAstVisitor<void> {
   final List<ExtractedIntent> intents = [];
 
-  // Track AppIntentBuilder instances and their configurations
-  // Key: variable name, Value: builder configuration
-  final Map<String, _BuilderConfig> _builderConfigs = {};
+  // Stack of scopes for tracking builder variables. Each function/method body
+  // gets its own scope so that same-named variables in different functions
+  // don't collide.
+  final List<Map<String, _BuilderConfig>> _scopeStack = [{}];
+
+  Map<String, _BuilderConfig> get _builderConfigs => _scopeStack.last;
+
+  @override
+  void visitBlock(Block node) {
+    _scopeStack.add({});
+    super.visitBlock(node);
+    _scopeStack.removeLast();
+  }
 
   @override
   void visitVariableDeclaration(VariableDeclaration node) {
@@ -187,34 +214,6 @@ class _IntentVisitor extends RecursiveAstVisitor<void> {
   }
 
   @override
-  void visitExpressionStatement(ExpressionStatement node) {
-    // Handle standalone method invocations (Pattern 2)
-    if (node.expression is MethodInvocation) {
-      final methodCall = node.expression as MethodInvocation;
-      final target = methodCall.target;
-
-      // Track method calls on builder variables
-      if (target is SimpleIdentifier) {
-        final varName = target.name;
-        if (_builderConfigs.containsKey(varName)) {
-          final config = _builderConfigs[varName]!;
-          _updateIntentData(methodCall, config);
-
-          // Check if this is a .build() call
-          if (methodCall.methodName.name == 'build') {
-            final intent = config.toIntent();
-            if (intent != null) {
-              intents.add(intent);
-            }
-          }
-        }
-      }
-    }
-
-    super.visitExpressionStatement(node);
-  }
-
-  @override
   void visitMethodInvocation(MethodInvocation node) {
     final target = node.target;
 
@@ -224,17 +223,13 @@ class _IntentVisitor extends RecursiveAstVisitor<void> {
       if (_builderConfigs.containsKey(varName)) {
         final config = _builderConfigs[varName]!;
         _updateIntentData(node, config);
-      }
-    }
 
-    // Pattern 2: Check if this is a .build() call on a tracked builder
-    if (node.methodName.name == 'build' && target is SimpleIdentifier) {
-      final varName = target.name;
-      if (_builderConfigs.containsKey(varName)) {
-        final config = _builderConfigs[varName]!;
-        final intent = config.toIntent();
-        if (intent != null) {
-          intents.add(intent);
+        // Check if this is a .build() call on a tracked builder
+        if (node.methodName.name == 'build') {
+          final intent = config.toIntent();
+          if (intent != null) {
+            intents.add(intent);
+          }
         }
       }
     }
@@ -244,7 +239,7 @@ class _IntentVisitor extends RecursiveAstVisitor<void> {
 
   bool _isAppIntentBuilder(InstanceCreationExpression node) {
     final typeName = node.constructorName.type.toString();
-    return typeName.contains('AppIntentBuilder');
+    return typeName == 'AppIntentBuilder';
   }
 
   /// Extract intent from Pattern 1 (chained builder)
@@ -260,7 +255,7 @@ class _IntentVisitor extends RecursiveAstVisitor<void> {
     // Reverse parameters because we walked the chain backward
     intent.parameters = intent.parameters.reversed.toList();
 
-    return intent.isValid ? intent : null;
+    return intent.hasAnyField ? intent : null;
   }
 
   /// Updates an intent data container from a method invocation.
@@ -298,6 +293,10 @@ class _IntentVisitor extends RecursiveAstVisitor<void> {
         if (param != null) {
           data.parameters.add(param);
         }
+      case 'widgetLoadingText':
+        data.widgetLoadingText = _extractStringLiteral(args.first);
+      case 'widgetDescription':
+        data.widgetDescription = _extractStringLiteral(args.first);
     }
   }
 
@@ -346,7 +345,7 @@ class _IntentVisitor extends RecursiveAstVisitor<void> {
     if (expr is! InstanceCreationExpression) return null;
 
     final typeName = expr.constructorName.type.toString();
-    if (!typeName.contains('AppIntentParameter')) return null;
+    if (typeName != 'AppIntentParameter') return null;
 
     final param = ExtractedParameter();
 
@@ -393,17 +392,26 @@ class _BuilderConfig extends _IntentDataContainer {
       ..description = description
       ..category = category
       ..presentsResult = presentsResult
+      ..widgetLoadingText = widgetLoadingText
+      ..widgetDescription = widgetDescription
       ..parameters = parameters;
 
-    return intent.isValid ? intent : null;
+    return intent.hasAnyField ? intent : null;
   }
 }
 
 /// Represents an intent definition extracted from the source code.
 class ExtractedIntent extends _IntentDataContainer {
-  /// Whether the extracted intent has the minimum required fields.
+  /// Whether the extracted intent has the minimum required fields
+  /// for code generation.
   bool get isValid =>
       identifier != null && title != null && description != null;
+
+  /// Whether the intent has at least one field set, indicating the developer
+  /// attempted to configure a builder. Used to filter noise from unrelated
+  /// code while still surfacing incomplete intents to the validator.
+  bool get hasAnyField =>
+      identifier != null || title != null || description != null;
 
   /// Gets the [IntentCategory] enum value from the raw [category] string.
   ///

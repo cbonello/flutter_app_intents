@@ -1,13 +1,13 @@
-import 'package:flutter_app_intents/src/generator/android_widget_info_generator.dart';
-import 'package:flutter_app_intents/src/generator/intent_extractor.dart';
+import 'package:flutter_app_intents/src/generator/android/widget_info_generator.dart';
+import 'package:flutter_app_intents/src/generator/shared/intent_extractor.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  group(AndroidWidgetInfoGenerator, () {
-    late AndroidWidgetInfoGenerator generator;
+  group(WidgetInfoGenerator, () {
+    late WidgetInfoGenerator generator;
 
     setUp(() {
-      generator = AndroidWidgetInfoGenerator();
+      generator = WidgetInfoGenerator();
     });
 
     group('generateWidgetInfo', () {
@@ -365,7 +365,7 @@ void main() {
     });
 
     group('consistency with other generators', () {
-      test('layout name matches AndroidWidgetLayoutGenerator convention', () {
+      test('layout name matches WidgetLayoutGenerator convention', () {
         final intent = ExtractedIntent()
           ..identifier = 'get_weather'
           ..presentsResult = true;
@@ -373,7 +373,7 @@ void main() {
         final xml = generator.generateWidgetInfo(intent);
 
         // The layout reference should match the naming convention
-        // used by AndroidWidgetLayoutGenerator (widget_<identifier>)
+        // used by WidgetLayoutGenerator (widget_<identifier>)
         expect(xml, contains('@layout/widget_get_weather'));
       });
 

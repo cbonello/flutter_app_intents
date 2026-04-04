@@ -1,13 +1,13 @@
-import 'package:flutter_app_intents/src/generator/android_widget_layout_generator.dart';
-import 'package:flutter_app_intents/src/generator/intent_extractor.dart';
+import 'package:flutter_app_intents/src/generator/android/widget_layout_generator.dart';
+import 'package:flutter_app_intents/src/generator/shared/intent_extractor.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  group(AndroidWidgetLayoutGenerator, () {
-    late AndroidWidgetLayoutGenerator generator;
+  group(WidgetLayoutGenerator, () {
+    late WidgetLayoutGenerator generator;
 
     setUp(() {
-      generator = AndroidWidgetLayoutGenerator();
+      generator = WidgetLayoutGenerator();
     });
 
     group('generateLayout', () {
@@ -511,7 +511,7 @@ void main() {
     });
 
     group('consistency with other generators', () {
-      test('file naming matches AndroidWidgetProviderGenerator convention', () {
+      test('file naming matches WidgetProviderGenerator convention', () {
         final intent = ExtractedIntent()
           ..identifier = 'get_weather'
           ..presentsResult = true;

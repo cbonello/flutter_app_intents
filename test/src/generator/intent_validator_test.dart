@@ -1,4 +1,4 @@
-import 'package:flutter_app_intents/src/generator/intent_extractor.dart';
+import 'package:flutter_app_intents/src/generator/shared/intent_extractor.dart';
 import 'package:flutter_app_intents/src/generator/intent_validator.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -341,6 +341,80 @@ void main() {
           errors.every((e) => e.hint != null && e.hint!.isNotEmpty),
           isTrue,
         );
+      });
+    });
+
+    group('Empty and whitespace string validation', () {
+      late IntentValidator validator;
+
+      setUp(() {
+        validator = IntentValidator(targetPlatform: 'android');
+      });
+
+      test('rejects empty identifier', () {
+        final intent = ExtractedIntent()
+          ..identifier = ''
+          ..title = 'Test'
+          ..description = 'Test'
+          ..category = 'general';
+
+        final errors = validator.validate(intent);
+
+        expect(errors.any((e) => e.message.contains('identifier')), isTrue);
+      });
+
+      test('rejects whitespace-only title', () {
+        final intent = ExtractedIntent()
+          ..identifier = 'test'
+          ..title = '   '
+          ..description = 'Test'
+          ..category = 'general';
+
+        final errors = validator.validate(intent);
+
+        expect(errors.any((e) => e.message.contains('title')), isTrue);
+      });
+
+      test('rejects whitespace-only description', () {
+        final intent = ExtractedIntent()
+          ..identifier = 'test'
+          ..title = 'Test'
+          ..description = '  \t  '
+          ..category = 'general';
+
+        final errors = validator.validate(intent);
+
+        expect(errors.any((e) => e.message.contains('description')), isTrue);
+      });
+    });
+
+    group('Incomplete intent surfacing', () {
+      late IntentValidator validator;
+
+      setUp(() {
+        validator = IntentValidator(targetPlatform: 'android');
+      });
+
+      test('reports missing title on intent with only identifier', () {
+        final intent = ExtractedIntent()..identifier = 'my_intent';
+
+        final errors = validator.validate(intent);
+
+        expect(errors.any((e) => e.message.contains('title')), isTrue);
+        expect(errors.any((e) => e.message.contains('description')), isTrue);
+      });
+
+      test('reports missing description on intent with identifier and title',
+          () {
+        final intent = ExtractedIntent()
+          ..identifier = 'my_intent'
+          ..title = 'My Intent';
+
+        final errors = validator.validate(intent);
+
+        expect(errors.any((e) => e.message.contains('description')), isTrue);
+        expect(errors.any((e) => e.message.contains('identifier')), isFalse);
+        expect(errors.any((e) => e.message.contains('title')), isFalse);
       });
     });
   });

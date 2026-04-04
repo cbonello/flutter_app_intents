@@ -1,25 +1,17 @@
-import 'package:flutter_app_intents/src/generator/intent_extractor.dart';
+import 'package:flutter_app_intents/src/generator/android/resource_naming.dart';
+import 'package:flutter_app_intents/src/generator/shared/intent_extractor.dart';
 
 /// Generates Android AppWidgetProvider Kotlin classes for intents with results.
 ///
 /// Creates boilerplate AppWidgetProvider classes that can display intent
 /// results in widgets using RemoteViews.
 ///
-/// For v0.8.0, this generates simple widget providers that display text
-/// results.
-///
-/// **Important:** The generated code references Android string resources
-/// that must be manually added to your app's `strings.xml` file:
-/// - `@string/widget_<identifier>_loading`: Placeholder text shown before
-///   result is loaded
-///
-/// Example:
-/// ```xml
-/// <string name="widget_get_weather_loading">Waiting for weather...</string>
-/// ```
-// TODO(enhancement): Generate string resource files automatically or make
-// placeholder text configurable.
-class AndroidWidgetProviderGenerator {
+/// The generated code references Android string resources
+/// (`@string/widget_<identifier>_loading`) that are automatically generated
+/// by [StringsGenerator]. The loading text and widget description can
+/// be customized via the `widgetLoadingText()` and `widgetDescription()`
+/// methods on `AppIntentBuilder`.
+class WidgetProviderGenerator {
   /// Generates an AppWidgetProvider Kotlin class for the given intent.
   ///
   /// Returns null if the intent doesn't present results (presentsResult=false).
@@ -46,7 +38,7 @@ class AndroidWidgetProviderGenerator {
     return _generateProviderCode(
       className: className,
       layoutName: layoutName,
-      intentId: intent.identifier!,
+      intentId: _escapeKotlinString(intent.identifier!),
       packageName: packageName,
     );
   }
@@ -150,7 +142,7 @@ class $className : AppWidgetProvider() {
   /// Gets the provider class name for an intent.
   String _getProviderClassName(ExtractedIntent intent) {
     // Convert snake_case to PascalCase
-    final parts = intent.identifier!.split('_');
+    final parts = intent.identifier!.split('_').where((p) => p.isNotEmpty);
     final pascalCase = parts.map(_capitalize).join();
 
     return '${pascalCase}WidgetProvider';
@@ -158,7 +150,7 @@ class $className : AppWidgetProvider() {
 
   /// Gets the layout name for an intent.
   String _getLayoutName(ExtractedIntent intent) =>
-      'widget_${intent.identifier}';
+      ResourceNaming.layoutName(intent.identifier!);
 
   /// Gets the file name for the provider class.
   String getProviderFileName(ExtractedIntent intent) =>
@@ -170,6 +162,16 @@ class $className : AppWidgetProvider() {
     required String packageName,
   }) =>
       '$packageName.${_getProviderClassName(intent)}';
+
+  /// Escapes a string for use inside a Kotlin double-quoted string literal.
+  String _escapeKotlinString(String value) {
+    return value
+        .replaceAll(r'\', r'\\')
+        .replaceAll('"', r'\"')
+        .replaceAll('\n', r'\n')
+        .replaceAll('\r', r'\r')
+        .replaceAll(r'$', r'\$');
+  }
 
   /// Capitalizes the first letter of a string.
   String _capitalize(String s) =>

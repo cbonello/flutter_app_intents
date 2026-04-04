@@ -54,9 +54,9 @@ class AppIntentParameter extends Equatable {
       'name': name,
       'title': title,
       'type': type.name,
-      'description': description,
+      if (description != null) 'description': description,
       'isOptional': isOptional,
-      'defaultValue': defaultValue,
+      if (defaultValue != null) 'defaultValue': defaultValue,
     };
   }
 

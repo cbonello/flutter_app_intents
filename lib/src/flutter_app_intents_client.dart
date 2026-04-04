@@ -1,5 +1,3 @@
-// ignore_for_file: prefer_constructors_over_static_methods
-
 import 'dart:async';
 
 import 'package:flutter_app_intents/src/models/app_intent.dart';
@@ -58,6 +56,9 @@ class FlutterAppIntentsClient {
   final Map<String, Future<AppIntentResult> Function(Map<String, dynamic>)>
       _intentHandlers = {};
 
+  /// Whether the global intent handler has been set up
+  bool _handlerInitialized = false;
+
   /// Register a single intent with its execution handler
   ///
   /// Associates an AppIntent configuration with a Flutter function that
@@ -94,16 +95,21 @@ class FlutterAppIntentsClient {
     AppIntent intent,
     Future<AppIntentResult> Function(Map<String, dynamic> parameters) handler,
   ) async {
-    // Store the handler
-    _intentHandlers[intent.identifier] = handler;
-
-    // Set up the global handler if not already done
-    if (_intentHandlers.isNotEmpty) {
+    // Set up the global handler once
+    if (!_handlerInitialized) {
       FlutterAppIntentsService.setIntentHandler(_handleIntent);
+      _handlerInitialized = true;
     }
 
-    // Register with the iOS system
-    return FlutterAppIntentsService.registerIntent(intent);
+    // Register with the iOS system first
+    final result = await FlutterAppIntentsService.registerIntent(intent);
+
+    // Only store the handler after successful platform registration
+    if (result) {
+      _intentHandlers[intent.identifier] = handler;
+    }
+
+    return result;
   }
 
   /// Register multiple intents with their handlers in a single call
@@ -138,22 +144,27 @@ class FlutterAppIntentsClient {
     Map<AppIntent, Future<AppIntentResult> Function(Map<String, dynamic>)>
         intentsWithHandlers,
   ) async {
-    // Store all handlers
-    _intentHandlers.addEntries(
-      intentsWithHandlers.entries.map(
-        (entry) => MapEntry(entry.key.identifier, entry.value),
-      ),
-    );
-
-    // Set up the global handler if not already done
-    if (_intentHandlers.isNotEmpty) {
+    // Set up the global handler once
+    if (!_handlerInitialized) {
       FlutterAppIntentsService.setIntentHandler(_handleIntent);
+      _handlerInitialized = true;
     }
 
-    // Register with the iOS system
-    return FlutterAppIntentsService.registerIntents(
+    // Register with the iOS system first
+    final result = await FlutterAppIntentsService.registerIntents(
       intentsWithHandlers.keys.toList(),
     );
+
+    // Only store handlers after successful platform registration
+    if (result) {
+      _intentHandlers.addEntries(
+        intentsWithHandlers.entries.map(
+          (entry) => MapEntry(entry.key.identifier, entry.value),
+        ),
+      );
+    }
+
+    return result;
   }
 
   /// Remove an intent from the system and stop handling its invocations
@@ -176,9 +187,12 @@ class FlutterAppIntentsClient {
   ///
   /// Returns: true if unregistration succeeded, false otherwise
   Future<bool> unregisterIntent(String identifier) async {
+    final result = await FlutterAppIntentsService.unregisterIntent(identifier);
+
+    // Only remove the local handler after the service call succeeds
     _intentHandlers.remove(identifier);
 
-    return FlutterAppIntentsService.unregisterIntent(identifier);
+    return result;
   }
 
   /// Retrieve a list of all currently registered intents
@@ -394,16 +408,7 @@ class FlutterAppIntentsClient {
 
     try {
       return await handler(parameters);
-    }
-    // Intentionally catch all throwable objects (Error, Exception, etc.)
-    // for maximum robustness in intent handling
-    // ignore: avoid_catches_without_on_clauses
-    catch (e, s) {
-      // Using print for debugging - helps developers troubleshoot failures
-      // ignore: avoid_print
-      print('Intent handler for $identifier failed with error: $e');
-      // ignore: avoid_print
-      print(s);
+    } on Object catch (e) {
       return AppIntentResult.failed(error: 'Intent handler failed: $e');
     }
   }
@@ -427,7 +432,9 @@ class AppIntentBuilder {
         _isEligibleForPrediction = true,
         _authenticationPolicy = AuthenticationPolicy.none,
         _presentsResult = false,
-        _resultLayout = null;
+        _resultLayout = null,
+        _widgetLoadingText = null,
+        _widgetDescription = null;
 
   /// Private constructor for creating modified copies
   const AppIntentBuilder._({
@@ -442,6 +449,8 @@ class AppIntentBuilder {
     required AuthenticationPolicy authenticationPolicy,
     required bool presentsResult,
     required ResultLayout? resultLayout,
+    required String? widgetLoadingText,
+    required String? widgetDescription,
   })  : _identifier = identifier,
         _title = title,
         _description = description,
@@ -452,7 +461,9 @@ class AppIntentBuilder {
         _isEligibleForPrediction = isEligibleForPrediction,
         _authenticationPolicy = authenticationPolicy,
         _presentsResult = presentsResult,
-        _resultLayout = resultLayout;
+        _resultLayout = resultLayout,
+        _widgetLoadingText = widgetLoadingText,
+        _widgetDescription = widgetDescription;
 
   final String? _identifier;
   final String? _title;
@@ -465,6 +476,8 @@ class AppIntentBuilder {
   final AuthenticationPolicy _authenticationPolicy;
   final bool _presentsResult;
   final ResultLayout? _resultLayout;
+  final String? _widgetLoadingText;
+  final String? _widgetDescription;
 
   /// Set the unique identifier for this intent
   ///
@@ -493,6 +506,8 @@ class AppIntentBuilder {
       authenticationPolicy: _authenticationPolicy,
       presentsResult: _presentsResult,
       resultLayout: _resultLayout,
+      widgetLoadingText: _widgetLoadingText,
+      widgetDescription: _widgetDescription,
     );
   }
 
@@ -523,6 +538,8 @@ class AppIntentBuilder {
       authenticationPolicy: _authenticationPolicy,
       presentsResult: _presentsResult,
       resultLayout: _resultLayout,
+      widgetLoadingText: _widgetLoadingText,
+      widgetDescription: _widgetDescription,
     );
   }
 
@@ -553,6 +570,8 @@ class AppIntentBuilder {
       authenticationPolicy: _authenticationPolicy,
       presentsResult: _presentsResult,
       resultLayout: _resultLayout,
+      widgetLoadingText: _widgetLoadingText,
+      widgetDescription: _widgetDescription,
     );
   }
 
@@ -586,6 +605,8 @@ class AppIntentBuilder {
       authenticationPolicy: _authenticationPolicy,
       presentsResult: _presentsResult,
       resultLayout: _resultLayout,
+      widgetLoadingText: _widgetLoadingText,
+      widgetDescription: _widgetDescription,
     );
   }
 
@@ -618,6 +639,8 @@ class AppIntentBuilder {
       authenticationPolicy: _authenticationPolicy,
       presentsResult: _presentsResult,
       resultLayout: _resultLayout,
+      widgetLoadingText: _widgetLoadingText,
+      widgetDescription: _widgetDescription,
     );
   }
 
@@ -649,6 +672,8 @@ class AppIntentBuilder {
       authenticationPolicy: _authenticationPolicy,
       presentsResult: _presentsResult,
       resultLayout: _resultLayout,
+      widgetLoadingText: _widgetLoadingText,
+      widgetDescription: _widgetDescription,
     );
   }
 
@@ -685,6 +710,8 @@ class AppIntentBuilder {
       authenticationPolicy: _authenticationPolicy,
       presentsResult: _presentsResult,
       resultLayout: _resultLayout,
+      widgetLoadingText: _widgetLoadingText,
+      widgetDescription: _widgetDescription,
     );
   }
 
@@ -717,6 +744,8 @@ class AppIntentBuilder {
       authenticationPolicy: _authenticationPolicy,
       presentsResult: _presentsResult,
       resultLayout: _resultLayout,
+      widgetLoadingText: _widgetLoadingText,
+      widgetDescription: _widgetDescription,
     );
   }
 
@@ -753,6 +782,8 @@ class AppIntentBuilder {
       authenticationPolicy: policy,
       presentsResult: _presentsResult,
       resultLayout: _resultLayout,
+      widgetLoadingText: _widgetLoadingText,
+      widgetDescription: _widgetDescription,
     );
   }
 
@@ -799,6 +830,8 @@ class AppIntentBuilder {
       authenticationPolicy: _authenticationPolicy,
       presentsResult: presents,
       resultLayout: _resultLayout,
+      widgetLoadingText: _widgetLoadingText,
+      widgetDescription: _widgetDescription,
     );
   }
 
@@ -869,6 +902,8 @@ class AppIntentBuilder {
       authenticationPolicy: _authenticationPolicy,
       presentsResult: _presentsResult,
       resultLayout: layout,
+      widgetLoadingText: _widgetLoadingText,
+      widgetDescription: _widgetDescription,
     );
   }
 
@@ -915,6 +950,78 @@ class AppIntentBuilder {
       authenticationPolicy: _authenticationPolicy,
       presentsResult: _presentsResult,
       resultLayout: _resultLayout,
+    );
+  }
+
+  /// Set custom loading text for the Android widget.
+  ///
+  /// This text is shown in the widget while the intent result is being loaded.
+  /// If not set, defaults to "Loading {title}…".
+  ///
+  /// Only applies to intents with `presentsResult(presents: true)`.
+  ///
+  /// Example:
+  /// ```dart
+  /// AppIntentBuilder()
+  ///   .identifier('get_weather')
+  ///   .title('Get Weather')
+  ///   .presentsResult(presents: true)
+  ///   .widgetLoadingText('Fetching weather data…')
+  ///   .build()
+  /// ```
+  ///
+  /// Returns a new builder instance with the widget loading text set.
+  AppIntentBuilder widgetLoadingText(String text) {
+    return AppIntentBuilder._(
+      identifier: _identifier,
+      title: _title,
+      description: _description,
+      parameters: _parameters,
+      category: _category,
+      hints: _hints,
+      isEligibleForSearch: _isEligibleForSearch,
+      isEligibleForPrediction: _isEligibleForPrediction,
+      authenticationPolicy: _authenticationPolicy,
+      presentsResult: _presentsResult,
+      resultLayout: _resultLayout,
+      widgetLoadingText: text,
+      widgetDescription: _widgetDescription,
+    );
+  }
+
+  /// Set custom description for the Android widget.
+  ///
+  /// This text is used as the widget description in the widget picker.
+  /// If not set, defaults to "Displays {title} results".
+  ///
+  /// Only applies to intents with `presentsResult(presents: true)`.
+  ///
+  /// Example:
+  /// ```dart
+  /// AppIntentBuilder()
+  ///   .identifier('get_weather')
+  ///   .title('Get Weather')
+  ///   .presentsResult(presents: true)
+  ///   .widgetDescription('Shows current weather conditions')
+  ///   .build()
+  /// ```
+  ///
+  /// Returns a new builder instance with the widget description set.
+  AppIntentBuilder widgetDescription(String text) {
+    return AppIntentBuilder._(
+      identifier: _identifier,
+      title: _title,
+      description: _description,
+      parameters: _parameters,
+      category: _category,
+      hints: _hints,
+      isEligibleForSearch: _isEligibleForSearch,
+      isEligibleForPrediction: _isEligibleForPrediction,
+      authenticationPolicy: _authenticationPolicy,
+      presentsResult: _presentsResult,
+      resultLayout: _resultLayout,
+      widgetLoadingText: _widgetLoadingText,
+      widgetDescription: text,
     );
   }
 }

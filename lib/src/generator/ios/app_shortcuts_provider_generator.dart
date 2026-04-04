@@ -2,7 +2,7 @@
 // by forcing all buffer operations into cascades, reducing clarity.
 // ignore_for_file: cascade_invocations
 
-import 'package:flutter_app_intents/src/generator/intent_extractor.dart';
+import 'package:flutter_app_intents/src/generator/shared/intent_extractor.dart';
 import 'package:flutter_app_intents/src/models/intent_category.dart';
 
 /// Generates iOS AppShortcuts.swift file for static App Shortcuts
@@ -104,8 +104,10 @@ class AppShortcutsProviderGenerator {
   void _generateIntentStruct(StringBuffer buffer, ExtractedIntent intent) {
     final structName = _intentStructName(intent.identifier!);
     final title = intent.title!;
-    final description = intent.description!;
+    final escapedTitle = _escapeSwiftString(title);
+    final escapedDescription = _escapeSwiftString(intent.description!);
     final identifier = intent.identifier!;
+    final escapedIdentifier = _escapeSwiftString(identifier);
     final presentsResult = intent.presentsResult ?? false;
     final params = intent.parameters;
 
@@ -114,11 +116,11 @@ class AppShortcutsProviderGenerator {
       ..writeln('struct $structName: AppIntent {')
       ..writeln(
         '    static var title: LocalizedStringResource = '
-        '"$title"',
+        '"$escapedTitle"',
       )
       ..writeln()
       ..writeln('    static var description: IntentDescription = '
-          'IntentDescription("$description")')
+          'IntentDescription("$escapedDescription")')
       ..writeln()
       ..writeln('    static var openAppWhenRun: Bool { true }')
       ..writeln();
@@ -153,7 +155,7 @@ class AppShortcutsProviderGenerator {
           '        let result = await '
           'FlutterAppIntentsPlugin.shared.handleIntentInvocation(',
         )
-        ..writeln('            identifier: "$identifier",')
+        ..writeln('            identifier: "$escapedIdentifier",')
         ..writeln('            parameters: [:]')
         ..writeln('        )');
     } else {
@@ -176,7 +178,7 @@ class AppShortcutsProviderGenerator {
           '        let result = await '
           'FlutterAppIntentsPlugin.shared.handleIntentInvocation(',
         )
-        ..writeln('            identifier: "$identifier",')
+        ..writeln('            identifier: "$escapedIdentifier",')
         ..writeln('            parameters: parameters')
         ..writeln('        )');
     }
@@ -219,11 +221,13 @@ class AppShortcutsProviderGenerator {
   }) {
     final structName = _intentStructName(intent.identifier!);
     final title = intent.title!;
-    final shortTitle = _generateShortTitle(title);
+    final shortTitle = _escapeSwiftString(_generateShortTitle(title));
     final systemImage = _systemImageForCategory(intent.categoryEnum);
     final phrases = _generatePhrases(title, appName: appName);
 
-    final phrasesStr = phrases.map((p) => '                    "$p"').join(
+    final phrasesStr = phrases
+        .map((p) => '                    "${_escapeSwiftString(p)}"')
+        .join(
           ',\n',
         );
 
@@ -247,8 +251,40 @@ $phrasesStr
     final isOptional = param.isOptional;
     final optionalMarker = isOptional ? '?' : '';
 
-    buffer.writeln('    @Parameter(title: "${param.title}")');
+    final escapedParamTitle = _escapeSwiftString(param.title!);
+    buffer.writeln('    @Parameter(title: "$escapedParamTitle")');
     buffer.writeln('    var ${param.name}: $swiftType$optionalMarker');
+  }
+
+  /// Escapes a string for use inside a Swift double-quoted string literal.
+  ///
+  /// Preserves Swift string interpolation sequences like `\(.applicationName)`.
+  String _escapeSwiftString(String value) {
+    final buffer = StringBuffer();
+    for (var i = 0; i < value.length; i++) {
+      final char = value[i];
+      if (char == r'\') {
+        // Preserve Swift interpolation: \(...)
+        if (i + 1 < value.length && value[i + 1] == '(') {
+          buffer.write(char);
+        } else {
+          buffer.write(r'\\');
+        }
+      } else if (char == '"') {
+        buffer.write(r'\"');
+      } else if (char == '\n') {
+        buffer.write(r'\n');
+      } else if (char == '\r') {
+        buffer.write(r'\r');
+      } else if (char == '\t') {
+        buffer.write(r'\t');
+      } else if (char == '\x00') {
+        buffer.write(r'\0');
+      } else {
+        buffer.write(char);
+      }
+    }
+    return buffer.toString();
   }
 
   /// Maps Dart parameter types to Swift types
@@ -277,7 +313,7 @@ $phrasesStr
   /// - increment_counter -> IncrementCounterIntent
   /// - start_workout -> StartWorkoutIntent
   String _intentStructName(String identifier) {
-    return '${identifier.split('_').map(
+    return '${identifier.split('_').where((part) => part.isNotEmpty).map(
           (part) => part[0].toUpperCase() + part.substring(1),
         ).join()}Intent';
   }

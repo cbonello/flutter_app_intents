@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:flutter_app_intents/src/generator/intent_extractor.dart';
+import 'package:flutter_app_intents/src/generator/shared/intent_extractor.dart';
 import 'package:path/path.dart' as path;
 import 'package:xml/xml.dart';
 
@@ -210,7 +210,8 @@ class ShortcutsXmlGenerator {
       'Could not auto-detect main activity from AndroidManifest.xml. '
       'Using default: MainActivity. '
       'If your app uses a different activity name, use: '
-      'dart run flutter_app_intents:generate --main-activity=YourActivity',
+      'dart run flutter_app_intents:app_intents_cli '
+      '--main-activity=YourActivity',
     );
 
     return _cachedMainActivity!;

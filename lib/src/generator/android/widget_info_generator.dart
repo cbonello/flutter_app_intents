@@ -1,4 +1,5 @@
-import 'package:flutter_app_intents/src/generator/intent_extractor.dart';
+import 'package:flutter_app_intents/src/generator/android/resource_naming.dart';
+import 'package:flutter_app_intents/src/generator/shared/intent_extractor.dart';
 import 'package:xml/xml.dart';
 
 /// Generates Android widget provider info XML files.
@@ -6,15 +7,13 @@ import 'package:xml/xml.dart';
 /// Creates widget configuration XML files that define widget properties
 /// like initial layout, update period, resize mode, etc.
 ///
-/// **Important:** The generated XML references an Android string resource
-/// (`@string/widget_<identifier>_description`) that must be manually added
-/// to your app's `strings.xml` file. For example:
-/// ```xml
-/// <string name="widget_get_weather_description">Displays weather results</string>
-/// ```
+/// The generated XML references an Android string resource
+/// (`@string/widget_<identifier>_description`) that is automatically generated
+/// by `StringsGenerator`. The description text can be customized via
+/// the `widgetDescription()` method on `AppIntentBuilder`.
 // TODO(enhancement): Make widget dimensions and properties configurable
 // via parameters or a configuration object for more flexibility.
-class AndroidWidgetInfoGenerator {
+class WidgetInfoGenerator {
   /// Generates a widget provider info XML for the given intent.
   ///
   /// Returns null if the intent doesn't present results (presentsResult=false).
@@ -35,7 +34,7 @@ class AndroidWidgetInfoGenerator {
     final builder = XmlBuilder()
       ..processing('xml', 'version="1.0" encoding="utf-8"');
 
-    final layoutName = _getLayoutName(intent);
+    final layoutName = ResourceNaming.layoutName(intent.identifier!);
 
     builder.element(
       'appwidget-provider',
@@ -51,10 +50,10 @@ class AndroidWidgetInfoGenerator {
           ..attribute('android:minHeight', '40dp')
           // updatePeriodMillis = 0: manual updates only (no periodic refresh)
           ..attribute('android:updatePeriodMillis', '0')
-          // Description string resource must be added to strings.xml
+          // Description from auto-generated strings.xml
           ..attribute(
             'android:description',
-            '@string/widget_${intent.identifier}_description',
+            '@string/${ResourceNaming.descriptionStringName(intent.identifier!)}',
           )
           ..attribute('android:widgetCategory', 'home_screen')
           // Allow both horizontal and vertical resizing
@@ -65,13 +64,8 @@ class AndroidWidgetInfoGenerator {
     return builder.buildDocument().toXmlString(pretty: true, indent: '    ');
   }
 
-  /// Gets the layout name for an intent.
-  String _getLayoutName(ExtractedIntent intent) {
-    return 'widget_${intent.identifier}';
-  }
-
   /// Gets the widget info file name for an intent.
   String getWidgetInfoFileName(ExtractedIntent intent) {
-    return '${intent.identifier}_widget_info.xml';
+    return ResourceNaming.widgetInfoFileName(intent.identifier!);
   }
 }

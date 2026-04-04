@@ -1,5 +1,5 @@
-import 'package:flutter_app_intents/src/generator/app_shortcuts_provider_generator.dart';
-import 'package:flutter_app_intents/src/generator/intent_extractor.dart';
+import 'package:flutter_app_intents/src/generator/ios/app_shortcuts_provider_generator.dart';
+import 'package:flutter_app_intents/src/generator/shared/intent_extractor.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
@@ -628,6 +628,95 @@ void main() {
       expect(swift, contains('if let returnDate = returnDate {'));
       expect(swift, contains('var passengers: Int?'));
       expect(swift, contains('if let passengers = passengers {'));
+    });
+
+    group('Swift string escaping', () {
+      test('escapes double quotes in title', () {
+        final intents = [
+          ExtractedIntent()
+            ..identifier = 'test_action'
+            ..title = 'Show "Weather"'
+            ..description = 'A test action'
+            ..category = 'general',
+        ];
+
+        final swift = generator.generate(intents);
+
+        expect(swift, contains(r'Show \"Weather\"'));
+      });
+
+      test('escapes backslashes in description', () {
+        final intents = [
+          ExtractedIntent()
+            ..identifier = 'test_action'
+            ..title = 'Test'
+            ..description = r'Path is C:\Users'
+            ..category = 'general',
+        ];
+
+        final swift = generator.generate(intents);
+
+        expect(swift, contains(r'Path is C:\\Users'));
+      });
+
+      test('preserves Swift interpolation in phrases', () {
+        final intents = [
+          ExtractedIntent()
+            ..identifier = 'test_action'
+            ..title = 'Test Action'
+            ..description = 'A test action'
+            ..category = 'general',
+        ];
+
+        // Without appName, phrases use \(.applicationName)
+        final swift = generator.generate(intents);
+
+        expect(swift, contains(r'\(.applicationName)'));
+        // Should NOT double-escape to \\(.applicationName)
+        expect(swift, isNot(contains(r'\\(.applicationName)')));
+      });
+
+      test('escapes tab characters', () {
+        final intents = [
+          ExtractedIntent()
+            ..identifier = 'test_action'
+            ..title = 'Test\tAction'
+            ..description = 'A test action'
+            ..category = 'general',
+        ];
+
+        final swift = generator.generate(intents);
+
+        expect(swift, contains(r'Test\tAction'));
+      });
+
+      test('escapes null bytes', () {
+        final intents = [
+          ExtractedIntent()
+            ..identifier = 'test_action'
+            ..title = 'Test\x00Action'
+            ..description = 'A test action'
+            ..category = 'general',
+        ];
+
+        final swift = generator.generate(intents);
+
+        expect(swift, contains(r'Test\0Action'));
+      });
+
+      test('escapes newlines in description', () {
+        final intents = [
+          ExtractedIntent()
+            ..identifier = 'test_action'
+            ..title = 'Test'
+            ..description = 'Line one\nLine two'
+            ..category = 'general',
+        ];
+
+        final swift = generator.generate(intents);
+
+        expect(swift, contains(r'Line one\nLine two'));
+      });
     });
   });
 }

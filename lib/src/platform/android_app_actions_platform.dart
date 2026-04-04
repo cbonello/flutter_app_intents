@@ -117,14 +117,17 @@ class AndroidAppActionsPlatform extends AppIntentsPlatform {
   Future<bool> unregisterIntent(String identifier) async {
     await _ensureSupported();
 
-    _handlers.remove(identifier);
-
-    return _invokePlatformMethod<bool>(
+    final result = await _invokePlatformMethod<bool>(
       'unregisterIntent',
       {'identifier': identifier},
       errorMessage: 'Unregistration failed',
       defaultValue: false,
     );
+
+    // Only remove the local handler after the platform call succeeds
+    _handlers.remove(identifier);
+
+    return result;
   }
 
   @override
@@ -166,6 +169,14 @@ class AndroidAppActionsPlatform extends AppIntentsPlatform {
     Map<String, dynamic> parameters, {
     double relevanceScore = 1.0,
   }) async {
+    if (relevanceScore < 0.0 || relevanceScore > 1.0) {
+      throw ArgumentError.value(
+        relevanceScore,
+        'relevanceScore',
+        'Must be between 0.0 and 1.0',
+      );
+    }
+
     await _ensureSupported();
 
     return _invokePlatformMethod<bool>(

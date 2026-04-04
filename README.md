@@ -712,6 +712,8 @@ final intent = AppIntentBuilder()
 - `.eligibleForSearch(bool)` - Make discoverable in Spotlight/search (default: true)
 - `.eligibleForPrediction(bool)` - Enable Siri predictions (default: true)
 - `.presentsResult(bool)` - Show result dialog vs open app silently (default: false)
+- `.widgetLoadingText(String)` - Custom loading text for Android widget (default: "Loading {title}...")
+- `.widgetDescription(String)` - Custom description for Android widget picker (default: "Displays {title} results")
 - `.authenticationPolicy(AuthenticationPolicy)` - Set authentication requirements
 - `.build()` - Create the AppIntent instance
 
@@ -823,6 +825,8 @@ final queryIntent = AppIntentBuilder()
     .title('Get Counter Value')
     .description('Returns the current counter value')
     .presentsResult(true)  // ← Shows result string in dialog (iOS), generates widgets (Android - experimental)
+    .widgetLoadingText('Fetching counter...')  // Optional: custom Android widget loading text
+    .widgetDescription('Shows the current counter value')  // Optional: custom Android widget description
     .build();
 
 // iOS: Shows result string in a system dialog before opening app 📱 (text only)

@@ -1,4 +1,5 @@
-import 'package:flutter_app_intents/src/generator/intent_extractor.dart';
+import 'package:flutter_app_intents/src/generator/android/resource_naming.dart';
+import 'package:flutter_app_intents/src/generator/shared/intent_extractor.dart';
 
 /// Validates intent definitions for platform-specific requirements.
 class IntentValidator {
@@ -49,8 +50,8 @@ class IntentValidator {
   List<ValidationError> validate(ExtractedIntent intent) {
     final errors = <ValidationError>[];
 
-    // Required fields
-    if (intent.identifier == null) {
+    // Required fields — check for null and empty/whitespace-only strings
+    if (intent.identifier == null || intent.identifier!.trim().isEmpty) {
       errors.add(
         ValidationError(
           intent: intent.toString(),
@@ -60,7 +61,7 @@ class IntentValidator {
       );
     }
 
-    if (intent.title == null) {
+    if (intent.title == null || intent.title!.trim().isEmpty) {
       errors.add(
         ValidationError(
           intent: intent.toString(),
@@ -70,7 +71,7 @@ class IntentValidator {
       );
     }
 
-    if (intent.description == null) {
+    if (intent.description == null || intent.description!.trim().isEmpty) {
       errors.add(
         ValidationError(
           intent: intent.toString(),
@@ -95,6 +96,22 @@ class IntentValidator {
   List<ValidationError> _validateAndroid(ExtractedIntent intent) {
     final errors = <ValidationError>[];
 
+    // Identifier must be a valid Android resource name
+    final identifier = intent.identifier;
+    if (identifier != null &&
+        !ResourceNaming.isValidResourceName(identifier)) {
+      errors.add(
+        ValidationError(
+          intent: identifier,
+          message: 'Identifier "$identifier" is not a valid Android resource '
+              'name. Must contain only lowercase letters (a-z), digits (0-9), '
+              'and underscores, and must start with a letter or underscore.',
+          hint: 'Rename to something like '
+              '"${_suggestValidIdentifier(identifier)}".',
+        ),
+      );
+    }
+
     // Category is required for Android (BII mapping)
     if (intent.category == null) {
       errors.add(
@@ -108,6 +125,25 @@ class IntentValidator {
     }
 
     return errors;
+  }
+
+  /// Suggests a valid Android resource name from an invalid identifier.
+  String _suggestValidIdentifier(String identifier) {
+    // Convert camelCase/PascalCase to snake_case, strip invalid chars
+    final snaked = identifier
+        .replaceAllMapped(
+          RegExp('([a-z])([A-Z])'),
+          (m) => '${m[1]}_${m[2]}',
+        )
+        .toLowerCase()
+        .replaceAll(RegExp('[^a-z0-9_]'), '_')
+        .replaceAll(RegExp('_+'), '_');
+
+    // Ensure it starts with a letter or underscore
+    if (snaked.isNotEmpty && RegExp('[0-9]').hasMatch(snaked[0])) {
+      return '_$snaked';
+    }
+    return snaked.isEmpty ? 'my_intent' : snaked;
   }
 
   /// iOS-specific validation

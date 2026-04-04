@@ -32,7 +32,13 @@ class PlatformHints extends Equatable {
     return PlatformHints(
       iosSuggestedPhrase: map['iosSuggestedPhrase'] as String?,
       androidBIIOverride: map['androidBIIOverride'] as String?,
-      androidExtras: map['androidExtras'] as Map<String, dynamic>?,
+      androidExtras: map['androidExtras'] != null
+          ? (map['androidExtras'] is Map<String, dynamic>
+              ? map['androidExtras'] as Map<String, dynamic>
+              : Map<String, dynamic>.from(
+                  map['androidExtras'] as Map<Object?, Object?>,
+                ))
+          : null,
     );
   }
 

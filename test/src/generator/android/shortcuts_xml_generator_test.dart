@@ -1,7 +1,7 @@
 import 'dart:io';
 
-import 'package:flutter_app_intents/src/generator/intent_extractor.dart';
-import 'package:flutter_app_intents/src/generator/shortcuts_xml_generator.dart';
+import 'package:flutter_app_intents/src/generator/shared/intent_extractor.dart';
+import 'package:flutter_app_intents/src/generator/android/shortcuts_xml_generator.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 /// This file contains unit tests for the [ShortcutsXmlGenerator] class.

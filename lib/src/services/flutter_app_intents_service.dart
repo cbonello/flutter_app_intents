@@ -79,28 +79,22 @@ class FlutterAppIntentsService {
 
   /// Gets all registered App Intents
   static Future<List<AppIntent>> getRegisteredIntents() async {
-    if (!_isIOS) {
-      throw UnsupportedError('App Intents are only supported on iOS');
-    }
+    final result = await _invokePlatformMethod<List<dynamic>>(
+      'getRegisteredIntents',
+      null,
+      errorMessage: 'Failed to get registered intents',
+      defaultValue: <dynamic>[],
+    );
 
-    try {
-      final result = await _channel.invokeListMethod<Map<dynamic, dynamic>>(
-        'getRegisteredIntents',
-      );
-
-      return result
-              ?.map(
-                (intentMap) =>
-                    AppIntent.fromMap(Map<String, dynamic>.from(intentMap)),
-              )
-              .toList() ??
-          [];
-    } on PlatformException catch (e) {
-      throw FlutterAppIntentsException(
-        'Failed to get registered intents: ${e.message}',
-        e.code,
-      );
-    }
+    return result
+        .map(
+          (intentMap) => AppIntent.fromMap(
+            intentMap is Map<String, dynamic>
+                ? intentMap
+                : Map<String, dynamic>.from(intentMap as Map<Object?, Object?>),
+          ),
+        )
+        .toList();
   }
 
   /// Sets up a handler for when an intent is invoked

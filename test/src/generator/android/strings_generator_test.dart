@@ -1,13 +1,13 @@
-import 'package:flutter_app_intents/src/generator/android_strings_generator.dart';
-import 'package:flutter_app_intents/src/generator/intent_extractor.dart';
+import 'package:flutter_app_intents/src/generator/android/strings_generator.dart';
+import 'package:flutter_app_intents/src/generator/shared/intent_extractor.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  group(AndroidStringsGenerator, () {
-    late AndroidStringsGenerator generator;
+  group(StringsGenerator, () {
+    late StringsGenerator generator;
 
     setUp(() {
-      generator = AndroidStringsGenerator();
+      generator = StringsGenerator();
     });
 
     group('generateStrings', () {
@@ -383,7 +383,7 @@ void main() {
         expect(merged, isNot(contains('Old loading')));
       });
 
-      test('returns new content when parsing existing content fails', () {
+      test('throws when parsing existing content fails', () {
         const invalidExistingContent = 'This is not valid XML';
 
         final newStrings = generator.generateStrings([
@@ -393,13 +393,53 @@ void main() {
             ..presentsResult = true,
         ])!;
 
-        final merged = generator.mergeWithExisting(
-          invalidExistingContent,
-          newStrings,
+        // Should throw rather than silently overwrite the existing file
+        expect(
+          () => generator.mergeWithExisting(invalidExistingContent, newStrings),
+          throwsFormatException,
         );
+      });
 
-        // Should return the new content when parsing fails
-        expect(merged, equals(newStrings));
+      test('throws when only START marker is present', () {
+        const existingContent = '''
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- START: flutter_app_intents auto-generated strings -->
+    <string name="widget_old_description">Old</string>
+</resources>''';
+
+        final newStrings = generator.generateStrings([
+          ExtractedIntent()
+            ..identifier = 'get_counter'
+            ..title = 'Get Counter'
+            ..presentsResult = true,
+        ])!;
+
+        expect(
+          () => generator.mergeWithExisting(existingContent, newStrings),
+          throwsFormatException,
+        );
+      });
+
+      test('throws when only END marker is present', () {
+        const existingContent = '''
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="widget_old_description">Old</string>
+    <!-- END: flutter_app_intents auto-generated strings -->
+</resources>''';
+
+        final newStrings = generator.generateStrings([
+          ExtractedIntent()
+            ..identifier = 'get_counter'
+            ..title = 'Get Counter'
+            ..presentsResult = true,
+        ])!;
+
+        expect(
+          () => generator.mergeWithExisting(existingContent, newStrings),
+          throwsFormatException,
+        );
       });
 
       test('handles empty existing resources', () {

@@ -83,5 +83,50 @@ void main() {
       },
       skip: 'Tests run on host platform, not Android',
     );
+
+    group('relevanceScore validation', () {
+      test('rejects relevanceScore below 0.0', () {
+        expect(
+          () => platform.donateIntent(
+            'test_id',
+            {'param': 'value'},
+            relevanceScore: -0.1,
+          ),
+          throwsArgumentError,
+        );
+      });
+
+      test('rejects relevanceScore above 1.0', () {
+        expect(
+          () => platform.donateIntent(
+            'test_id',
+            {'param': 'value'},
+            relevanceScore: 1.1,
+          ),
+          throwsArgumentError,
+        );
+      });
+
+      test('accepts relevanceScore at boundaries', () {
+        // On non-Android, these throw UnsupportedError (from _ensureSupported)
+        // rather than ArgumentError, proving the validation passed.
+        expect(
+          () => platform.donateIntent(
+            'test_id',
+            {'param': 'value'},
+            relevanceScore: 0.0,
+          ),
+          throwsUnsupportedError,
+        );
+        expect(
+          () => platform.donateIntent(
+            'test_id',
+            {'param': 'value'},
+            relevanceScore: 1.0,
+          ),
+          throwsUnsupportedError,
+        );
+      });
+    });
   });
 }

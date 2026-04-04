@@ -1,8 +1,10 @@
+import 'package:equatable/equatable.dart';
+
 /// Defines how an intent result should be displayed.
 ///
 /// For iOS, this controls the IntentDialog presentation.
 /// For Android, this generates a widget layout using RemoteViews.
-class ResultLayout {
+class ResultLayout extends Equatable {
   const ResultLayout._({
     required this.type,
     required this.fields,
@@ -119,6 +121,9 @@ class ResultLayout {
 
   /// The fields to display in the result.
   final List<ResultField> fields;
+
+  @override
+  List<Object?> get props => [type, fields];
 }
 
 /// The type of result layout.
@@ -134,7 +139,7 @@ enum ResultLayoutType {
 }
 
 /// A field in a result layout.
-class ResultField {
+class ResultField extends Equatable {
   const ResultField({
     required this.key,
     required this.type,
@@ -149,6 +154,9 @@ class ResultField {
 
   /// The index of the item (for list items).
   final int? index;
+
+  @override
+  List<Object?> get props => [key, type, index];
 }
 
 /// The type of result field.
@@ -173,7 +181,7 @@ enum ResultFieldType {
 }
 
 /// A list item with title and optional subtitle.
-class ListItem {
+class ListItem extends Equatable {
   const ListItem({
     required this.title,
     this.subtitle,
@@ -184,4 +192,7 @@ class ListItem {
 
   /// The optional subtitle of the list item.
   final String? subtitle;
+
+  @override
+  List<Object?> get props => [title, subtitle];
 }

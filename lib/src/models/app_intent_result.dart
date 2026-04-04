@@ -73,10 +73,10 @@ class AppIntentResult extends Equatable {
   Map<String, dynamic> toMap() {
     return {
       'success': success,
-      'value': value,
-      'error': error,
+      if (value != null) 'value': value,
+      if (error != null) 'error': error,
       'needsToContinueInApp': needsToContinueInApp,
-      'opensIntent': opensIntent,
+      if (opensIntent != null) 'opensIntent': opensIntent,
     };
   }
 

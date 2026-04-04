@@ -1,14 +1,14 @@
-import 'package:flutter_app_intents/src/generator/android_widget_provider_generator.dart';
-import 'package:flutter_app_intents/src/generator/intent_extractor.dart';
+import 'package:flutter_app_intents/src/generator/android/widget_provider_generator.dart';
+import 'package:flutter_app_intents/src/generator/shared/intent_extractor.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  group(AndroidWidgetProviderGenerator, () {
-    late AndroidWidgetProviderGenerator generator;
+  group(WidgetProviderGenerator, () {
+    late WidgetProviderGenerator generator;
     const testPackageName = 'com.example.test';
 
     setUp(() {
-      generator = AndroidWidgetProviderGenerator();
+      generator = WidgetProviderGenerator();
     });
 
     group('generateProvider', () {

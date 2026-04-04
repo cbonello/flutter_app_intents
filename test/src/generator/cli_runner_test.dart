@@ -1,14 +1,14 @@
 import 'dart:io';
 
-import 'package:flutter_app_intents/src/generator/android_strings_generator.dart';
-import 'package:flutter_app_intents/src/generator/android_widget_info_generator.dart';
-import 'package:flutter_app_intents/src/generator/android_widget_layout_generator.dart';
-import 'package:flutter_app_intents/src/generator/android_widget_provider_generator.dart';
-import 'package:flutter_app_intents/src/generator/app_shortcuts_provider_generator.dart';
+import 'package:flutter_app_intents/src/generator/android/strings_generator.dart';
+import 'package:flutter_app_intents/src/generator/android/widget_info_generator.dart';
+import 'package:flutter_app_intents/src/generator/android/widget_layout_generator.dart';
+import 'package:flutter_app_intents/src/generator/android/widget_provider_generator.dart';
+import 'package:flutter_app_intents/src/generator/ios/app_shortcuts_provider_generator.dart';
 import 'package:flutter_app_intents/src/generator/cli_runner.dart';
-import 'package:flutter_app_intents/src/generator/intent_extractor.dart';
+import 'package:flutter_app_intents/src/generator/shared/intent_extractor.dart';
 import 'package:flutter_app_intents/src/generator/intent_validator.dart';
-import 'package:flutter_app_intents/src/generator/shortcuts_xml_generator.dart';
+import 'package:flutter_app_intents/src/generator/android/shortcuts_xml_generator.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:path/path.dart' as p;
@@ -22,17 +22,17 @@ class MockShortcutsXmlGenerator extends Mock implements ShortcutsXmlGenerator {}
 class MockAppShortcutsProviderGenerator extends Mock
     implements AppShortcutsProviderGenerator {}
 
-class MockAndroidWidgetLayoutGenerator extends Mock
-    implements AndroidWidgetLayoutGenerator {}
+class MockWidgetLayoutGenerator extends Mock
+    implements WidgetLayoutGenerator {}
 
-class MockAndroidWidgetProviderGenerator extends Mock
-    implements AndroidWidgetProviderGenerator {}
+class MockWidgetProviderGenerator extends Mock
+    implements WidgetProviderGenerator {}
 
-class MockAndroidWidgetInfoGenerator extends Mock
-    implements AndroidWidgetInfoGenerator {}
+class MockWidgetInfoGenerator extends Mock
+    implements WidgetInfoGenerator {}
 
-class MockAndroidStringsGenerator extends Mock
-    implements AndroidStringsGenerator {}
+class MockStringsGenerator extends Mock
+    implements StringsGenerator {}
 
 void main() {
   group(CliRunner, () {
@@ -42,10 +42,10 @@ void main() {
     late MockIntentExtractor mockIntentExtractor;
     late MockShortcutsXmlGenerator mockShortcutsXmlGenerator;
     late MockAppShortcutsProviderGenerator mockAppShortcutsProviderGenerator;
-    late MockAndroidWidgetLayoutGenerator mockWidgetLayoutGenerator;
-    late MockAndroidWidgetProviderGenerator mockWidgetProviderGenerator;
-    late MockAndroidWidgetInfoGenerator mockWidgetInfoGenerator;
-    late MockAndroidStringsGenerator mockStringsGenerator;
+    late MockWidgetLayoutGenerator mockWidgetLayoutGenerator;
+    late MockWidgetProviderGenerator mockWidgetProviderGenerator;
+    late MockWidgetInfoGenerator mockWidgetInfoGenerator;
+    late MockStringsGenerator mockStringsGenerator;
     late MockIntentValidator mockIntentValidator;
 
     setUp(() {
@@ -59,10 +59,10 @@ void main() {
       mockIntentExtractor = MockIntentExtractor();
       mockShortcutsXmlGenerator = MockShortcutsXmlGenerator();
       mockAppShortcutsProviderGenerator = MockAppShortcutsProviderGenerator();
-      mockWidgetLayoutGenerator = MockAndroidWidgetLayoutGenerator();
-      mockWidgetProviderGenerator = MockAndroidWidgetProviderGenerator();
-      mockWidgetInfoGenerator = MockAndroidWidgetInfoGenerator();
-      mockStringsGenerator = MockAndroidStringsGenerator();
+      mockWidgetLayoutGenerator = MockWidgetLayoutGenerator();
+      mockWidgetProviderGenerator = MockWidgetProviderGenerator();
+      mockWidgetInfoGenerator = MockWidgetInfoGenerator();
+      mockStringsGenerator = MockStringsGenerator();
       mockIntentValidator = MockIntentValidator();
 
       when(() => mockIntentExtractor.extractFromDirectory(any())).thenAnswer(

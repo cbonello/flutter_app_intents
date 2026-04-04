@@ -69,7 +69,7 @@ enum IntentCategory {
   /// Smart home and device control
   ///
   /// Examples: "Turn on the lights", "Set thermostat to 70"
-  deviceControl('actions.intent.OPEN_APP_FEATURE', 'Device Control'),
+  deviceControl('actions.intent.CONTROL_SMART_HOME_DEVICE', 'Device Control'),
 
   /// Nutrition and food tracking
   ///

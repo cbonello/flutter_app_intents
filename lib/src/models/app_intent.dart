@@ -46,7 +46,11 @@ class AppIntent extends Equatable {
             : null,
         hints = map['hints'] != null
             ? PlatformHints.fromMap(
-                map['hints'] as Map<String, dynamic>,
+                map['hints'] is Map<String, dynamic>
+                    ? map['hints'] as Map<String, dynamic>
+                    : Map<String, dynamic>.from(
+                        map['hints'] as Map<Object?, Object?>,
+                      ),
               )
             : null,
         isEligibleForSearch = map['isEligibleForSearch'] as bool? ?? true,

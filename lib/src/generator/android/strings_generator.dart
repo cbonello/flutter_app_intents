@@ -1,21 +1,29 @@
-import 'package:flutter_app_intents/src/generator/intent_extractor.dart';
+import 'package:flutter_app_intents/src/generator/android/resource_naming.dart';
+import 'package:flutter_app_intents/src/generator/shared/intent_extractor.dart';
 import 'package:xml/xml.dart';
 
 /// Generates Android string resources for widget support.
 ///
-/// Creates strings.xml with localized string resources referenced by:
-/// - Widget info XML files (description)
-/// - Widget provider Kotlin classes (loading text)
+/// Creates `strings.xml` with localized string resources referenced by:
+/// - Widget info XML files (`widget_<id>_description`)
+/// - Widget layout XML files (`widget_<id>_loading`)
 ///
-/// These strings can be customized by editing the generated file.
-class AndroidStringsGenerator {
+/// String values use custom text from `AppIntentBuilder.widgetLoadingText()`
+/// and `AppIntentBuilder.widgetDescription()` when provided, falling back to
+/// auto-generated defaults derived from the intent title.
+///
+/// Resource names are derived from [ResourceNaming] for consistency
+/// with other Android generators. String values are escaped for Android
+/// resource requirements (apostrophes, quotes, leading `@`/`?`).
+class StringsGenerator {
   /// Generates or updates strings.xml with widget string resources.
   ///
   /// Returns null if no intents with presentsResult=true.
   String? generateStrings(List<ExtractedIntent> intents) {
     // Filter intents that need widget strings
-    final widgetIntents =
-        intents.where((i) => i.presentsResult ?? false).toList();
+    final widgetIntents = intents
+        .where((i) => (i.presentsResult ?? false) && i.identifier != null)
+        .toList();
 
     if (widgetIntents.isEmpty) {
       return null;
@@ -40,6 +48,11 @@ class AndroidStringsGenerator {
           final identifier = intent.identifier!;
           final title = intent.title ?? 'Result';
 
+          final descriptionText =
+              intent.widgetDescription ?? _generateDescription(title);
+          final loadingText =
+              intent.widgetLoadingText ?? _generateLoadingText(title);
+
           builder
             ..comment(' Strings for ${intent.identifier} intent ')
 
@@ -48,8 +61,11 @@ class AndroidStringsGenerator {
               'string',
               nest: () {
                 builder
-                  ..attribute('name', 'widget_${identifier}_description')
-                  ..text(_generateDescription(title));
+                  ..attribute(
+                    'name',
+                    ResourceNaming.descriptionStringName(identifier),
+                  )
+                  ..text(_escapeForAndroidResource(descriptionText));
               },
             )
 
@@ -58,8 +74,11 @@ class AndroidStringsGenerator {
               'string',
               nest: () {
                 builder
-                  ..attribute('name', 'widget_${identifier}_loading')
-                  ..text(_generateLoadingText(title));
+                  ..attribute(
+                    'name',
+                    ResourceNaming.loadingStringName(identifier),
+                  )
+                  ..text(_escapeForAndroidResource(loadingText));
               },
             )
             ..text('\n');
@@ -83,15 +102,43 @@ class AndroidStringsGenerator {
     return 'Loading $title…';
   }
 
+  /// Escapes a string for use in an Android `strings.xml` resource value.
+  ///
+  /// Android resource strings have special escaping requirements beyond
+  /// standard XML:
+  /// - Apostrophes must be backslash-escaped (`\'`)
+  /// - Double quotes must be backslash-escaped (`\"`)
+  /// - Backslashes must be escaped (`\\`)
+  /// - `@` at the start must be escaped (Android treats it as a reference)
+  /// - `?` at the start must be escaped (Android treats it as a theme attr)
+  ///
+  /// Standard XML entities (`&`, `<`, `>`) are handled by the xml package.
+  String _escapeForAndroidResource(String value) {
+    var escaped = value
+        .replaceAll(r'\', r'\\')
+        .replaceAll("'", r"\'")
+        .replaceAll('"', r'\"');
+
+    if (escaped.startsWith('@')) {
+      escaped = '\\$escaped';
+    } else if (escaped.startsWith('?')) {
+      escaped = '\\$escaped';
+    }
+
+    return escaped;
+  }
+
   /// Gets the file path for strings.xml relative to app directory.
   String getStringsFilePath() {
     return 'android/app/src/main/res/values/strings.xml';
   }
 
-  /// Merges generated strings with existing strings.xml content.
+  /// Merges generated strings with existing `strings.xml` content.
   ///
-  /// This preserves any user-defined strings while adding/updating
-  /// widget-related strings.
+  /// Preserves user-defined strings while adding/updating widget-related
+  /// strings. Uses comment markers to identify the auto-generated block.
+  ///
+  /// Throws [FormatException] if the existing content is not valid XML.
   String mergeWithExisting(String existingContent, String newStrings) {
     try {
       final existingDoc = XmlDocument.parse(existingContent);
@@ -121,6 +168,16 @@ class AndroidStringsGenerator {
       // If markers are found, remove the old block
       if (startIndex != null && endIndex != null) {
         children.removeRange(startIndex, endIndex + 1);
+      } else if (startIndex != null || endIndex != null) {
+        // Only one marker found — the auto-generation block is corrupted
+        final found = startIndex != null ? 'START' : 'END';
+        final missing = startIndex != null ? 'END' : 'START';
+        throw FormatException(
+          'Found the $found marker for the flutter_app_intents auto-generated '
+          'block in strings.xml but the $missing marker is missing. '
+          'Please restore both markers or remove them entirely, then re-run '
+          'the generator.',
+        );
       } else {
         // No markers found - remove all widget_* strings before adding new
         // block
@@ -142,9 +199,12 @@ class AndroidStringsGenerator {
       );
 
       return existingDoc.toXmlString(pretty: true, indent: '    ');
-    } on XmlException {
-      // If parsing fails, return the new content
-      return newStrings;
+    } on XmlException catch (e) {
+      throw FormatException(
+        'Failed to parse existing strings.xml. '
+        'Please fix the XML syntax error before re-running the generator.\n'
+        'Error: $e',
+      );
     }
   }
 }

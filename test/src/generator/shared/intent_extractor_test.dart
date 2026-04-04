@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:flutter_app_intents/src/generator/intent_extractor.dart';
+import 'package:flutter_app_intents/src/generator/shared/intent_extractor.dart';
 import 'package:flutter_app_intents/src/models/intent_category.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -744,6 +744,78 @@ completely broken { {{ syntax
         expect(str, contains('testParam'));
         expect(str, contains('string'));
         expect(str, contains('true'));
+      });
+    });
+
+    group('Scope isolation', () {
+      test('chained builders in different functions are independent',
+          () async {
+        File('${tempDir.path}/scoped_builders.dart').writeAsStringSync(
+          '''
+import 'package:flutter_app_intents/flutter_app_intents.dart';
+
+void functionA() {
+  final intentA = AppIntentBuilder()
+    .identifier('intent_a')
+    .title('Intent A')
+    .description('From function A')
+    .category(IntentCategory.general)
+    .build();
+}
+
+void functionB() {
+  final intentB = AppIntentBuilder()
+    .identifier('intent_b')
+    .title('Intent B')
+    .description('From function B')
+    .category(IntentCategory.fitness)
+    .build();
+}
+''',
+        );
+
+        final intents =
+            await extractor.extractFromDirectory(tempDir.path);
+
+        expect(intents.length, equals(2));
+
+        final intentA =
+            intents.firstWhere((i) => i.identifier == 'intent_a');
+        final intentB =
+            intents.firstWhere((i) => i.identifier == 'intent_b');
+
+        expect(intentA.title, equals('Intent A'));
+        expect(intentA.description, equals('From function A'));
+        expect(intentB.title, equals('Intent B'));
+        expect(intentB.description, equals('From function B'));
+      });
+    });
+
+    group('Type matching', () {
+      test('does not match similarly named classes', () async {
+        File('${tempDir.path}/false_positive.dart').writeAsStringSync(
+          '''
+class MyAppIntentBuilder {
+  MyAppIntentBuilder identifier(String id) => this;
+  MyAppIntentBuilder title(String t) => this;
+  MyAppIntentBuilder description(String d) => this;
+  void build() {}
+}
+
+final myBuilder = MyAppIntentBuilder()
+  .identifier('false_positive')
+  .title('Should Not Match')
+  .description('This is not a real intent');
+''',
+        );
+
+        final intents =
+            await extractor.extractFromDirectory(tempDir.path);
+
+        expect(
+          intents.where((i) => i.identifier == 'false_positive'),
+          isEmpty,
+        );
       });
     });
   });

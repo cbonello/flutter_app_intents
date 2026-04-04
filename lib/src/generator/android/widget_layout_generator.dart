@@ -1,4 +1,5 @@
-import 'package:flutter_app_intents/src/generator/intent_extractor.dart';
+import 'package:flutter_app_intents/src/generator/android/resource_naming.dart';
+import 'package:flutter_app_intents/src/generator/shared/intent_extractor.dart';
 import 'package:xml/xml.dart';
 
 /// Generates Android widget layout XML files for intents that present results.
@@ -11,7 +12,7 @@ import 'package:xml/xml.dart';
 /// on ResultLayout specifications.
 // TODO(enhancement): Support customizable layouts through ResultLayout API,
 // allowing developers to define custom widget appearances per intent.
-class AndroidWidgetLayoutGenerator {
+class WidgetLayoutGenerator {
   // Default layout styling constants
   // These provide consistent styling across all generated widgets but could
   // be made configurable in future versions.
@@ -124,7 +125,7 @@ class AndroidWidgetLayoutGenerator {
                 ..attribute('android:gravity', 'center')
                 ..attribute(
                   'android:text',
-                  '@string/widget_${intentId}_loading',
+                  '@string/${ResourceNaming.loadingStringName(intentId)}',
                 );
             },
           );
@@ -134,11 +135,11 @@ class AndroidWidgetLayoutGenerator {
 
   /// Gets the layout file name for an intent.
   String getLayoutFileName(ExtractedIntent intent) {
-    return 'widget_${intent.identifier}.xml';
+    return ResourceNaming.layoutFileName(intent.identifier!);
   }
 
   /// Gets the layout resource ID for an intent.
   String getLayoutResourceId(ExtractedIntent intent) {
-    return 'R.layout.widget_${intent.identifier}';
+    return ResourceNaming.layoutResourceId(intent.identifier!);
   }
 }

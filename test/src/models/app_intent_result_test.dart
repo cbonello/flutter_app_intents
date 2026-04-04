@@ -213,11 +213,11 @@ void main() {
           equals({
             'success': true,
             'value': 'Test result',
-            'error': null,
             'needsToContinueInApp': true,
             'opensIntent': 'test_intent',
           }),
         );
+        expect(map.containsKey('error'), isFalse);
       });
 
       test('converts failed result to map', () {
@@ -229,12 +229,12 @@ void main() {
           map,
           equals({
             'success': false,
-            'value': null,
             'error': 'Test error',
             'needsToContinueInApp': false,
-            'opensIntent': null,
           }),
         );
+        expect(map.containsKey('value'), isFalse);
+        expect(map.containsKey('opensIntent'), isFalse);
       });
 
       test('converts result with null values', () {
@@ -246,12 +246,12 @@ void main() {
           map,
           equals({
             'success': true,
-            'value': null,
-            'error': null,
             'needsToContinueInApp': false,
-            'opensIntent': null,
           }),
         );
+        expect(map.containsKey('value'), isFalse);
+        expect(map.containsKey('error'), isFalse);
+        expect(map.containsKey('opensIntent'), isFalse);
       });
 
       test('converts result with complex value', () {

@@ -186,11 +186,11 @@ void main() {
             'name': 'simple_param',
             'title': 'Simple Parameter',
             'type': 'string',
-            'description': null,
             'isOptional': false,
-            'defaultValue': null,
           }),
         );
+        expect(map.containsKey('description'), isFalse);
+        expect(map.containsKey('defaultValue'), isFalse);
       });
 
       test('converts all parameter types correctly', () {

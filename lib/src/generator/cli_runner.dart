@@ -1,29 +1,41 @@
+import 'dart:async';
 import 'dart:io';
 
-import 'package:flutter_app_intents/src/generator/android_strings_generator.dart';
-import 'package:flutter_app_intents/src/generator/android_widget_info_generator.dart';
-import 'package:flutter_app_intents/src/generator/android_widget_layout_generator.dart';
-import 'package:flutter_app_intents/src/generator/android_widget_provider_generator.dart';
-import 'package:flutter_app_intents/src/generator/app_shortcuts_provider_generator.dart';
-import 'package:flutter_app_intents/src/generator/intent_extractor.dart';
+import 'package:flutter_app_intents/src/generator/android/shortcuts_xml_generator.dart';
+import 'package:flutter_app_intents/src/generator/android/strings_generator.dart';
+import 'package:flutter_app_intents/src/generator/android/widget_info_generator.dart';
+import 'package:flutter_app_intents/src/generator/android/widget_layout_generator.dart';
+import 'package:flutter_app_intents/src/generator/android/widget_provider_generator.dart';
 import 'package:flutter_app_intents/src/generator/intent_validator.dart';
-import 'package:flutter_app_intents/src/generator/shortcuts_xml_generator.dart';
+import 'package:flutter_app_intents/src/generator/ios/app_shortcuts_provider_generator.dart';
+import 'package:flutter_app_intents/src/generator/shared/intent_extractor.dart';
 import 'package:meta/meta.dart';
 import 'package:watcher/watcher.dart';
 
-/// Main CLI runner for code generation
+/// Main CLI runner for code generation.
+///
+/// Orchestrates the full generation pipeline:
+/// 1. Finds the project root and resolves target platforms
+/// 2. Extracts intent definitions from `lib/` via [IntentExtractor]
+/// 3. Validates intents per platform via [IntentValidator]
+/// 4. Generates Android files: `shortcuts.xml`, widget layouts/info/providers,
+///    and `strings.xml` via the Android generators
+/// 5. Generates iOS files: `AppShortcuts.swift` via
+///    [AppShortcutsProviderGenerator]
+///
+/// Supports single-run and watch mode (re-generates on `.dart` file changes).
 class CliRunner {
   /// Creates a new [CliRunner] with default dependencies.
   CliRunner()
       : _intentExtractor = IntentExtractor(),
-        _shortcutsXmlGenerator = ShortcutsXmlGenerator(
-          projectRoot: _findProjectRoot(),
-        ),
+        _shortcutsXmlGenerator = null,
+        _shortcutsXmlGeneratorFactory =
+            ((projectRoot) => ShortcutsXmlGenerator(projectRoot: projectRoot)),
         _appShortcutsProviderGenerator = AppShortcutsProviderGenerator(),
-        _widgetLayoutGenerator = AndroidWidgetLayoutGenerator(),
-        _widgetProviderGenerator = AndroidWidgetProviderGenerator(),
-        _widgetInfoGenerator = AndroidWidgetInfoGenerator(),
-        _stringsGenerator = AndroidStringsGenerator(),
+        _widgetLayoutGenerator = WidgetLayoutGenerator(),
+        _widgetProviderGenerator = WidgetProviderGenerator(),
+        _widgetInfoGenerator = WidgetInfoGenerator(),
+        _stringsGenerator = StringsGenerator(),
         _intentValidatorFactory =
             ((platform) => IntentValidator(targetPlatform: platform));
 
@@ -33,13 +45,14 @@ class CliRunner {
     required IntentExtractor intentExtractor,
     required ShortcutsXmlGenerator shortcutsXmlGenerator,
     required AppShortcutsProviderGenerator appShortcutsProviderGenerator,
-    required AndroidWidgetLayoutGenerator widgetLayoutGenerator,
-    required AndroidWidgetProviderGenerator widgetProviderGenerator,
-    required AndroidWidgetInfoGenerator widgetInfoGenerator,
-    required AndroidStringsGenerator stringsGenerator,
+    required WidgetLayoutGenerator widgetLayoutGenerator,
+    required WidgetProviderGenerator widgetProviderGenerator,
+    required WidgetInfoGenerator widgetInfoGenerator,
+    required StringsGenerator stringsGenerator,
     required IntentValidator Function(String) intentValidatorFactory,
   })  : _intentExtractor = intentExtractor,
         _shortcutsXmlGenerator = shortcutsXmlGenerator,
+        _shortcutsXmlGeneratorFactory = null,
         _appShortcutsProviderGenerator = appShortcutsProviderGenerator,
         _widgetLayoutGenerator = widgetLayoutGenerator,
         _widgetProviderGenerator = widgetProviderGenerator,
@@ -48,12 +61,13 @@ class CliRunner {
         _intentValidatorFactory = intentValidatorFactory;
 
   final IntentExtractor _intentExtractor;
-  final ShortcutsXmlGenerator _shortcutsXmlGenerator;
+  ShortcutsXmlGenerator? _shortcutsXmlGenerator;
+  final ShortcutsXmlGenerator Function(String)? _shortcutsXmlGeneratorFactory;
   final AppShortcutsProviderGenerator _appShortcutsProviderGenerator;
-  final AndroidWidgetLayoutGenerator _widgetLayoutGenerator;
-  final AndroidWidgetProviderGenerator _widgetProviderGenerator;
-  final AndroidWidgetInfoGenerator _widgetInfoGenerator;
-  final AndroidStringsGenerator _stringsGenerator;
+  final WidgetLayoutGenerator _widgetLayoutGenerator;
+  final WidgetProviderGenerator _widgetProviderGenerator;
+  final WidgetInfoGenerator _widgetInfoGenerator;
+  final StringsGenerator _stringsGenerator;
   final IntentValidator Function(String) _intentValidatorFactory;
 
   /// Runs the code generator.
@@ -80,6 +94,11 @@ class CliRunner {
     // relative paths from the root.
     final projectRoot = _findProjectRoot();
     Directory.current = projectRoot;
+
+    // Create the ShortcutsXmlGenerator with the resolved project root.
+    // This is deferred from the constructor so both the generator and
+    // Directory.current use the same project root.
+    _shortcutsXmlGenerator ??= _shortcutsXmlGeneratorFactory!(projectRoot);
 
     // Determine target platforms
     final platforms = _determinePlatforms(platform);
@@ -211,33 +230,65 @@ class CliRunner {
     // simplicity and robustness, it re-scans the entire lib/ directory on any
     // .dart file change.
     final watcher = DirectoryWatcher('lib');
+    final completer = Completer<void>();
+    Timer? debounceTimer;
+    var isGenerating = false;
 
     try {
-      await for (final event in watcher.events) {
-        // Only watch Dart files
-        if (!event.path.endsWith('.dart')) continue;
+      final subscription = watcher.events.listen(
+        (event) {
+          // Only watch Dart files
+          if (!event.path.endsWith('.dart')) return;
 
-        // Debounce rapid changes
-        await Future<void>.delayed(const Duration(milliseconds: 500));
+          // Cancel any pending debounce timer — only the last event in a
+          // rapid burst will trigger regeneration.
+          debounceTimer?.cancel();
+          debounceTimer = Timer(const Duration(milliseconds: 500), () async {
+            // Skip if a generation is already in progress
+            if (isGenerating) return;
+            isGenerating = true;
 
-        stdout
-          ..writeln()
-          ..writeln('🔄 File changed: ${event.path}')
-          ..writeln('🔍 Re-scanning...')
-          ..writeln();
+            stdout
+              ..writeln()
+              ..writeln('🔄 File changed: ${event.path}')
+              ..writeln('🔍 Re-scanning...')
+              ..writeln();
 
-        try {
-          await _generateForPlatforms(platforms, mainActivity: mainActivity);
-          stdout.writeln('✅ Regeneration complete');
-        } on Exception catch (e) {
-          stdout.writeln('❌ Error during regeneration: $e');
-        }
+            try {
+              await _generateForPlatforms(
+                platforms,
+                mainActivity: mainActivity,
+              );
+              stdout.writeln('✅ Regeneration complete');
+            } on Exception catch (e) {
+              stdout.writeln('❌ Error during regeneration: $e');
+            } finally {
+              isGenerating = false;
+            }
 
-        stdout
-          ..writeln()
-          ..writeln('👀 Watching...');
-      }
+            stdout
+              ..writeln()
+              ..writeln('👀 Watching...');
+          });
+        },
+        onError: (Object e) {
+          stdout
+            ..writeln()
+            ..writeln(
+              '❌ An unexpected error occurred with the file watcher: $e',
+            )
+            ..writeln('   Watch mode has stopped.');
+          completer.complete();
+        },
+        onDone: completer.complete,
+      );
+
+      // Keep running until the stream closes or errors out
+      await completer.future;
+      debounceTimer?.cancel();
+      await subscription.cancel();
     } on Object catch (e) {
+      debounceTimer?.cancel();
       stdout
         ..writeln()
         ..writeln('❌ An unexpected error occurred with the file watcher: $e')
@@ -284,7 +335,7 @@ class CliRunner {
 
       if (available.isNotEmpty) {
         stdout.writeln(
-          '      dart run flutter_app_intents:generate '
+          '      dart run flutter_app_intents:app_intents_cli '
           '--platform=${available.join(",")}',
         );
       }
@@ -362,20 +413,20 @@ class CliRunner {
     }
   }
 
-  /// Generate Android shortcuts.xml
+  /// Generate all Android files: shortcuts.xml and widget artifacts.
   Future<void> _generateAndroid(
     List<ExtractedIntent> intents, {
     String? mainActivity,
   }) async {
     // Set the main activity override if provided
-    _shortcutsXmlGenerator.mainActivityOverride = mainActivity;
+    _shortcutsXmlGenerator!.mainActivityOverride = mainActivity;
 
-    final xml = _shortcutsXmlGenerator.generate(intents);
+    final xml = _shortcutsXmlGenerator!.generate(intents);
 
     // Display any warnings from generation
-    if (_shortcutsXmlGenerator.warnings.isNotEmpty) {
+    if (_shortcutsXmlGenerator!.warnings.isNotEmpty) {
       stdout.writeln('⚠️  Warnings:');
-      for (final warning in _shortcutsXmlGenerator.warnings) {
+      for (final warning in _shortcutsXmlGenerator!.warnings) {
         stdout.writeln('   $warning');
       }
       stdout.writeln();
@@ -481,12 +532,22 @@ class CliRunner {
       if (stringsFile.existsSync()) {
         // Merge with existing content
         final existingContent = await stringsFile.readAsString();
-        final mergedContent = _stringsGenerator.mergeWithExisting(
-          existingContent,
-          strings,
-        );
-        await stringsFile.writeAsString(mergedContent);
-        stdout.writeln('   📝 Updated string resources: $stringsPath');
+        try {
+          final mergedContent = _stringsGenerator.mergeWithExisting(
+            existingContent,
+            strings,
+          );
+          await stringsFile.writeAsString(mergedContent);
+          stdout.writeln('   📝 Updated string resources: $stringsPath');
+        } on FormatException catch (e) {
+          stdout
+            ..writeln('   ❌ Could not update $stringsPath')
+            ..writeln('      $e')
+            ..writeln(
+              '      Fix the syntax error in your strings.xml and re-run '
+              'the generator.',
+            );
+        }
       } else {
         // Create new strings.xml
         await stringsFile.parent.create(recursive: true);
