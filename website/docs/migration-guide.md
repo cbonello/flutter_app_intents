@@ -88,7 +88,7 @@ final myIntent = AppIntentBuilder()
 | `music` | `music.note` | `PLAY_MUSIC` | Play music |
 | `calling` | `phone.fill` | `CALL_CONTACT` | Make calls |
 
-See [IntentCategory API](./api-reference#intentcategory) for all 20+ categories.
+See [API Reference](../api-reference) for all 20+ categories.
 
 ### Step 2: Install the CLI (Optional but Convenient)
 
@@ -309,9 +309,9 @@ grep "targetPackage" android/app/src/main/res/xml/shortcuts.xml
 
 ## Getting Help
 
-- Check the [Troubleshooting Guide](./troubleshooting)
-- Review [Examples](./examples) showing code generation
-- See [iOS Configuration](./ios-configuration) and [Android Configuration](./android-configuration)
+- Check the [Troubleshooting Guide](../troubleshooting)
+- Review [Examples](../examples) showing code generation
+- See [iOS Configuration](../ios-configuration) and [Android Configuration](../android-configuration)
 - Open an [issue on GitHub](https://github.com/christophebonello/flutter_app_intents/issues)
 
 ---

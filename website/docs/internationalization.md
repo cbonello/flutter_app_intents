@@ -342,7 +342,7 @@ Settings → Siri & Search → Language → [Select language]
 
 - [Android Configuration](./android-configuration.md) - Platform-specific setup
 - [iOS Configuration](./ios-configuration.md) - Platform-specific setup
-- [Code Generation](./getting-started.md#code-generation) - Using the CLI generator
+- [Code Generation](./getting-started.md#code-generation-recommended) - Using the CLI generator
 
 ## Community Contributions
 
