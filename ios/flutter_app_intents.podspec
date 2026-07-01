@@ -10,7 +10,7 @@ enabling integration with Siri, Shortcuts, and other system experiences.
   s.license          = { :file => '../LICENSE' }
   s.author           = { 'Your Company' => 'email@example.com' }
   s.source           = { :path => '.' }
-  s.source_files = 'Classes/**/*'
+  s.source_files = 'flutter_app_intents/Sources/flutter_app_intents/**/*.swift'
   s.dependency 'Flutter'
   s.platform = :ios, '16.0'
 
